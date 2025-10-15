@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DateLink — Profile</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffe1ec 0%, #fff5fa 100%);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    nav {
+      background: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 55px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      z-index: 10;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #ff4f87;
+      font-weight: 600;
+    }
+
+    .container {
+      background: white;
+      width: 92%;
+      max-width: 480px;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 25px rgba(0,0,0,.08);
+      margin-top: 80px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      color: #ff4f87;
+      margin-top: 0;
+    }
+
+    .photo {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ffb6c1;
+      margin: 12px auto;
+      display: block;
+    }
+
+    .profile-info {
+      text-align: left;
+      margin-top: 15px;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .profile-info p {
+      margin: 8px 0;
+      line-height: 1.4;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .tag {
+      background: #ffedf2;
+      color: #ff4f87;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .follow-btn, .message-btn {
+      display: inline-block;
+      margin: 10px 5px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      color: white;
+      font-size: 15px;
+    }
+
+    .follow-btn { background: #ff4f87; }
+    .message-btn { background: #555; }
+
+    /* Posts Section */
+    .posts-section {
+      margin-top: 25px;
+      text-align: left;
+    }
+
+    .posts-section h3 {
+      color: #ff4f87;
+      border-bottom: 2px solid #ffb6c1;
+      padding-bottom: 4px;
+    }
+
+    .post {
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+      margin-bottom: 15px;
+    }
+
+    .post img, .post video {
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 8px;
+    }
+
+    .like-btn, .comment-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 8px;
+      color: #ff4f87;
+    }
+
+    .comment-box {
+      display: flex;
+      margin-top: 6px;
+    }
+
+    .comment-box input {
+      flex: 1;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      margin-right: 5px;
+    }
+
+    .comment-box button {
+      background: #ff4f87;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    .comment-list {
+      margin-top: 8px;
+      padding-left: 10px;
+      border-left: 2px solid #ffb6c1;
+    }
+
+    .comment-list p {
+      margin: 3px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="home2.html">🏠 Home</a>
+    <a href="match.html">💞 Match</a>
+    <a href="chats.html">💬 Chats</a>
+    <a href="profile.html">👤 Profile</a>
+  </nav>
+
+  <div class="container">
+    <h2 id="userName">Loading...</h2>
+    <img id="userPhoto" class="photo" src="https://via.placeholder.com/120" alt="User photo">
+
+    <div class="profile-info" id="profileInfo">Fetching profile...</div>
+
+    <button id="followBtn" class="follow-btn">Follow</button>
+    <button id="messageBtn" class="message-btn">Message</button>
+
+    <div class="posts-section">
+      <h3>Posts</h3>
+      <div id="postsContainer">Loading posts...</div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
+      authDomain: "smart-waste-66279.firebaseapp.com",
+      projectId: "smart-waste-66279",
+      storageBucket: "smart-waste-66279.appspot.com",
+      messagingSenderId: "619099585646",
+      appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const params = new URLSearchParams(window.location.search);
+    const uid = params.get('uid');
+    let currentUser = null;
+
+    const postsContainer = document.getElementById('postsContainer');
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) return location.href = 'log1.html';
+      currentUser = user;
+      loadUserProfile(uid);
+      loadUserPosts(uid);
+      setupFollowButton(uid);
+    });
+
+    async function loadUserProfile(uid) {
+      const doc = await db.collection('users').doc(uid).get();
+      if (!doc.exists) return alert('User not found.');
+
+      const u = doc.data();
+      document.getElementById('userName').textContent = u.fullName || 'Unknown';
+      document.getElementById('userPhoto').src = u.photoURL || 'https://via.placeholder.com/120';
+
+      const hobbies = Array.isArray(u.hobbies) ? u.hobbies : (u.hobbies ? [u.hobbies] : []);
+      const hobbyTags = hobbies.length ? hobbies.map(h => `<span class="tag">${h}</span>`).join('') : '<span>-</span>';
+
+      document.getElementById('profileInfo').innerHTML = `
+        <p><strong>Age:</strong> ${u.age || '-'} </p>
+        <p><strong>Location:</strong> ${u.location || '-'} </p>
+        <p><strong>Occupation:</strong> ${u.occupation || '-'} </p>
+        <p><strong>Marital Status:</strong> ${u.maritalStatus || '-'} </p>
+        <p><strong>Kids:</strong> ${u.kids || '0'} </p>
+        <p><strong>Hobbies:</strong></p>
+        <div class="tags">${hobbyTags}</div>
+        <p><strong>Favourite Meal:</strong> ${u.meal || '-'} </p>
+        <p><strong>Favourite Games:</strong> ${u.games || '-'} </p>
+        <p><strong>Bio:</strong> ${u.bio || 'No bio yet.'}</p>
+      `;
+    }
+
+    async function loadUserPosts(uid) {
+      const postsSnap = await db.collection('users').doc(uid)
+        .collection('posts')
+        .orderBy('createdAt', 'desc')
+        .get();
+
+      if (postsSnap.empty) {
+        postsContainer.innerHTML = '<p>No posts yet.</p>';
+        return;
+      }
+
+      postsContainer.innerHTML = '';
+      for (const postDoc of postsSnap.docs) {
+        const post = postDoc.data();
+        const div = document.createElement('div');
+        div.className = 'post';
+        div.innerHTML = `
+          <p>${post.text || ''}</p>
+          ${post.mediaType === 'image' ? `<img src="${post.mediaUrl}" />` : ''}
+          ${post.mediaType === 'video' ? `<video controls src="${post.mediaUrl}"></video>` : ''}
+          <div>
+            <button class="like-btn" onclick="toggleLike('${postDoc.id}')">❤️ Like</button>
+            <button class="comment-btn" onclick="toggleCommentBox('${postDoc.id}')">💬 Comment</button>
+          </div>
+          <div id="comments-${postDoc.id}" class="comment-list"></div>
+          <div id="commentBox-${postDoc.id}" class="comment-box" style="display:none;">
+            <input id="commentInput-${postDoc.id}" placeholder="Write a comment..." />
+            <button onclick="addComment('${postDoc.id}')">Send</button>
+          </div>
+        `;
+        postsContainer.appendChild(div);
+        loadComments(uid, postDoc.id);
+      }
+    }
+
+    async function setupFollowButton(uid) {
+      const followBtn = document.getElementById('followBtn');
+      const doc = await db.collection('users').doc(currentUser.uid)
+        .collection('following').doc(uid).get();
+
+      followBtn.textContent = doc.exists ? 'Unfollow' : 'Follow';
+      followBtn.onclick = async () => {
+        if (doc.exists) {
+          await db.collection('users').doc(currentUser.uid).collection('following').doc(uid).delete();
+          await db.collection('users').doc(uid).collection('followers').doc(currentUser.uid).delete();
+          followBtn.textContent = 'Follow';
+        } else {
+          await db.collection('users').doc(currentUser.uid).collection('following').doc(uid)
+            .set({ followedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          await db.collection('users').doc(uid).collection('followers').doc(currentUser.uid)
+            .set({ followedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          followBtn.textContent = 'Unfollow';
+        }
+      };
+    }
+
+    function toggleCommentBox(postId) {
+      const box = document.getElementById(`commentBox-${postId}`);
+      box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    async function addComment(postId) {
+      const input = document.getElementById(`commentInput-${postId}`);
+      const text = input.value.trim();
+      if (!text) return;
+
+      const ref = db.collection('users').doc(uid).collection('posts')
+        .doc(postId).collection('comments').doc();
+      await ref.set({
+        uid: currentUser.uid,
+        text,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      input.value = '';
+      loadComments(uid, postId);
+    }
+
+    async function loadComments(uid, postId) {
+      const container = document.getElementById(`comments-${postId}`);
+      const snap = await db.collection('users').doc(uid).collection('posts')
+        .doc(postId).collection('comments').orderBy('createdAt').get();
+      container.innerHTML = '';
+      snap.forEach(doc => {
+        const c = doc.data();
+        const p = document.createElement('p');
+        p.textContent = c.text;
+        container.appendChild(p);
+      });
+    }
+
+    async function toggleLike(postId) {
+      const ref = db.collection('users').doc(uid).collection('posts').doc(postId);
+      const doc = await ref.get();
+      if (!doc.exists) return;
+      const data = doc.data();
+      let likes = data.likes || [];
+      if (likes.includes(currentUser.uid)) {
+        likes = likes.filter(x => x !== currentUser.uid);
+      } else {
+        likes.push(currentUser.uid);
+      }
+      await ref.update({ likes });
+    }
+
+    document.getElementById('messageBtn').onclick = () => {
+      window.location.href = `chats.html?uid=${uid}`;
+    };
+  </script>
+</body>
+</html>
