@@ -1,5 +1,4 @@
-window.toggleReplyBox=toggleReplyBox;
-  window.addReply=addReply;<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -872,12 +871,10 @@ window.addComment = addComment;
 window.toggleComments = toggleComments;
 window.showProfile = showProfile;
 window.closeProfile = closeProfile;
-window.toggleReplyBox=toggleReplyBox;
-  window.addReply=addReply;
+
 </script>
-<!-- 👁 Visitor Tracking Script -->
 <script>
-  const db = firebase.firestore();
+  
 
   async function updateVisitorStats() {
     const statsRef = db.collection('visitors').doc('stats');
@@ -907,7 +904,6 @@ window.toggleReplyBox=toggleReplyBox;
     sessionStorage.setItem("visited_today", "true");
   }
 </script>
-  
 
 </body>
 </html>
