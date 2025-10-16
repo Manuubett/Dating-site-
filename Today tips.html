@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <style>
+  
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
+      color: #333;
+    }
+    
+    nav {
+      background: linear-gradient(135deg, #ff4f87, #ff6b6b);
+      padding: 15px;
+      text-align: center;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      font-size: 18px;
+      padding: 8px 15px;
+      border-radius: 20px;
+      transition: background 0.3s;
+    }
+    
+    nav a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 80px auto 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .photo {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #ff4f87;
+      display: block;
+      margin: 0 auto 20px;
+      cursor: pointer;
+    }
+    
+    .profile-info p {
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    
+    .follow-stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 20px 0;
+      padding: 15px;
+      background: linear-gradient(135deg, #ff4f87, #ff6b6b);
+      border-radius: 10px;
+      color: white;
+    }
+    
+    .follow-stats div {
+      cursor: pointer;
+      padding: 10px 20px;
+      border-radius: 25px;
+      background: rgba(255,255,255,0.2);
+      transition: background 0.3s;
+    }
+    
+    .follow-stats div:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    .followers-list {
+      display: none;
+      margin: 15px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .follower-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin: 8px 0;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .follower-item img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    
+    .follow-btn {
+      background: linear-gradient(135deg, #ff4f87, #ff6b6b);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    .follow-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 79, 135, 0.4);
+    }
+    
+    .follow-btn.following {
+      background: #6c757d;
+    }
+    
+    .follow-back {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      border-color: #ff4f87;
+      outline: none;
+    }
+    
+    .chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    
+    .chip {
+      background: #e9ecef;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    
+    .chip.selected {
+      background: #ff4f87;
+      color: white;
+      border-color: #ff4f87;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #ff4f87, #ff6b6b);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 79, 135, 0.4);
+    }
+    
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .post-card {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .post-card img, .post-card video {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    
+    .text-post {
+      padding: 20px;
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      color: #333;
+      font-weight: bold;
+    }
+    
+    .post-actions {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: flex;
+      gap: 5px;
+    }
+    
+    .post-actions button {
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      padding: 5px;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+    }
+    
+    .modal-content img, .modal-content video {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+    
+    .text-post-modal {
+      padding: 40px;
+      background: white;
+      border-radius: 15px;
+      max-width: 500px;
+      text-align: center;
+      font-size: 18px;
+    }
+    
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 40px;
+      cursor: pointer;
+    }
+
+    /* Photo upload styling */
+    .photo-upload-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .photo-upload-label {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4f87, #ff6b6b);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+
+    .photo-upload-label:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 79, 135, 0.4);
+    }
+
+    #photoInput {
+      display: none;
+    }
+    /* ... (keep all your existing CSS styles) ... */
+
+    .follow-btn {
+      background: linear-gradient(135deg, #ff4f87, #ff6b6b);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    .follow-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 79, 135, 0.4);
+    }
+    
+    .follow-btn.following {
+      background: #6c757d;
+    }
+    
+    .follow-back {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+
+    .follow-back:hover {
+      background: #218838;
+      transform: translateY(-1px);
+    }
+
+    .unfollow-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+
+    .unfollow-btn:hover {
+      background: #c82333;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>    
+  <!-- ... (keep all your existing HTML structure) ... -->
+
+  <nav>  
+    <a href="home2.html">🏠 Home</a>  
+    <a href="matchs.html">💞 Match</a> 
+    
+    <a href="chats.html">💬 Chats</a>  
+    
+  </nav>    
+    
+  <div class="container">  
+    <h2>My Profile</h2>  
+    <img id="profilePic" class="photo" src="https://via.placeholder.com/120" alt="Profile photo">  
+    
+    <!-- View Mode -->  
+    <div id="viewMode">  
+      <div class="profile-info">  
+        <p><strong>Name:</strong> <span id="viewName">Loading...</span></p>  
+        <p><strong>Age:</strong> <span id="viewAge">-</span></p>  
+        <p><strong>Location:</strong> <span id="viewLocation">—</span></p>  
+        <p><strong>Occupation:</strong> <span id="viewOccupation">—</span></p>  
+        <p><strong>Marital Status:</strong> <span id="viewMarital">—</span></p>  
+        <p><strong>Number of Kids:</strong> <span id="viewKids">—</span></p>  
+        <p><strong>Hobbies:</strong> <span id="viewHobbies">—</span></p>  
+        <p><strong>Favourite Meal:</strong> <span id="viewMeal">—</span></p>  
+        <p><strong>Favourite Games:</strong> <span id="viewGames">—</span></p>  
+        <p><strong>Bio:</strong></p>  
+        <p id="viewBio" style="background:#f9f9f9;padding:10px;border-radius:8px;">—</p>  
+      </div>  
+
+      <div class="follow-stats">  
+        <div onclick="toggleFollowers()">Followers: <span id="followerCount">0</span></div>  
+        <div onclick="toggleFollowing()">Following: <span id="followingCount">0</span></div>  
+      </div>  
+
+      <div class="followers-list" id="followersList"></div>  
+      <div class="followers-list" id="followingList"></div>  
+    </div>  
+
+    <!-- Edit Mode -->  
+    <div id="editMode" style="display:none;">  
+      <div class="photo-upload-container">
+        <label for="photoInput" class="photo-upload-label">
+          📷 Change Profile Photo
+        </label>
+        <input id="photoInput" type="file" accept="image/*">
+      </div>
+      
+      <input id="name" placeholder="Full name" />  
+      <input id="age" type="number" placeholder="Age" min="18" />  
+      <input id="location" placeholder="Your location" />  
+
+      <select id="occupation">  
+        <option value="">Select Occupation</option>  
+        <option>Student</option>  
+        <option>Engineer</option>  
+        <option>Doctor</option>  
+        <option>Teacher</option>  
+        <option>Entrepreneur</option>  
+        <option>Artist</option>  
+        <option>Lawyer</option>  
+        <option>Designer</option>  
+        <option>Developer</option>  
+        <option>Other</option>  
+      </select>  
+
+      <select id="marital">  
+        <option value="">Select Marital Status</option>  
+        <option>Single</option>  
+        <option>In a Relationship</option>  
+        <option>Married</option>  
+        <option>Divorced</option>  
+        <option>Widowed</option>  
+      </select>  
+
+      <input id="kids" type="number" placeholder="Number of kids" min="0" />  
+
+      <label><strong>Hobbies</strong></label>  
+      <div id="hobbiesContainer" class="chips-container"></div>  
+
+      <input id="meal" placeholder="Favourite meal" />  
+      <input id="games" placeholder="Favourite games" />  
+      <textarea id="bio" placeholder="Write something about yourself..." rows="3"></textarea>  
+      <button id="saveBtn">Save Profile</button>  
+    </div>  
+
+    <button id="toggleEdit">⚙️ Edit Profile</button>  
+    <button id="logoutBtn">Logout</button>  
+
+    <!-- My Posts -->  
+    <div class="posts-section">  
+      <h3 style="color:#ff4f87;">My Posts</h3>  
+      <div id="userPosts" class="posts-grid"></div>  
+    </div>
+  </div>    
+
+  <!-- Zoom Modal -->    
+  <div class="modal" id="zoomModal">  
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <div class="modal-content" id="modalContent"></div>  
+  </div>    
+
+  <!-- Firebase SDKs -->    
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>    
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>    
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>    
+  <script>  
+    const firebaseConfig = {  
+      apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",  
+      authDomain: "smart-waste-66279.firebaseapp.com",  
+      projectId: "smart-waste-66279",  
+      storageBucket: "smart-waste-66279.appspot.com",  
+      messagingSenderId: "619099585646",  
+      appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"  
+    };  
+    firebase.initializeApp(firebaseConfig);  
+    const auth = firebase.auth();  
+    const db = firebase.firestore();  
+    
+    let currentUserId = null;  
+    let uploadedPhotoURL = '';  
+    let isEditing = false;  
+    
+    const toggleEditBtn = document.getElementById('toggleEdit');  
+    const viewMode = document.getElementById('viewMode');  
+    const editMode = document.getElementById('editMode');  
+    
+    // Format number to k format
+    function formatCount(count) {
+      if (count >= 1000) {
+        return (count / 1000).toFixed(1) + 'k';
+      }
+      return count;
+    }
+    
+    // Initialize hobbies
+    const hobbies = [
+      "Reading", "Traveling", "Cooking", "Gaming", "Sports", 
+      "Music", "Dancing", "Photography", "Art", "Writing",
+      "Yoga", "Movies", "Shopping", "Hiking", "Swimming"
+    ];
+    
+    // Initialize hobbies chips
+    const hobbiesContainer = document.getElementById('hobbiesContainer');
+    hobbies.forEach(hobby => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.textContent = hobby;
+      chip.onclick = () => chip.classList.toggle('selected');
+      hobbiesContainer.appendChild(chip);
+    });
+    
+    toggleEditBtn.addEventListener('click', () => {  
+      isEditing = !isEditing;  
+      viewMode.style.display = isEditing ? 'none' : 'block';  
+      editMode.style.display = isEditing ? 'block' : 'none';  
+      toggleEditBtn.textContent = isEditing ? '🔙 View Profile' : '⚙️ Edit Profile';  
+      
+      if (isEditing) {
+        loadEditForm();
+      }
+    });  
+    
+    auth.onAuthStateChanged(async (user) => {  
+      if (!user) return location.href = 'log1.html';  
+      currentUserId = user.uid;  
+      loadProfile();  
+    });  
+    
+    async function loadProfile() {  
+      const doc = await db.collection('users').doc(currentUserId).get();  
+      if (doc.exists) {  
+        const data = doc.data();  
+        document.getElementById('viewName').textContent = data.fullName || 'No name';  
+        document.getElementById('viewAge').textContent = data.age || '-';  
+        document.getElementById('viewLocation').textContent = data.location || '—';  
+        document.getElementById('viewOccupation').textContent = data.occupation || '—';  
+        document.getElementById('viewMarital').textContent = data.maritalStatus || '—';  
+        document.getElementById('viewKids').textContent = data.kids || '—';  
+        document.getElementById('viewMeal').textContent = data.meal || '—';  
+        document.getElementById('viewGames').textContent = data.games || '—';  
+        document.getElementById('viewBio').textContent = data.bio || 'No bio yet';  
+        document.getElementById('viewHobbies').textContent = Array.isArray(data.hobbies) ? data.hobbies.join(', ') : '—';  
+        
+        // Update profile photo with cache busting
+        if (data.photoURL) {
+          document.getElementById('profilePic').src = data.photoURL + '?t=' + new Date().getTime();
+        }
+        
+        // Load followers and following counts with k formatting
+        const followerCount = data.followers ? data.followers.length : 0;
+        const followingCount = data.following ? data.following.length : 0;
+        
+        document.getElementById('followerCount').textContent = formatCount(followerCount);
+        document.getElementById('followingCount').textContent = formatCount(followingCount);
+      }  
+      await loadUserPosts();  
+    }  
+    
+    function loadEditForm() {
+      db.collection('users').doc(currentUserId).get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById('name').value = data.fullName || '';
+          document.getElementById('age').value = data.age || '';
+          document.getElementById('location').value = data.location || '';
+          document.getElementById('occupation').value = data.occupation || '';
+          document.getElementById('marital').value = data.maritalStatus || '';
+          document.getElementById('kids').value = data.kids || '';
+          document.getElementById('meal').value = data.meal || '';
+          document.getElementById('games').value = data.games || '';
+          document.getElementById('bio').value = data.bio || '';
+          
+          // Reset hobbies selection
+          document.querySelectorAll('.chip').forEach(chip => {
+            chip.classList.remove('selected');
+          });
+          
+          // Select saved hobbies
+          if (Array.isArray(data.hobbies)) {
+            data.hobbies.forEach(hobby => {
+              document.querySelectorAll('.chip').forEach(chip => {
+                if (chip.textContent === hobby) {
+                  chip.classList.add('selected');
+                }
+              });
+            });
+          }
+        }
+      });
+    }
+    
+    // Save profile function
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const selectedHobbies = Array.from(document.querySelectorAll('.chip.selected'))
+        .map(chip => chip.textContent);
+      
+      const userData = {
+        fullName: document.getElementById('name').value,
+        age: document.getElementById('age').value,
+        location: document.getElementById('location').value,
+        occupation: document.getElementById('occupation').value,
+        maritalStatus: document.getElementById('marital').value,
+        kids: document.getElementById('kids').value,
+        hobbies: selectedHobbies,
+        meal: document.getElementById('meal').value,
+        games: document.getElementById('games').value,
+        bio: document.getElementById('bio').value,
+        updatedAt: new Date()
+      };
+      
+      try {
+        await db.collection('users').doc(currentUserId).update(userData);
+        alert('Profile updated successfully!');
+        isEditing = false;
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+        toggleEditBtn.textContent = '⚙️ Edit Profile';
+        loadProfile();
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        alert('Error updating profile: ' + error.message);
+      }
+    });
+    
+    // Upload profile picture
+    document.getElementById('photoInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Show loading state
+      const originalText = document.querySelector('.photo-upload-label').textContent;
+      document.querySelector('.photo-upload-label').textContent = '📸 Uploading...';
+      document.querySelector('.photo-upload-label').style.opacity = '0.7';
+
+      try {
+        const key = "e26f20d023a0094ee31c68ded33ab41d";
+        const form = new FormData();
+        form.append('image', file);
+
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, {
+          method: 'POST',
+          body: form
+        });
+
+        const json = await res.json();
+
+        if (json.data && json.data.url) {
+          // Update Firestore with the new photo URL
+          await db.collection('users').doc(currentUserId).update({
+            photoURL: json.data.url,
+            updatedAt: new Date()
+          });
+
+          // Update profile image in both view and edit modes with cache busting
+          const newPhotoUrl = json.data.url + '?t=' + new Date().getTime();
+          document.getElementById('profilePic').src = newPhotoUrl;
+          
+          alert('Profile picture updated successfully!');
+          
+          // Clear the input to allow uploading the same file again
+          e.target.value = '';
+        } else {
+          throw new Error('Failed to get image URL from imgbb');
+        }
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        alert('Error uploading photo: ' + error.message);
+      } finally {
+        // Reset button state
+        document.querySelector('.photo-upload-label').textContent = originalText;
+        document.querySelector('.photo-upload-label').style.opacity = '1';
+      }
+    });
+    
+    // Logout function
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      auth.signOut().then(() => {
+        window.location.href = 'log1.html';
+      });
+    });
+    
+    async function loadUserPosts() {  
+      const postsContainer = document.getElementById('userPosts');  
+      postsContainer.innerHTML = '<p>Loading posts...</p>';  
+      const snap = await db.collection('users').doc(currentUserId).collection('posts').orderBy('createdAt','desc').get();  
+      if (snap.empty) {  
+        postsContainer.innerHTML = '<p>No posts yet.</p>';  
+        return;  
+      }  
+      postsContainer.innerHTML = '';  
+      snap.forEach(doc => {  
+        const p = doc.data();  
+        const id = doc.id;  
+        const card = document.createElement('div');  
+        card.className = 'post-card';  
+        
+        let content = '';
+        if (p.mediaType === 'video') {  
+          content = `<video src="${p.mediaUrl}" onclick="zoomMedia('${p.mediaUrl}','video')" muted></video>`;  
+        } else if (p.mediaType === 'image') {  
+          content = `<img src="${p.mediaUrl}" onclick="zoomMedia('${p.mediaUrl}','image')">`;  
+        } else if (p.text && p.bgColor) {
+          // Text post with background color
+          content = `<div class="text-post" style="background-color: ${p.bgColor};" onclick="zoomText('${p.text}', '${p.bgColor}')">${p.text}</div>`;
+        } else if (p.text) {
+          // Regular text post
+          content = `<div class="text-post" onclick="zoomText('${p.text}', '#ffffff')">${p.text}</div>`;
+        }
+        
+        card.innerHTML = `  
+          ${content}  
+          <div class="post-actions">  
+            <button onclick="editPost('${id}')">✏️</button>  
+            <button onclick="deletePost('${id}')">🗑️</button>  
+          </div>  
+        `;  
+        postsContainer.appendChild(card);  
+      });  
+    }  
+    
+    async function deletePost(postId) {  
+      if (!confirm('Delete this post permanently?')) return;  
+      await db.collection('users').doc(currentUserId).collection('posts').doc(postId).delete();  
+      // Also delete from main posts collection
+      await db.collection('posts').doc(postId).delete();
+      alert('Post deleted.');  
+      loadUserPosts();  
+    }  
+    
+    async function editPost(postId) {  
+      const newText = prompt('Edit caption:');  
+      if (newText === null) return;  
+      await db.collection('users').doc(currentUserId).collection('posts').doc(postId).update({ text: newText });  
+      // Also update in main posts collection
+      await db.collection('posts').doc(postId).update({ text: newText });
+      alert('Post updated.');  
+      loadUserPosts();  
+    }  
+    
+    function zoomMedia(url, type) {  
+      const modal = document.getElementById('zoomModal');  
+      const modalContent = document.getElementById('modalContent');  
+      modalContent.innerHTML = type === 'video'  
+        ? `<video src="${url}" controls autoplay></video>`  
+        : `<img src="${url}" alt="">`;  
+      modal.style.display = 'flex';  
+    }  
+    
+    function zoomText(text, bgColor) {
+      const modal = document.getElementById('zoomModal');  
+      const modalContent = document.getElementById('modalContent');  
+      modalContent.innerHTML = `<div class="text-post-modal" style="background-color: ${bgColor};">${text}</div>`;  
+      modal.style.display = 'flex';  
+    }
+    
+    function closeModal() {  
+      document.getElementById('zoomModal').style.display = 'none';  
+    }
+    
+    // Followers/Following functions
+    async function toggleFollowers() {
+      const followersList = document.getElementById('followersList');
+      const followingList = document.getElementById('followingList');
+      
+      if (followersList.style.display === 'block') {
+        followersList.style.display = 'none';
+        return;
+      }
+      
+      // Hide following list if open
+      followingList.style.display = 'none';
+      
+      // Load followers
+      followersList.innerHTML = '<p>Loading followers...</p>';
+      followersList.style.display = 'block';
+      
+      const userDoc = await db.collection('users').doc(currentUserId).get();
+      const userData = userDoc.data();
+      const followers = userData.followers || [];
+      const following = userData.following || [];
+      
+      if (followers.length === 0) {
+        followersList.innerHTML = '<p>No followers yet.</p>';
+        return;
+      }
+      
+      followersList.innerHTML = '';
+      for (const followerId of followers) {
+        const followerDoc = await db.collection('users').doc(followerId).get();
+        if (followerDoc.exists) {
+          const followerData = followerDoc.data();
+          const followerItem = document.createElement('div');
+          followerItem.className = 'follower-item';
+          
+          // Check if current user is already following this follower
+          const isFollowing = following.includes(followerId);
+          const buttonClass = isFollowing ? 'unfollow-btn' : 'follow-back';
+          const buttonText = isFollowing ? 'Unfollow' : 'Follow Back';
+          const buttonAction = isFollowing ? `unfollowUser('${followerId}')` : `followUser('${followerId}')`;
+          
+          followerItem.innerHTML = `
+            <div style="display: flex; align-items: center;">
+              <img src="${followerData.photoURL || 'https://via.placeholder.com/40'}" style="cursor:pointer;" onclick="viewUserProfile('${followerId}')">
+              <span style="margin-left:10px; cursor:pointer;" onclick="viewUserProfile('${followerId}')">${followerData.fullName || 'Unknown User'}</span>
+            </div>
+            <button class="${buttonClass}" onclick="${buttonAction}">${buttonText}</button>
+          `;
+          followersList.appendChild(followerItem);
+        }
+      }
+    }
+    
+    async function toggleFollowing() {
+      const followingList = document.getElementById('followingList');
+      const followersList = document.getElementById('followersList');
+      
+      if (followingList.style.display === 'block') {
+        followingList.style.display = 'none';
+        return;
+      }
+      
+      // Hide followers list if open
+      followersList.style.display = 'none';
+      
+      // Load following
+      followingList.innerHTML = '<p>Loading following...</p>';
+      followingList.style.display = 'block';
+      
+      const userDoc = await db.collection('users').doc(currentUserId).get();
+      const userData = userDoc.data();
+      const following = userData.following || [];
+      
+      if (following.length === 0) {
+        followingList.innerHTML = '<p>Not following anyone yet.</p>';
+        return;
+      }
+      
+      followingList.innerHTML = '';
+      for (const followingId of following) {
+        const followingDoc = await db.collection('users').doc(followingId).get();
+        if (followingDoc.exists) {
+          const followingData = followingDoc.data();
+          const followingItem = document.createElement('div');
+          followingItem.className = 'follower-item';
+          followingItem.innerHTML = `
+            <div style="display: flex; align-items: center;">
+              <img src="${followingData.photoURL || 'https://via.placeholder.com/40'}" style="cursor:pointer;" onclick="viewUserProfile('${followingId}')">
+              <span style="margin-left:10px; cursor:pointer;" onclick="viewUserProfile('${followingId}')">${followingData.fullName || 'Unknown User'}</span>
+            </div>
+            <button class="unfollow-btn" onclick="unfollowUser('${followingId}')">Unfollow</button>
+          `;
+          followingList.appendChild(followingItem);
+        }
+      }
+    }
+    
+    function viewUserProfile(userId) {
+      window.location.href = `user.html?uid=${userId}`;
+    }
+    
+    async function followUser(userId) {
+      if (userId === currentUserId) {
+        alert("You cannot follow yourself!");
+        return;
+      }
+      
+      try {
+        // Add to current user's following list
+        const userDoc = await db.collection('users').doc(currentUserId).get();
+        const userData = userDoc.data();
+        const following = userData.following || [];
+        
+        if (!following.includes(userId)) {
+          following.push(userId);
+          await db.collection('users').doc(currentUserId).update({ 
+            following,
+            updatedAt: new Date()
+          });
+        }
+        
+        // Add current user to target user's followers list
+        const targetDoc = await db.collection('users').doc(userId).get();
+        const targetData = targetDoc.data();
+        const followers = targetData.followers || [];
+        
+        if (!followers.includes(currentUserId)) {
+          followers.push(currentUserId);
+          await db.collection('users').doc(userId).update({ 
+            followers,
+            updatedAt: new Date()
+          });
+        }
+        
+        alert('Followed successfully!');
+        // Refresh both lists and counts
+        toggleFollowers();
+        loadProfile();
+      } catch (error) {
+        console.error('Error following user:', error);
+        alert('Error following user: ' + error.message);
+      }
+    }
+    
+    async function unfollowUser(userId) {
+      if (!confirm('Unfollow this user?')) return;
+      
+      try {
+        // Remove from current user's following list
+        const userDoc = await db.collection('users').doc(currentUserId).get();
+        const userData = userDoc.data();
+        const following = userData.following || [];
+        const followingIndex = following.indexOf(userId);
+        
+        if (followingIndex > -1) {
+          following.splice(followingIndex, 1);
+          await db.collection('users').doc(currentUserId).update({ 
+            following,
+            updatedAt: new Date()
+          });
+        }
+        
+        // Remove current user from target user's followers list
+        const targetDoc = await db.collection('users').doc(userId).get();
+        const targetData = targetDoc.data();
+        const followers = targetData.followers || [];
+        const followerIndex = followers.indexOf(currentUserId);
+        
+        if (followerIndex > -1) {
+          followers.splice(followerIndex, 1);
+          await db.collection('users').doc(userId).update({ 
+            followers,
+            updatedAt: new Date()
+          });
+        }
+        
+        alert('Unfollowed successfully!');
+        // Refresh both lists and counts
+        toggleFollowers();
+        toggleFollowing();
+        loadProfile();
+      } catch (error) {
+        console.error('Error unfollowing user:', error);
+        alert('Error unfollowing user: ' + error.message);
+      }
+    }
+  </script>  
+</body>  
+</html>
