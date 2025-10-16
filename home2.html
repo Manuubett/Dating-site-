@@ -872,5 +872,42 @@ window.toggleComments = toggleComments;
 window.showProfile = showProfile;
 window.closeProfile = closeProfile;
 </script>
+  <!-- 👁 Visitor Tracking Script (for pages that already have Firebase initialized) -->
+<script>
+  // Make sure Firestore is available
+  const db = firebase.firestore();
+
+  async function updateVisitorStats() {
+    const statsRef = db.collection('visitors').doc('stats');
+    const today = new Date().toISOString().split('T')[0];
+
+    try {
+      await db.runTransaction(async (t) => {
+        const doc = await t.get(statsRef);
+        let data = doc.exists ? doc.data() : { total: 0, daily: {}, lastUpdated: "" };
+
+        // Initialize daily object if missing
+        if (!data.daily) data.daily = {};
+
+        // Increment today's and total counts
+        data.daily[today] = (data.daily[today] || 0) + 1;
+        data.total = (data.total || 0) + 1;
+        data.lastUpdated = new Date().toLocaleString();
+
+        t.set(statsRef, data);
+      });
+
+      console.log("✅ Visitor stats updated successfully.");
+    } catch (error) {
+      console.error("❌ Error updating visitor stats:", error);
+    }
+  }
+
+  // Prevent multiple counts per session (1 visit per tab/session)
+  if (!sessionStorage.getItem("visited_today")) {
+    updateVisitorStats();
+    sessionStorage.setItem("visited_today", "true");
+  }
+</script>
 </body>
 </html>
