@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>DateLink — Login & Signup</title>
 <style>
-  body{
+  body {
     font-family:'Poppins',sans-serif;
     margin:0;
     background:linear-gradient(135deg,#ff4f87,#ff8eb1);
@@ -14,7 +14,7 @@
     align-items:center;
     height:100vh;
   }
-  .auth-container{
+  .auth-container {
     background:white;
     width:340px;
     padding:25px;
@@ -23,8 +23,8 @@
     text-align:center;
     transition:.4s;
   }
-  h2{color:#ff4f87;margin-bottom:20px;}
-  input{
+  h2 { color:#ff4f87;margin-bottom:20px; }
+  input {
     width:100%;
     padding:10px;
     margin:8px 0;
@@ -32,7 +32,7 @@
     border-radius:8px;
     font-family:inherit;
   }
-  button{
+  button {
     width:100%;
     padding:10px;
     background:#ff4f87;
@@ -42,17 +42,14 @@
     cursor:pointer;
     font-weight:600;
   }
-  button:hover{background:#ff2f6d;}
-  .toggle{
-    margin-top:15px;
-    color:#666;
-  }
-  .toggle span{
+  button:hover { background:#ff2f6d; }
+  .toggle { margin-top:15px;color:#666; }
+  .toggle span {
     color:#ff4f87;
     cursor:pointer;
     font-weight:600;
   }
-  .hidden{display:none;}
+  .hidden { display:none; }
 </style>
 </head>
 <body>
@@ -98,19 +95,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- Redirect logged-in users ---
-auth.onAuthStateChanged(user => {
-  if(user){
-    localStorage.setItem('loggedIn', 'true');
-    window.location.href = 'home2.html';
-  }
-});
-
-// Extra check using localStorage
-if(localStorage.getItem('loggedIn') === 'true'){
-  window.location.href = 'home2.html';
-}
-
 const formTitle = document.getElementById('formTitle');
 const loginForm = document.getElementById('loginForm');
 const signupForm = document.getElementById('signupForm');
@@ -120,7 +104,7 @@ const toggleText = document.getElementById('toggleText');
 let isLogin = true;
 function toggleForms() {
   isLogin = !isLogin;
-  if(isLogin){
+  if (isLogin) {
     formTitle.textContent = 'Login';
     loginForm.classList.remove('hidden');
     signupForm.classList.add('hidden');
@@ -139,12 +123,12 @@ toggleLink.addEventListener('click', toggleForms);
 document.getElementById('loginBtn').addEventListener('click', async () => {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value.trim();
-  if(!email || !password) return alert('Enter both fields!');
+  if (!email || !password) return alert('Enter both fields!');
   try {
     await auth.signInWithEmailAndPassword(email, password);
     localStorage.setItem('loggedIn', 'true');
-    window.location.href = 'home2.html';
-  } catch(err) {
+    window.location.href = 'home2.html'; // redirect only after successful login
+  } catch (err) {
     alert(err.message);
   }
 });
@@ -154,23 +138,19 @@ document.getElementById('signupBtn').addEventListener('click', async () => {
   const name = document.getElementById('signupName').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
   const password = document.getElementById('signupPassword').value.trim();
-
-  if(!name || !email || !password) return alert('Fill all fields!');
-
+  if (!name || !email || !password) return alert('Fill all fields!');
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, password);
     const uid = cred.user.uid;
-
     await db.collection('users').doc(uid).set({
       fullName: name,
       email,
       bio: '',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
     localStorage.setItem('loggedIn', 'true');
     window.location.href = 'home2.html';
-  } catch(err) {
+  } catch (err) {
     alert(err.message);
   }
 });
