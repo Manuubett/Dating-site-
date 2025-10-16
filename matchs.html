@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DateLink — Find Matches</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffe6ee, #fff0f5);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: #fff;
+      position: fixed;
+      top: 0; left: 0; width: 100%;
+      display: flex; justify-content: space-around; align-items: center;
+      height: 55px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      z-index: 10;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #ff4f87;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+
+    nav a:hover {
+      background: rgba(255, 79, 135, 0.1);
+    }
+
+    .match-container {
+      width: 90%;
+      max-width: 420px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0;
+      margin-top: 70px;
+      transition: all 0.3s ease-in-out;
+      position: relative;
+    }
+
+    .profile-photo-container {
+      width: 100%;
+      height: 320px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .match-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .profile-info {
+      padding: 20px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    h3 {
+      margin: 10px 0 4px;
+      color: #333;
+      font-size: 1.5rem;
+    }
+
+    .user-details {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .detail-item i {
+      color: #ff4f87;
+    }
+
+    p {
+      color: #555;
+      margin: 4px 0;
+      font-size: 15px;
+    }
+
+    .hobbies {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin: 15px 0;
+    }
+
+    .chip {
+      background: #ffe6ee;
+      color: #ff4f87;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .chip:hover {
+      background: #ff4f87;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      margin: 20px 0 10px;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      font-size: 28px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn:hover { 
+      transform: scale(1.1); 
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    
+    .btn:active {
+      transform: scale(0.95);
+    }
+    
+    .skip { 
+      background: #fff; 
+      color: #555; 
+      border: 2px solid #e6e6e6;
+    }
+    
+    .like { 
+      background: #ff4f87; 
+      color: white; 
+      border: 2px solid #ff4f87;
+    }
+
+    .alert {
+      position: fixed;
+      top: 80px; 
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff4f87;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 50px;
+      display: none;
+      font-weight: 600;
+      box-shadow: 0 5px 15px rgba(255, 79, 135, 0.3);
+      z-index: 100;
+      animation: fadeInOut 3s ease-in-out;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, -20px); }
+      10%, 90% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, -20px); }
+    }
+
+    .progress-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin: 15px 0;
+    }
+
+    .progress-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #e6e6e6;
+      transition: all 0.3s ease;
+    }
+
+    .progress-dot.active {
+      background: #ff4f87;
+      transform: scale(1.2);
+    }
+
+    .no-profiles {
+      padding: 40px 20px;
+      text-align: center;
+      color: #666;
+    }
+
+    .no-profiles h3 {
+      color: #ff4f87;
+      margin-bottom: 10px;
+    }
+
+    .refresh-btn {
+      background: #ff4f87;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 20px;
+      margin-top: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+      background: #ff2d6f;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(255, 79, 135, 0.2);
+    }
+
+    .profile-photo-container:hover .match-photo {
+      transform: scale(1.05);
+    }
+
+    .user-bio {
+      line-height: 1.5;
+      margin: 15px 0;
+      padding: 0 10px;
+    }
+
+    /* Loading animation */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 79, 135, 0.3);
+      border-radius: 50%;
+      border-top-color: #ff4f87;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .match-container {
+        width: 95%;
+        margin-top: 65px;
+      }
+      
+      .profile-photo-container {
+        height: 280px;
+      }
+      
+      .btn {
+        width: 60px;
+        height: 60px;
+      }
+    }
+
+    /* Pulse animation for match */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .pulse {
+      animation: pulse 0.5s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="home2.html">🏠 Home</a>
+    <a href="match.html">💞 Match</a>
+    <a href="chats.html">💬 Chats</a>
+    <a href="profile.html">👤 Profile</a>
+  </nav>
+
+  <div class="alert" id="alertBox">
+    <span>🎉 It's a Match! You can now start chatting</span>
+  </div>
+
+  <div class="match-container" id="matchCard">
+    <div class="profile-photo-container">
+      <img id="userPhoto" class="match-photo" src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Profile Photo">
+    </div>
+    
+    <div class="profile-info">
+      <h3 id="userName">Loading...</h3>
+      
+      <div class="user-details">
+        <div class="detail-item">
+          <i>🎂</i> <span id="userAge">—</span>
+        </div>
+        <div class="detail-item">
+          <i>📍</i> <span id="userLocation">—</span>
+        </div>
+        <div class="detail-item">
+          <i>💼</i> <span id="userOccupation">—</span>
+        </div>
+      </div>
+      
+      <div id="userHobbies" class="hobbies"></div>
+      
+      <p id="userBio" class="user-bio">Fetching profiles...</p>
+      
+      <div class="progress-indicator" id="progressIndicator">
+        <!-- Progress dots will be added dynamically -->
+      </div>
+    </div>
+    
+    <div class="buttons">
+      <button class="btn skip" id="skipBtn">❌</button>
+      <button class="btn like" id="likeBtn">❤️</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <script>
+    // Firebase config (same as profile.html)
+    const firebaseConfig = {
+      apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
+      authDomain: "smart-waste-66279.firebaseapp.com",
+      projectId: "smart-waste-66279",
+      storageBucket: "smart-waste-66279.appspot.com",
+      messagingSenderId: "619099585646",
+      appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const photo = document.getElementById('userPhoto');
+    const nameEl = document.getElementById('userName');
+    const ageEl = document.getElementById('userAge');
+    const locationEl = document.getElementById('userLocation');
+    const occupationEl = document.getElementById('userOccupation');
+    const hobbiesEl = document.getElementById('userHobbies');
+    const bioEl = document.getElementById('userBio');
+    const alertBox = document.getElementById('alertBox');
+    const skipBtn = document.getElementById('skipBtn');
+    const likeBtn = document.getElementById('likeBtn');
+    const progressIndicator = document.getElementById('progressIndicator');
+    const matchCard = document.getElementById('matchCard');
+
+    let profiles = [];
+    let currentIndex = 0;
+    let currentUserId = null;
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) return window.location.href = 'log1.html';
+      currentUserId = user.uid;
+      loadProfiles();
+    });
+
+    async function loadProfiles() {
+      // Show loading state
+      nameEl.textContent = "Finding matches";
+      bioEl.innerHTML = '<div class="loading"></div>';
+      hobbiesEl.innerHTML = "";
+      
+      const snapshot = await db.collection('users').get();
+      profiles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter(u => u.id !== currentUserId);
+      
+      // Create progress indicator dots
+      updateProgressIndicator();
+      
+      if (profiles.length === 0) {
+        showNoProfiles();
+      } else {
+        showNextProfile();
+      }
+    }
+
+    function updateProgressIndicator() {
+      progressIndicator.innerHTML = '';
+      for (let i = 0; i < Math.min(profiles.length, 10); i++) {
+        const dot = document.createElement('div');
+        dot.className = 'progress-dot';
+        if (i === currentIndex % profiles.length) {
+          dot.classList.add('active');
+        }
+        progressIndicator.appendChild(dot);
+      }
+    }
+
+    function showNoProfiles() {
+      matchCard.innerHTML = `
+        <div class="no-profiles">
+          <h3>No profiles available 💔</h3>
+          <p>There are no more profiles to show right now.</p>
+          <p>Check back later or invite friends to join!</p>
+          <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+        </div>
+      `;
+    }
+
+    function showNextProfile() {
+      if (profiles.length === 0) {
+        showNoProfiles();
+        return;
+      }
+
+      const user = profiles[currentIndex % profiles.length];
+
+      // Add pulse animation to card
+      matchCard.classList.add('pulse');
+      setTimeout(() => matchCard.classList.remove('pulse'), 500);
+
+      // Display profile info
+      photo.src = user.photoURL || "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60";
+      nameEl.textContent = user.fullName || "Unknown";
+      ageEl.textContent = user.age ? user.age + " yrs" : "—";
+      locationEl.textContent = user.location || "—";
+      occupationEl.textContent = user.occupation || "—";
+      bioEl.textContent = user.bio || "No bio available.";
+      
+      hobbiesEl.innerHTML = "";
+      if (Array.isArray(user.hobbies) && user.hobbies.length) {
+        user.hobbies.forEach(hobby => {
+          const chip = document.createElement("div");
+          chip.className = "chip";
+          chip.textContent = hobby;
+          hobbiesEl.appendChild(chip);
+        });
+      } else {
+        hobbiesEl.innerHTML = "<p>No hobbies listed</p>";
+      }
+      
+      // Update progress indicator
+      updateProgressIndicator();
+    }
+
+    skipBtn.addEventListener('click', () => {
+      currentIndex++;
+      showNextProfile();
+    });
+
+    likeBtn.addEventListener('click', async () => {
+      const likedUser = profiles[currentIndex % profiles.length];
+      if (!likedUser) return;
+      
+      // Visual feedback
+      likeBtn.style.transform = "scale(0.9)";
+      setTimeout(() => likeBtn.style.transform = "scale(1)", 150);
+      
+      await db.collection('likes').add({
+        from: currentUserId,
+        to: likedUser.id,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      checkForMatch(likedUser.id);
+      currentIndex++;
+      showNextProfile();
+    });
+
+    async function checkForMatch(otherUserId) {
+      const snapshot = await db.collection('likes')
+        .where('from', '==', otherUserId)
+        .where('to', '==', currentUserId)
+        .get();
+      if (!snapshot.empty) {
+        alertBox.style.display = 'block';
+        setTimeout(() => alertBox.style.display = 'none', 3000);
+        await db.collection('matches').add({
+          users: [currentUserId, otherUserId],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+  </script>
+</body>
+</html>
