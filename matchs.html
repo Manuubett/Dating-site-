@@ -1,221 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DateLink — Find Matches</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Match App</title>
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #ffe6ee, #fff0f5);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 70px;
     }
 
     nav {
-      background: #fff;
       position: fixed;
-      top: 0; left: 0; width: 100%;
-      display: flex; justify-content: space-around; align-items: center;
-      height: 55px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.1);
-      z-index: 10;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 15px 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 100;
     }
 
     nav a {
       text-decoration: none;
-      color: #ff4f87;
-      font-weight: 600;
-      padding: 8px 12px;
-      border-radius: 20px;
-      transition: all 0.3s ease;
-    }
-
-    nav a:hover {
-      background: rgba(255, 79, 135, 0.1);
-    }
-
-    .match-container {
-      width: 90%;
-      max-width: 420px;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.1);
-      overflow: hidden;
+      color: #555;
+      font-size: 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    .alert {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4CAF50;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
       text-align: center;
-      padding: 0;
-      margin-top: 70px;
-      transition: all 0.3s ease-in-out;
+      max-width: 80%;
+    }
+
+    .match-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+      margin-top: 30px;
+      overflow: hidden;
       position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    .match-container.pulse {
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
     }
 
     .profile-photo-container {
-      width: 100%;
-      height: 320px;
       position: relative;
+      width: 100%;
+      height: 300px;
       overflow: hidden;
+      cursor: pointer;
     }
 
     .match-photo {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s ease;
+      transition: transform 0.3s ease;
+    }
+
+    .profile-photo-container:hover .match-photo {
+      transform: scale(1.05);
     }
 
     .profile-info {
       padding: 20px;
-      width: 100%;
-      box-sizing: border-box;
     }
 
-    h3 {
-      margin: 10px 0 4px;
+    .profile-info h3 {
+      margin: 0 0 15px 0;
+      font-size: 24px;
       color: #333;
-      font-size: 1.5rem;
+      cursor: pointer;
+      display: inline-block;
+      transition: color 0.2s ease;
+    }
+
+    .profile-info h3:hover {
+      color: #ff4081;
     }
 
     .user-details {
       display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin: 10px 0;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
     }
 
     .detail-item {
       display: flex;
       align-items: center;
       gap: 5px;
+      font-size: 14px;
       color: #666;
-      font-size: 0.9rem;
-    }
-
-    .detail-item i {
-      color: #ff4f87;
-    }
-
-    p {
-      color: #555;
-      margin: 4px 0;
-      font-size: 15px;
     }
 
     .hobbies {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin: 15px 0;
+      gap: 8px;
+      margin-bottom: 15px;
     }
 
     .chip {
-      background: #ffe6ee;
-      color: #ff4f87;
+      background: #f0f0f0;
+      padding: 5px 12px;
       border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 500;
-      transition: all 0.3s ease;
+      font-size: 12px;
+      color: #555;
     }
 
-    .chip:hover {
-      background: #ff4f87;
-      color: white;
-      transform: translateY(-2px);
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: space-around;
-      width: 100%;
-      margin: 20px 0 10px;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 50%;
-      width: 70px;
-      height: 70px;
-      font-size: 28px;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .btn:hover { 
-      transform: scale(1.1); 
-      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-    }
-    
-    .btn:active {
-      transform: scale(0.95);
-    }
-    
-    .skip { 
-      background: #fff; 
-      color: #555; 
-      border: 2px solid #e6e6e6;
-    }
-    
-    .like { 
-      background: #ff4f87; 
-      color: white; 
-      border: 2px solid #ff4f87;
-    }
-
-    .alert {
-      position: fixed;
-      top: 80px; 
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ff4f87;
-      color: white;
-      padding: 15px 25px;
-      border-radius: 50px;
-      display: none;
-      font-weight: 600;
-      box-shadow: 0 5px 15px rgba(255, 79, 135, 0.3);
-      z-index: 100;
-      animation: fadeInOut 3s ease-in-out;
-    }
-
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translate(-50%, -20px); }
-      10%, 90% { opacity: 1; transform: translate(-50%, 0); }
-      100% { opacity: 0; transform: translate(-50%, -20px); }
+    .user-bio {
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 20px;
     }
 
     .progress-indicator {
       display: flex;
       justify-content: center;
-      gap: 5px;
-      margin: 15px 0;
+      gap: 8px;
+      margin-bottom: 20px;
     }
 
     .progress-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #e6e6e6;
-      transition: all 0.3s ease;
+      background: #e0e0e0;
+      transition: background 0.3s ease;
     }
 
     .progress-dot.active {
-      background: #ff4f87;
-      transform: scale(1.2);
+      background: #ff4081;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      padding: 0 20px 20px;
+    }
+
+    .btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+
+    .skip {
+      background: white;
+      color: #555;
+    }
+
+    .like {
+      background: linear-gradient(135deg, #ff4081 0%, #ff79a6 100%);
+      color: white;
+    }
+
+    .like.heart-burst {
+      animation: heartBurst 0.5s ease-in-out;
+    }
+
+    @keyframes heartBurst {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .bubble-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    .love-bubble {
+      position: absolute;
+      font-size: 20px;
+      animation: floatUp 1.5s ease-in forwards;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) translateX(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100px) translateX(var(--x-end));
+        opacity: 0;
+      }
     }
 
     .no-profiles {
@@ -224,80 +243,90 @@
       color: #666;
     }
 
-    .no-profiles h3 {
-      color: #ff4f87;
-      margin-bottom: 10px;
-    }
-
     .refresh-btn {
-      background: #ff4f87;
+      background: #ff4081;
       color: white;
       border: none;
-      border-radius: 25px;
       padding: 10px 20px;
+      border-radius: 20px;
       margin-top: 15px;
-      font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
     }
 
-    .refresh-btn:hover {
-      background: #ff2d6f;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 10px rgba(255, 79, 135, 0.2);
-    }
-
-    .profile-photo-container:hover .match-photo {
-      transform: scale(1.05);
-    }
-
-    .user-bio {
-      line-height: 1.5;
-      margin: 15px 0;
-      padding: 0 10px;
-    }
-
-    /* Loading animation */
     .loading {
-      display: inline-block;
-      width: 20px;
+      width: 100%;
       height: 20px;
-      border: 3px solid rgba(255, 79, 135, 0.3);
-      border-radius: 50%;
-      border-top-color: #ff4f87;
-      animation: spin 1s ease-in-out infinite;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 10px;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 480px) {
-      .match-container {
-        width: 95%;
-        margin-top: 65px;
-      }
-      
-      .profile-photo-container {
-        height: 280px;
-      }
-      
-      .btn {
-        width: 60px;
-        height: 60px;
-      }
+    /* Profile Photo Zoom Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
     }
 
-    /* Pulse animation for match */
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
-    .pulse {
-      animation: pulse 0.5s ease-in-out;
+    .modal-content {
+      max-width: 90%;
+      max-height: 80%;
+      border-radius: 10px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+      animation: zoomIn 0.3s ease;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 40px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    .view-profile-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      margin: 15px 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+
+    .view-profile-btn:hover {
+      background: #45a049;
     }
   </style>
 </head>
@@ -315,12 +344,15 @@
   </div>
 
   <div class="match-container" id="matchCard">
+    <div class="bubble-container" id="bubbleContainer"></div>
+    
     <div class="profile-photo-container">
       <img id="userPhoto" class="match-photo" src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Profile Photo">
     </div>
     
     <div class="profile-info">
       <h3 id="userName">Loading...</h3>
+      <button class="view-profile-btn" id="viewProfileBtn">👁 View Profile</button>
       
       <div class="user-details">
         <div class="detail-item">
@@ -349,13 +381,19 @@
     </div>
   </div>
 
+  <!-- Profile Photo Zoom Modal -->
+  <div class="modal" id="photoModal">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="modalPhoto">
+  </div>
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
   <script>
-    // Firebase config (same as profile.html)
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
       authDomain: "smart-waste-66279.firebaseapp.com",
@@ -380,10 +418,48 @@
     const likeBtn = document.getElementById('likeBtn');
     const progressIndicator = document.getElementById('progressIndicator');
     const matchCard = document.getElementById('matchCard');
+    const bubbleContainer = document.getElementById('bubbleContainer');
+    const viewProfileBtn = document.getElementById('viewProfileBtn');
+    const photoModal = document.getElementById('photoModal');
+    const modalPhoto = document.getElementById('modalPhoto');
+    const closeModal = document.querySelector('.close-modal');
 
     let profiles = [];
     let currentIndex = 0;
     let currentUserId = null;
+
+    // Profile photo zoom functionality
+    photo.addEventListener('click', () => {
+      modalPhoto.src = photo.src;
+      photoModal.style.display = 'flex';
+    });
+
+    // Close modal when clicking the X or outside the image
+    closeModal.addEventListener('click', () => {
+      photoModal.style.display = 'none';
+    });
+
+    photoModal.addEventListener('click', (e) => {
+      if (e.target === photoModal) {
+        photoModal.style.display = 'none';
+      }
+    });
+
+    // Profile name click functionality
+    nameEl.addEventListener('click', () => {
+      const currentProfile = profiles[currentIndex % profiles.length];
+      if (currentProfile) {
+        window.location.href = `user.html?uid=${currentProfile.id}`;
+      }
+    });
+
+    // View Profile button functionality
+    viewProfileBtn.addEventListener('click', () => {
+      const currentProfile = profiles[currentIndex % profiles.length];
+      if (currentProfile) {
+        window.location.href = `user.html?uid=${currentProfile.id}`;
+      }
+    });
 
     auth.onAuthStateChanged(async (user) => {
       if (!user) return window.location.href = 'log1.html';
@@ -475,11 +551,50 @@
       showNextProfile();
     });
 
+    // Create love bubbles animation
+    function createLoveBubbles() {
+      // Clear any existing bubbles
+      bubbleContainer.innerHTML = '';
+      
+      // Create multiple bubbles
+      for (let i = 0; i < 25; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'love-bubble';
+        bubble.innerHTML = '❤️';
+        
+        // Random position around the like button
+        const likeBtnRect = likeBtn.getBoundingClientRect();
+        const matchCardRect = matchCard.getBoundingClientRect();
+        
+        const startX = likeBtnRect.left - matchCardRect.left + likeBtnRect.width / 2;
+        const startY = likeBtnRect.top - matchCardRect.top + likeBtnRect.height / 2;
+        
+        // Random end position (spread across the profile)
+        const xEnd = (Math.random() * 200 - 100); // -100 to 100px
+        const delay = Math.random() * 0.5; // 0 to 0.5s delay
+        
+        bubble.style.left = `${startX}px`;
+        bubble.style.top = `${startY}px`;
+        bubble.style.setProperty('--x-end', `${xEnd}px`);
+        bubble.style.animationDelay = `${delay}s`;
+        bubble.style.fontSize = `${Math.random() * 15 + 15}px`; // 15px to 30px
+        
+        bubbleContainer.appendChild(bubble);
+      }
+    }
+
     likeBtn.addEventListener('click', async () => {
       const likedUser = profiles[currentIndex % profiles.length];
       if (!likedUser) return;
       
-      // Visual feedback
+      // Visual feedback - heart burst animation
+      likeBtn.classList.add('heart-burst');
+      setTimeout(() => likeBtn.classList.remove('heart-burst'), 500);
+      
+      // Create love bubbles
+      createLoveBubbles();
+      
+      // Button press animation
       likeBtn.style.transform = "scale(0.9)";
       setTimeout(() => likeBtn.style.transform = "scale(1)", 150);
       
@@ -491,7 +606,11 @@
       
       checkForMatch(likedUser.id);
       currentIndex++;
-      showNextProfile();
+      
+      // Show next profile after a delay to let animation play
+      setTimeout(() => {
+        showNextProfile();
+      }, 1500);
     });
 
     async function checkForMatch(otherUserId) {
