@@ -367,6 +367,7 @@
 </div>
 
 <div class="notification" id="notification"></div>
+<audio id="likeSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
 <div class="profile-modal" id="profileModal">
   <div class="box" id="profileBox">
@@ -473,6 +474,10 @@ auth.onAuthStateChanged(user => {
     window.location.href = 'login.html'; 
     return; 
   }
+  // Force refresh feed after reload to catch latest posts
+window.addEventListener('load', () => {
+  loadFeed();
+});
   currentUser = user;
   loadFeed();
 });
@@ -604,15 +609,22 @@ function loadFeed() {
       div.className = 'feed-post';
       
       let contentHTML = '';
-      if (p.mediaType === 'image') {
-        contentHTML = `<img src="${p.mediaUrl}" class="post-img" alt="Post image">`;
-      } else if (p.mediaType === 'video') {
-        contentHTML = `<video controls src="${p.mediaUrl}" class="post-img"></video>`;
-      } else if (p.text && p.bgColor) {
-        contentHTML = `<div class="text-post" style="background-color:${p.bgColor};">${p.text}</div>`;
-      } else if (p.text) {
-        contentHTML = `<p class="post-content">${p.text}</p>`;
-      }
+      if (p.text && p.mediaUrl) {
+  contentHTML = `
+    <p class="post-content">${p.text}</p>
+    ${p.mediaType === 'image' 
+      ? `<img src="${p.mediaUrl}" class="post-img" alt="Post image">`
+      : `<video controls src="${p.mediaUrl}" class="post-img"></video>`}
+  `;
+} else if (p.mediaType === 'image') {
+  contentHTML = `<img src="${p.mediaUrl}" class="post-img" alt="Post image">`;
+} else if (p.mediaType === 'video') {
+  contentHTML = `<video controls src="${p.mediaUrl}" class="post-img"></video>`;
+} else if (p.text && p.bgColor) {
+  contentHTML = `<div class="text-post" style="background-color:${p.bgColor};">${p.text}</div>`;
+} else if (p.text) {
+  contentHTML = `<p class="post-content">${p.text}</p>`;
+}
 
       // Create post with initial data (from post creation time)
       div.innerHTML = `
@@ -666,26 +678,27 @@ async function likePost(postId) {
   try {
     const postRef = db.collection('posts').doc(postId);
     const docSnap = await postRef.get();
-    
     if (!docSnap.exists) return;
-    
+
     const data = docSnap.data();
     const likes = data.likes || [];
     const idx = likes.indexOf(currentUser.uid);
-    
-    if (idx > -1) {
+    const alreadyLiked = idx > -1;
+
+    if (alreadyLiked) {
       likes.splice(idx, 1);
     } else {
       likes.push(currentUser.uid);
+      likeSound.currentTime = 0;
+      likeSound.play().catch(() => {}); // play sound when user likes
     }
-    
+
     await postRef.update({ likes });
   } catch (error) {
     console.error('Error liking post:', error);
     showNotification('Failed to like post');
   }
 }
-
 // Comment functionality
 async function addComment(postId, parentId = null) {
   const inputId = parentId ? `reply-${parentId}` : `input-${postId}`;
@@ -861,6 +874,7 @@ async function showProfile(uid) {
   }
 }
 
+
 function closeProfile() { 
   profileModal.style.display = 'none'; 
 }
@@ -904,6 +918,7 @@ window.closeProfile = closeProfile;
     sessionStorage.setItem("visited_today", "true");
   }
 </script>
+
 
 </body>
 </html>
