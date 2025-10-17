@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CarenChebet Library - Issue & Return</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="index.html">📚 CarenChebet Library</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item"><a class="nav-link" href="books.html">Books</a></li>
+        <li class="nav-item"><a class="nav-link" href="register.html">Members</a></li>
+        <li class="nav-item active"><a class="nav-link" href="issues.html">Issue & Return</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">📦 Issue & Return Books</h2>
+
+    <!-- Search Filters -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <input type="text" id="searchBook" class="form-control" placeholder="🔎 Search book by title">
+      </div>
+      <div class="col-md-6">
+        <input type="text" id="searchMember" class="form-control" placeholder="🔎 Search member by name">
+      </div>
+    </div>
+
+    <!-- Issue Book Form -->
+    <div class="card p-4 shadow-sm mb-5">
+      <h5 class="mb-3">📖 Issue a Book</h5>
+      <form id="issueForm">
+        <div class="form-group">
+          <label for="bookSelect">Select Book</label>
+          <select id="bookSelect" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label for="memberSelect">Select Member</label>
+          <select id="memberSelect" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label for="returnDate">Return Date</label>
+          <input type="date" id="returnDate" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success btn-block">✅ Issue Book</button>
+      </form>
+    </div>
+
+    <!-- Issued Books -->
+    <div class="card p-4 shadow-sm">
+      <h5 class="mb-3">📋 Issued Books</h5>
+      <table class="table table-bordered table-striped mt-3">
+        <thead class="thead-dark">
+          <tr>
+            <th>📕 Book</th>
+            <th>👤 Member</th>
+            <th>📅 Issue Date</th>
+            <th>📅 Return Date</th>
+            <th>💰 Penalty</th>
+            <th>⚡ Action</th>
+          </tr>
+        </thead>
+        <tbody id="issuesList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Firebase + Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAKMv1RIemwkvnBeIL7CriWiL0VprPipoI",
+      authDomain: "smart-f77b6.firebaseapp.com",
+      projectId: "smart-f77b6",
+      storageBucket: "smart-f77b6.appspot.com",
+      messagingSenderId: "210530046379",
+      appId: "1:210530046379:web:b2ecca8adc946581f842ee",
+      measurementId: "G-Y42CQGSQ5S"
+    };
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const booksCol = collection(db, "books");
+    const membersCol = collection(db, "members");
+    const issuesCol = collection(db, "issues");
+
+    const bookSelect = document.getElementById("bookSelect");
+    const memberSelect = document.getElementById("memberSelect");
+    const issuesList = document.getElementById("issuesList");
+
+    const searchBook = document.getElementById("searchBook");
+    const searchMember = document.getElementById("searchMember");
+
+    // Load books into dropdown
+    async function loadBooksDropdown(filter = "") {
+      bookSelect.innerHTML = "";
+      const snapshot = await getDocs(booksCol);
+      snapshot.forEach((docSnap) => {
+        const book = docSnap.data();
+        if (book.availableCopies > 0 && book.title.toLowerCase().includes(filter.toLowerCase())) {
+          let option = document.createElement("option");
+          option.value = docSnap.id;
+          option.textContent = `${book.title} (${book.availableCopies} available)`;
+          bookSelect.appendChild(option);
+        }
+      });
+    }
+
+    // Load members into dropdown
+    async function loadMembersDropdown(filter = "") {
+      memberSelect.innerHTML = "";
+      const snapshot = await getDocs(membersCol);
+      snapshot.forEach((docSnap) => {
+        const member = docSnap.data();
+        if (member.name.toLowerCase().includes(filter.toLowerCase())) {
+          let option = document.createElement("option");
+          option.value = docSnap.id;
+          option.textContent = `${member.name} (${member.category})`;
+          memberSelect.appendChild(option);
+        }
+      });
+    }
+
+    // Search filters
+    searchBook.addEventListener("input", () => loadBooksDropdown(searchBook.value));
+    searchMember.addEventListener("input", () => loadMembersDropdown(searchMember.value));
+
+    // Issue book
+    document.getElementById("issueForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const bookId = bookSelect.value;
+      const memberId = memberSelect.value;
+      const issueDate = new Date().toLocaleDateString();
+      const returnDate = document.getElementById("returnDate").value;
+
+      // Fetch book & member
+      let bookData, memberData;
+      const booksSnap = await getDocs(booksCol);
+      booksSnap.forEach((docSnap) => { if (docSnap.id === bookId) bookData = docSnap.data(); });
+      const membersSnap = await getDocs(membersCol);
+      membersSnap.forEach((docSnap) => { if (docSnap.id === memberId) memberData = docSnap.data(); });
+
+      // Save issue
+      await addDoc(issuesCol, { 
+        bookId, bookTitle: bookData.title, 
+        memberId, memberName: memberData.name, 
+        issueDate, returnDate 
+      });
+
+      // Update available copies
+      await updateDoc(doc(db, "books", bookId), { availableCopies: bookData.availableCopies - 1 });
+
+      loadBooksDropdown();
+      loadIssues();
+    });
+
+    // Load issued books
+    async function loadIssues() {
+      const snapshot = await getDocs(issuesCol);
+      issuesList.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const issue = docSnap.data();
+        const today = new Date();
+        const due = new Date(issue.returnDate);
+        let penalty = "None";
+        if (today > due) {
+          const diffDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
+          penalty = `Ksh ${diffDays * 20}`;
+        }
+
+        const row = `
+          <tr>
+            <td>${issue.bookTitle}</td>
+            <td>${issue.memberName}</td>
+            <td>${issue.issueDate}</td>
+            <td>${issue.returnDate}</td>
+            <td>${penalty}</td>
+            <td><button class="btn btn-warning btn-sm" onclick="returnBook('${docSnap.id}', '${issue.bookId}')">Return</button></td>
+          </tr>
+        `;
+        issuesList.innerHTML += row;
+      });
+    }
+
+    // Return book
+    window.returnBook = async (issueId, bookId) => {
+      let bookData;
+      const booksSnap = await getDocs(booksCol);
+      booksSnap.forEach((docSnap) => { if (docSnap.id === bookId) bookData = docSnap.data(); });
+
+      await updateDoc(doc(db, "books", bookId), { availableCopies: bookData.availableCopies + 1 });
+      await deleteDoc(doc(db, "issues", issueId));
+
+      loadBooksDropdown();
+      loadIssues();
+    };
+
+    // Init
+    loadBooksDropdown();
+    loadMembersDropdown();
+    loadIssues();
+  </script>
+</body>
+</html>
