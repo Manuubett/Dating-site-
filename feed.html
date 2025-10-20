@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media App</title>
+    <style>
+        :root {
+            --primary: #ec4899;
+            --secondary: #db2777;
+            --gradient: linear-gradient(45deg, var(--primary), var(--secondary));
+            --gradient-no-media: linear-gradient(45deg, #fdf2f8, #fce7f3);
+            --background: #fdf2f8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        nav {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: var(--gradient);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .post-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .post-box h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+        }
+
+        button {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feed-post {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        .user img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .actions button {
+            background: none;
+            color: #666;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .actions button:hover {
+            background: #fdf2f8;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Background color options for text posts */
+        .color-palette {
+            display: flex;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+            transform: scale(1.1);
+        }
+
+        /* Text post with background */
+        .text-post {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            word-wrap: break-word;
+        }
+
+        /* Modal styles - Facebook-like layout */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalAppear 0.3s ease;
+        }
+
+        @keyframes modalAppear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .modal-media-section {
+            padding: 1rem 1.5rem;
+            background: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+            max-height: 400px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .modal-media-section img,
+        .modal-media-section video {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .modal-details-section {
+            padding: 1rem 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .modal-text-content {
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .modal-actions button {
+            background: none;
+            color: #666;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .modal-actions button:hover {
+            background: #fdf2f8;
+        }
+
+        .modal-comments-section {
+            padding: 1rem 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 200px;
+            max-height: 400px;
+        }
+
+        .modal-comments-section::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-comments-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-comments-section::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .modal-comments-section::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .modal-comments {
+            margin: 1rem 0;
+        }
+
+        .comment {
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .reply {
+            padding: 0.5rem 1rem;
+            margin-left: 1rem;
+            border-left: 2px solid #e0e0e0;
+        }
+
+        .modal-comment-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .modal-comment-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        /* Notification styles */
+        .notification-container {
+            position: relative;
+            margin-left: auto;
+        }
+
+        .notif-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .notif-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .notif-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .notif-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1001;
+            margin-top: 0.5rem;
+        }
+
+        .notif-list .header {
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notif-item {
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .notif-item:hover {
+            background: #f8f9fa;
+        }
+
+        .notif-item.unread {
+            background: #fdf2f8;
+            border-left: 3px solid var(--primary);
+        }
+
+        /* Zoom overlay */
+        .zoom-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 3001;
+        }
+
+        .zoom-overlay img,
+        .zoom-overlay video {
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 8px;
+        }
+
+        /* Utility classes */
+        .small {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Media caption styles */
+        .media-caption {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #555;
+            border-left: 3px solid var(--primary);
+        }
+
+        /* Friend profile button */
+        .friend-profile-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .friend-profile-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* No media placeholder */
+        .no-media-placeholder {
+            padding: 3rem;
+            text-align: center;
+            color: #999;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+  <a href="matchs.html">💞 Match</a>
+  <a href="chats.html">💬 Chats</a>
+  <a href="profile.html">👤 Profile</a>
+
+  <!-- Notification Icon -->
+  <div class="notification-container" id="notificationContainer">
+    <button id="notifBtn" class="notif-btn">🔔
+      <span id="notifCount" class="notif-count">0</span>
+    </button>
+    <div id="notifList" class="notif-list" aria-hidden="true">
+      <div class="header">
+        <strong>Notifications</strong>
+        <div>
+          <button id="closeNotifBtn" style="background:#eee;border:none;padding:6px;border-radius:8px;margin-right:6px;cursor:pointer;">Close</button>
+          <button id="deleteAllNotifBtn" style="background:#ff5b7a;color:#fff;border:none;padding:6px;border-radius:8px;cursor:pointer;">Clear All</button>
+        </div>
+      </div>
+      <div id="notifItems" style="padding:6px;">
+        <p style="padding:10px;color:#666">No notifications yet</p>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="post-box create-post">
+    <h3>Create a post</h3>
+    <textarea id="postText" rows="3" placeholder="What's on your mind?"></textarea>
+    
+    <!-- Background color options -->
+    <div class="color-palette" id="colorPalette">
+      <div class="color-option" data-color="#ffffff" style="background:#ffffff;border:1px solid #e0e0e0;"></div>
+      <div class="color-option" data-color="#ffebee" style="background:#ffebee;"></div>
+      <div class="color-option" data-color="#e8f5e8" style="background:#e8f5e8;"></div>
+      <div class="color-option" data-color="#e3f2fd" style="background:#e3f2fd;"></div>
+      <div class="color-option" data-color="#fff3e0" style="background:#fff3e0;"></div>
+      <div class="color-option" data-color="#f3e5f5" style="background:#f3e5f5;"></div>
+    </div>
+    
+    <div style="margin:10px 0;">
+      <input id="postImage" type="file" accept="image/*,video/*">
+      <!-- Media caption input -->
+      <input type="text" id="mediaCaption" placeholder="Add a caption for your media..." style="width:100%;padding:0.75rem;margin-top:0.5rem;border:1px solid #e0e0e0;border-radius:8px;display:none;">
+      <div id="uploadIndicator" style="display:none;color:var(--primary);margin-top:6px;">Uploading media...</div>
+    </div>
+    <button id="postBtn">Post</button>
+  </div>
+
+  <div id="feed">
+    <div class="loading">Loading posts...</div>
+  </div>
+</div>
+
+<!-- Post modal - Facebook Style -->
+<div id="postModalBackdrop" class="modal-backdrop" role="dialog" aria-hidden="true">
+  <div class="modal-card" role="document">
+    <button id="closePostModal" class="close-modal" title="Close">✕</button>
+    
+    <!-- Header with user info -->
+    <div class="modal-header">
+      <img id="modalAuthorPhoto" src="" alt="author" style="width:44px;height:44px;border-radius:50%;object-fit:cover">
+      <div style="flex:1">
+        <div id="modalAuthorName" style="font-weight:700"></div>
+        <div id="modalTime" class="small"></div>
+      </div>
+      <button id="viewFriendProfile" class="friend-profile-btn" style="display:none;">View Profile</button>
+    </div>
+
+    <!-- Content area -->
+    <div class="modal-content">
+      <!-- Text content -->
+      <div class="modal-details-section">
+        <div id="modalText" class="modal-text-content"></div>
+        
+        <!-- Media caption -->
+        <div id="modalCaption" class="media-caption" style="display:none;"></div>
+      </div>
+
+      <!-- Media section - appears above comments and likes -->
+      <div class="modal-media-section" id="modalMedia">
+        <div class="no-media-placeholder" style="display:none;">No media in this post</div>
+      </div>
+
+      <!-- Actions (Like, Comment) -->
+      <div class="modal-actions">
+        <button id="modalLikeBtn" onclick="likePost(currentModalPostId)">
+          <span>🤍</span>
+          <span>Like</span>
+        </button>
+        <button onclick="document.getElementById('modalNewComment').focus()">
+          <span>💬</span>
+          <span>Comment</span>
+        </button>
+      </div>
+
+      <!-- Comments section -->
+      <div class="modal-comments-section">
+        <div style="margin-bottom: 1rem;">
+          <strong>Comments</strong>
+        </div>
+        <div id="modalComments" class="modal-comments">
+          <div class="empty-state">Loading comments…</div>
+        </div>
+
+        <!-- Comment input -->
+        <div class="modal-comment-input">
+          <input id="modalNewComment" placeholder="Write a comment..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #eee">
+          <button id="modalSendComment">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Zoom overlay -->
+<div id="zoomOverlay" class="zoom-overlay">
+  <div class="zoom-controls">
+    <a id="zoomDownload" href="#" download>⬇ Download</a>
+    <button id="zoomClose">✕</button>
+  </div>
+  <!-- zoom media inserted here -->
+</div>
+
+<!-- Audio -->
+<audio id="notifSound" preload="auto">
+  <source src="https://assets.mixkit.co/active_storage/sfx/273/273-preview.mp3" type="audio/mpeg">
+</audio>
+<audio id="likeSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<script>
+/* ----------------------
+   Firebase init
+   ---------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
+  authDomain: "smart-waste-66279.firebaseapp.com",
+  projectId: "smart-waste-66279",
+  storageBucket: "smart-waste-66279.appspot.com",
+  messagingSenderId: "619099585646",
+  appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* ----------------------
+   DOM refs & state
+   ---------------------- */
+const feed = document.getElementById('feed');
+const postText = document.getElementById('postText');
+const postImage = document.getElementById('postImage');
+const postBtn = document.getElementById('postBtn');
+const uploadIndicator = document.getElementById('uploadIndicator');
+const colorPalette = document.getElementById('colorPalette');
+const mediaCaption = document.getElementById('mediaCaption');
+
+const notifBtn = document.getElementById('notifBtn');
+const notifCount = document.getElementById('notifCount');
+const notifList = document.getElementById('notifList');
+const notifItems = document.getElementById('notifItems');
+const notifSound = document.getElementById('notifSound');
+const closeNotifBtn = document.getElementById('closeNotifBtn');
+const deleteAllNotifBtn = document.getElementById('deleteAllNotifBtn');
+
+const modalBackdrop = document.getElementById('postModalBackdrop');
+const modalMedia = document.getElementById('modalMedia');
+const modalAuthorPhoto = document.getElementById('modalAuthorPhoto');
+const modalAuthorName = document.getElementById('modalAuthorName');
+const modalTime = document.getElementById('modalTime');
+const modalText = document.getElementById('modalText');
+const modalCaption = document.getElementById('modalCaption');
+const modalComments = document.getElementById('modalComments');
+const modalNewComment = document.getElementById('modalNewComment');
+const modalSendComment = document.getElementById('modalSendComment');
+const modalLikeBtn = document.getElementById('modalLikeBtn');
+const closePostModal = document.getElementById('closePostModal');
+const viewFriendProfile = document.getElementById('viewFriendProfile');
+
+const zoomOverlay = document.getElementById('zoomOverlay');
+const zoomClose = document.getElementById('zoomClose');
+const zoomDownload = document.getElementById('zoomDownload');
+
+let currentUser = null;
+let userCache = {};
+let lastNotifTime = 0;
+let currentModalPostId = null;
+let modalCommentsUnsub = null;
+let selectedColor = '#ffffff'; // Default background color
+
+/* ----------------------
+   Scroll Prevention Functions
+   ---------------------- */
+function preventBodyScroll() {
+    document.body.classList.add('modal-open');
+    document.body.style.top = `-${window.scrollY}px`;
+}
+
+function allowBodyScroll() {
+    const scrollY = document.body.style.top;
+    document.body.classList.remove('modal-open');
+    document.body.style.top = '';
+    window.scrollTo(0, parseInt(scrollY || '0') * -1);
+}
+
+/* ----------------------
+   Background Color Selection
+   ---------------------- */
+colorPalette.addEventListener('click', (e) => {
+    if (e.target.classList.contains('color-option')) {
+        // Remove selected class from all options
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked option
+        e.target.classList.add('selected');
+        selectedColor = e.target.dataset.color;
+        
+        // Apply background color to textarea for preview
+        postText.style.backgroundColor = selectedColor;
+    }
+});
+
+/* ----------------------
+   Media Caption Handling
+   ---------------------- */
+postImage.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        mediaCaption.style.display = 'block';
+    } else {
+        mediaCaption.style.display = 'none';
+    }
+});
+
+/* ----------------------
+   Audio unlocking & activity tracking
+   ---------------------- */
+let audioUnlocked = false;
+let lastActive = Date.now();
+const ACTIVITY_TIMEOUT = 1000 * 60 * 3; // 3 minutes
+
+function unlockAudio() { 
+    audioUnlocked = true; 
+    window.removeEventListener('click', unlockAudio); 
+    window.removeEventListener('keydown', unlockAudio); 
+    window.removeEventListener('touchstart', unlockAudio); 
+}
+window.addEventListener('click', unlockAudio, { once: true });
+window.addEventListener('keydown', unlockAudio, { once: true });
+window.addEventListener('touchstart', unlockAudio, { once: true });
+
+// track user activity to decide whether to play sound
+['mousemove','keydown','touchstart','scroll','click'].forEach(ev => {
+    window.addEventListener(ev, () => lastActive = Date.now());
+});
+window.addEventListener('focus', ()=> { lastActive = Date.now(); });
+window.addEventListener('blur', ()=> { /* will prevent playing */ });
+
+/* ----------------------
+   Small helpers
+   ---------------------- */
+function escapeHtml(text){ const d=document.createElement('div'); d.textContent = text; return d.innerHTML; }
+function showToast(msg, t=2500){ const el = document.createElement('div'); el.textContent = msg; el.style = 'position:fixed;left:50%;transform:translateX(-50%);top:70px;background:var(--primary);color:#fff;padding:8px 12px;border-radius:999px;z-index:3000'; document.body.appendChild(el); setTimeout(()=>el.remove(),t); }
+
+/* ----------------------
+   Notifications listener
+   ---------------------- */
+function listenForNotifications(){
+    if (!currentUser) return;
+    db.collection('notifications').where('receiver','==',currentUser.uid).orderBy('createdAt','desc').limit(50)
+        .onSnapshot(snapshot=>{
+            if (!snapshot || snapshot.empty) {
+                notifItems.innerHTML = '<p style="padding:10px;color:#666">No notifications yet</p>';
+                notifCount.style.display = 'none';
+                return;
+            }
+
+            notifItems.innerHTML = '';
+            let newCount = 0;
+
+            snapshot.docChanges().forEach(change=>{
+                if (change.type === 'added') {
+                    const n = change.doc.data() || {};
+                    const notifTime = (n.createdAt && typeof n.createdAt.toMillis === 'function') ? n.createdAt.toMillis() : Date.now();
+                    if (notifTime > lastNotifTime) {
+                        // Only play sound if audioUnlocked and user interacted recently
+                        const activeRecently = (Date.now() - lastActive) < ACTIVITY_TIMEOUT;
+                        if (audioUnlocked && activeRecently) {
+                            notifSound.currentTime = 0;
+                            notifSound.play().catch(()=>{});
+                            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                                try { new Notification("New Notification", { body:`${n.senderName || 'Someone'} ${n.type}`, icon:'icon.png' }); } catch(e) {}
+                            }
+                        }
+                        lastNotifTime = notifTime;
+                    }
+                }
+            });
+
+            snapshot.forEach(doc=>{
+                const n = doc.data() || {};
+                const item = document.createElement('div');
+                item.className = 'notif-item' + (n.read ? '' : ' unread');
+                const time = (n.createdAt && typeof n.createdAt.toDate === 'function') ? n.createdAt.toDate().toLocaleString() : '';
+                const text = n.type === 'like' ? 'liked your post ❤️' : (n.type === 'comment' ? 'commented on your post 💬' : (n.type === 'reply' ? 'replied to your comment 💬' : 'started following you 👤'));
+                item.innerHTML = `<strong>${n.senderName||'Someone'}</strong> ${text}<br><small style="color:#666">${time}</small>`;
+                item.addEventListener('click', async ()=>{
+                    try{ await db.collection('notifications').doc(doc.id).update({ read:true }); }catch(e){}
+                    notifList.style.display = 'none';
+                    if (n.postId) openPostModal(n.postId, n.commentId || null);
+                    else if (n.sender) {
+                        // Redirect to user profile page
+                        window.location.href = `user.html?uid=${n.sender}`;
+                    }
+                });
+                notifItems.appendChild(item);
+                if (!n.read) newCount++;
+            });
+
+            if (newCount > 0) { 
+                notifCount.style.display = 'flex'; 
+                notifCount.textContent = newCount > 99 ? '99+' : newCount; 
+            } else { 
+                notifCount.style.display = 'none'; 
+            }
+        }, err => console.error('Notification listener error:', err));
+}
+
+/* ----------------------
+   Notification UI interactions
+   ---------------------- */
+notifBtn.addEventListener('click', (e)=>{ 
+    e.stopPropagation(); 
+    const open = getComputedStyle(notifList).display === 'block'; 
+    notifList.style.display = open ? 'none' : 'block'; 
+    if (!open) markAllAsRead(); 
+});
+
+closeNotifBtn.addEventListener('click', ()=> notifList.style.display='none');
+document.addEventListener('click', (e)=>{ 
+    if (!notifList.contains(e.target) && e.target !== notifBtn && !notifBtn.contains(e.target)) 
+        notifList.style.display='none'; 
+});
+
+async function markAllAsRead(){
+    if (!currentUser) return;
+    try{
+        const snap = await db.collection('notifications').where('receiver','==',currentUser.uid).where('read','==',false).get();
+        if (snap.empty){ notifCount.style.display='none'; return; }
+        const batch = db.batch();
+        snap.forEach(d => batch.update(d.ref, { read:true }));
+        await batch.commit();
+        notifCount.style.display='none';
+    }catch(e){ console.error('mark all read error', e); }
+}
+
+deleteAllNotifBtn.addEventListener('click', async ()=>{
+    if (!currentUser) return;
+    if (!confirm('Permanently delete all notifications?')) return;
+    try{
+        const snap = await db.collection('notifications').where('receiver','==',currentUser.uid).get();
+        if (snap.empty){ alert('No notifications'); return; }
+        const batch = db.batch();
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+        notifItems.innerHTML = '<p style="padding:10px;color:#666">No notifications yet</p>';
+        notifCount.style.display='none';
+        alert('Deleted');
+    }catch(e){ console.error('delete all notif error', e); alert('Failed to delete'); }
+});
+
+/* ----------------------
+   Posts creation + feed
+   ---------------------- */
+postBtn.addEventListener('click', async ()=>{
+    if (!currentUser) { showToast('Please sign in'); return; }
+    const text = postText.value.trim();
+    const file = postImage.files[0];
+    const caption = mediaCaption.value.trim();
+    if (!text && !file) { showToast('Write something or add media'); return; }
+    postBtn.disabled=true; postBtn.textContent='Posting...';
+    try{
+        let mediaUrl = '', mediaType = '';
+        if (file) {
+            uploadIndicator.style.display='block';
+            const key = 'e26f20d023a0094ee31c68ded33ab41d'; // imgbb
+            const form = new FormData(); form.append('image', file);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method:'POST', body: form });
+            const json = await res.json();
+            mediaUrl = json.data?.url || '';
+            mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+            uploadIndicator.style.display='none';
+        }
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const userData = userDoc.exists ? userDoc.data() : {};
+        const newRef = db.collection('posts').doc();
+        await newRef.set({
+            uid: currentUser.uid,
+            author: userData.fullName || 'Anonymous',
+            photoURL: userData.photoURL || '',
+            text: escapeHtml(text),
+            backgroundColor: selectedColor, // Save background color
+            mediaUrl,
+            mediaType,
+            mediaCaption: caption, // Save media caption
+            likes: [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        await db.collection('users').doc(currentUser.uid).collection('posts').doc(newRef.id).set({
+            text: escapeHtml(text), 
+            backgroundColor: selectedColor,
+            mediaUrl, 
+            mediaType, 
+            mediaCaption: caption,
+            likes: [], 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        postText.value=''; 
+        postImage.value=''; 
+        mediaCaption.value='';
+        mediaCaption.style.display='none';
+        postText.style.backgroundColor = '#ffffff'; // Reset to default
+        selectedColor = '#ffffff';
+        // Reset color selection
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        showToast('Posted');
+    }catch(e){ console.error('post error', e); showToast('Post failed'); }
+    finally{ postBtn.disabled=false; postBtn.textContent='Post'; }
+});
+
+function loadFeed(){
+    db.collection('posts').orderBy('createdAt','desc').onSnapshot(snapshot=>{
+        if (!snapshot || snapshot.empty) { feed.innerHTML = '<div class="empty-state"><h3>No posts yet</h3><p>Be the first!</p></div>'; return; }
+        feed.innerHTML = '';
+        snapshot.forEach(doc=>{
+            const p = doc.data(); 
+            const postId = doc.id;
+            const likeCount = p.likes?.length || 0;
+            const div = document.createElement('div'); 
+            div.className='feed-post'; 
+            div.id = `post-${postId}`;
+            
+            let mediaHTML = '';
+            if (p.mediaUrl) {
+                if (p.mediaType === 'video') mediaHTML = `<video src="${p.mediaUrl}" controls style="width:100%;border-radius:8px"></video>`;
+                else mediaHTML = `<img src="${p.mediaUrl}" style="width:100%;border-radius:8px" alt="post">`;
+                
+                // Add caption if exists
+                if (p.mediaCaption) {
+                    mediaHTML += `<div class="media-caption">${escapeHtml(p.mediaCaption)}</div>`;
+                }
+            } else {
+                mediaHTML = `<div style="padding:18px;border-radius:8px;background:var(--gradient-no-media);text-align:center;font-weight:600;">${p.text ? '' : 'No media'}</div>`;
+            }
+            
+            // Apply background color to text post
+            let textHTML = '';
+            if (p.text) {
+                const bgColor = p.backgroundColor || '#ffffff';
+                textHTML = `<div class="text-post" style="background-color:${bgColor}">${p.text}</div>`;
+            }
+            
+            div.innerHTML = `
+                <div class="user" onclick="openPostModal('${postId}')">
+                    <img src="${p.photoURL||'https://via.placeholder.com/44'}" alt="${p.author}">
+                    <strong>${p.author}</strong>
+                </div>
+                ${textHTML}
+                ${mediaHTML}
+                <div class="actions">
+                    <button onclick="likePost('${postId}')">🤍 <span style="margin-left:6px">${likeCount}</span></button>
+                    <button id="commentBtn-${postId}" onclick="openPostModal('${postId}')">💬 <span id="commentCount-${postId}">0</span></button>
+                </div>
+                <div id="comments-${postId}" class="comment-box" style="display:none"></div>
+            `;
+            feed.appendChild(div);
+            loadCommentsCount(postId);
+        });
+    }, err=> { console.error('load feed err', err); feed.innerHTML = '<div class="empty-state"><h3>Error loading posts</h3></div>'; });
+}
+
+function loadCommentsCount(postId){
+    db.collection('posts').doc(postId).collection('comments').onSnapshot(snap=>{
+        const btn = document.getElementById(`commentCount-${postId}`);
+        if (btn) btn.textContent = snap.size;
+    }, err=> console.error('comments count err', err));
+}
+
+/* ----------------------
+   Like logic
+   ---------------------- */
+async function likePost(postId){
+    try{
+        const ref = db.collection('posts').doc(postId);
+        const snap = await ref.get(); if (!snap.exists) return;
+        const data = snap.data(); const likes = data.likes || [];
+        const idx = likes.indexOf(currentUser.uid);
+        const already = idx > -1;
+        if (already) likes.splice(idx,1); else { likes.push(currentUser.uid); document.getElementById('likeSound').currentTime=0; document.getElementById('likeSound').play().catch(()=>{}); }
+        await ref.update({ likes });
+        if (!already && data.uid && data.uid !== currentUser.uid) {
+            const senderDoc = await db.collection('users').doc(currentUser.uid).get();
+            await sendNotification(data.uid, 'like', postId, senderDoc.exists ? senderDoc.data().fullName : 'Someone');
+        }
+    }catch(e){ console.error('like error', e); showToast('Like failed'); }
+}
+
+/* ----------------------
+   Modal: open post, comments & replies - Facebook Style
+   ---------------------- */
+function clearModal(){
+    modalMedia.innerHTML=''; 
+    modalAuthorPhoto.src=''; 
+    modalAuthorName.textContent=''; 
+    modalTime.textContent=''; 
+    modalText.textContent='';
+    modalComments.innerHTML=''; 
+    modalNewComment.value=''; 
+    currentModalPostId = null;
+    modalCaption.style.display='none'; // Hide caption
+    viewFriendProfile.style.display='none'; // Hide friend profile button
+    if (modalCommentsUnsub){ modalCommentsUnsub(); modalCommentsUnsub = null; }
+    zoomOverlay.style.display='none'; 
+    zoomOverlay.innerHTML='';
+}
+
+async function openPostModal(postId, focusCommentId = null){
+    if (!postId) return;
+    try{
+        const postDoc = await db.collection('posts').doc(postId).get();
+        if (!postDoc.exists) { showToast('Post not found'); return; }
+        const p = postDoc.data();
+        currentModalPostId = postId;
+
+        // Prevent body scroll and enable modal scroll
+        preventBodyScroll();
+
+        // Update header info
+        modalAuthorPhoto.src = p.photoURL || 'https://via.placeholder.com/44';
+        modalAuthorName.textContent = p.author || 'Unknown';
+        modalTime.textContent = p.createdAt && typeof p.createdAt.toDate === 'function' ? p.createdAt.toDate().toLocaleString() : '';
+        
+        // Apply background color to text in modal
+        if (p.text) {
+            const bgColor = p.backgroundColor || '#ffffff';
+            modalText.innerHTML = `<div class="text-post" style="background-color:${bgColor}">${p.text}</div>`;
+        } else {
+            modalText.innerHTML = '';
+        }
+        
+        // Show media caption if exists
+        if (p.mediaCaption) {
+            modalCaption.textContent = p.mediaCaption;
+            modalCaption.style.display = 'block';
+        } else {
+            modalCaption.style.display = 'none';
+        }
+
+        // Show friend profile button if post is not from current user
+        if (p.uid && p.uid !== currentUser.uid) {
+            viewFriendProfile.style.display = 'inline-block';
+            viewFriendProfile.onclick = () => {
+                // Redirect to user profile page
+                window.location.href = `user.html?uid=${p.uid}`;
+            };
+        } else {
+            viewFriendProfile.style.display = 'none';
+        }
+
+        // Media section - Facebook style (appears above comments and likes)
+        modalMedia.innerHTML = '';
+        const noMediaPlaceholder = modalMedia.querySelector('.no-media-placeholder');
+        if (noMediaPlaceholder) noMediaPlaceholder.style.display = 'none';
+
+        if (p.mediaUrl) {
+            if (p.mediaType === 'video') {
+                const v = document.createElement('video'); 
+                v.src = p.mediaUrl; 
+                v.controls = true; 
+                v.style.maxHeight = '100%';
+                v.style.maxWidth = '100%';
+                v.addEventListener('click', e => { 
+                    e.stopPropagation(); 
+                    openZoomWithMedia('video', p.mediaUrl); 
+                });
+                modalMedia.appendChild(v);
+            } else {
+                const img = document.createElement('img'); 
+                img.src = p.mediaUrl; 
+                img.alt = 'post';
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', () => openZoomWithMedia('image', p.mediaUrl));
+                modalMedia.appendChild(img);
+            }
+        } else {
+            const placeholder = modalMedia.querySelector('.no-media-placeholder') || document.createElement('div');
+            placeholder.className = 'no-media-placeholder';
+            placeholder.textContent = 'No media in this post';
+            placeholder.style.display = 'block';
+            modalMedia.appendChild(placeholder);
+        }
+
+        // Update like button state
+        const likes = p.likes || [];
+        const isLiked = currentUser && likes.includes(currentUser.uid);
+        modalLikeBtn.innerHTML = isLiked ? 
+            '<span>❤️</span><span>Liked</span>' : 
+            '<span>🤍</span><span>Like</span>';
+
+        // show modal
+        modalBackdrop.style.display = 'flex'; 
+        modalBackdrop.setAttribute('aria-hidden', 'false');
+
+        // subscribe to comments realtime
+        if (modalCommentsUnsub) modalCommentsUnsub();
+        modalComments.innerHTML = '<div class="empty-state">Loading comments…</div>';
+        modalCommentsUnsub = db.collection('posts').doc(postId).collection('comments').orderBy('createdAt','asc')
+            .onSnapshot(async snap => {
+                modalComments.innerHTML = '';
+                if (snap.empty){ 
+                    modalComments.innerHTML = '<div class="empty-state">No comments yet. Be the first!</div>'; 
+                    return; 
+                }
+                
+                for (const d of snap.docs){
+                    const c = d.data(); 
+                    const cid = d.id;
+                    const wrapper = document.createElement('div'); 
+                    wrapper.className='comment';
+                    
+                    const commenterName = userCache[c.uid]?.fullName || 'User';
+                    const meta = document.createElement('div'); 
+                    meta.className='meta small'; 
+                    meta.textContent = `${commenterName} · ${c.createdAt && typeof c.createdAt.toDate === 'function' ? c.createdAt.toDate().toLocaleString() : ''}`;
+                    
+                    const text = document.createElement('div'); 
+                    text.innerHTML = escapeHtml(c.text);
+                    
+                    const repliesContainer = document.createElement('div'); 
+                    repliesContainer.id = `replies-${cid}`;
+                    
+                    const replyArea = document.createElement('div'); 
+                    replyArea.style.marginTop = '8px';
+                    
+                    const replyBtn = document.createElement('button'); 
+                    replyBtn.className = 'reply-btn'; 
+                    replyBtn.textContent = 'Reply';
+                    replyBtn.style.background = 'none';
+                    replyBtn.style.border = 'none';
+                    replyBtn.style.color = '#666';
+                    replyBtn.style.cursor = 'pointer';
+                    replyBtn.style.fontSize = '0.875rem';
+                    
+                    const replyInput = document.createElement('input'); 
+                    replyInput.id = `reply-input-${cid}`; 
+                    replyInput.placeholder = 'Write a reply...'; 
+                    replyInput.style.display = 'none'; 
+                    replyInput.style.width='68%'; 
+                    replyInput.style.padding='6px'; 
+                    replyInput.style.border='1px solid #eee'; 
+                    replyInput.style.borderRadius='6px';
+                    
+                    const replySend = document.createElement('button'); 
+                    replySend.textContent = 'Send'; 
+                    replySend.style.display = 'none'; 
+                    replySend.style.marginLeft = '6px';
+                    replySend.style.background = 'var(--primary)';
+                    replySend.style.color = 'white';
+                    replySend.style.border = 'none';
+                    replySend.style.padding = '6px 12px';
+                    replySend.style.borderRadius = '6px';
+                    replySend.style.cursor = 'pointer';
+
+                    replyBtn.addEventListener('click', ()=> {
+                        const show = replyInput.style.display === 'none';
+                        replyInput.style.display = show ? 'inline-block' : 'none';
+                        replySend.style.display = show ? 'inline-block' : 'none';
+                        if (show) replyInput.focus();
+                    });
+
+                    replySend.addEventListener('click', async ()=>{
+                        const textVal = replyInput.value.trim(); 
+                        if (!textVal) return;
+                        replySend.disabled = true;
+                        try{
+                            const user = firebase.auth().currentUser;
+                            const rref = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc();
+                            await rref.set({ 
+                                uid: user.uid, 
+                                text: textVal, 
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                            });
+                            // notify comment owner (reply notification)
+                            if (c.uid && c.uid !== user.uid){
+                                const senderDoc = await db.collection('users').doc(user.uid).get();
+                                await sendNotification(c.uid, 'reply', postId, senderDoc.exists ? senderDoc.data().fullName : 'Someone', cid);
+                            }
+                            replyInput.value=''; 
+                            replyInput.style.display='none'; 
+                            replySend.style.display='none';
+                        }catch(e){ console.error('reply send err', e); }
+                        finally{ replySend.disabled = false; }
+                    });
+
+                    replyArea.appendChild(replyBtn); 
+                    replyArea.appendChild(replyInput); 
+                    replyArea.appendChild(replySend);
+                    wrapper.appendChild(meta); 
+                    wrapper.appendChild(text); 
+                    wrapper.appendChild(replyArea); 
+                    wrapper.appendChild(repliesContainer);
+                    modalComments.appendChild(wrapper);
+
+                    // subscribe replies for this comment
+                    db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').orderBy('createdAt','asc')
+                        .onSnapshot(rsnap => {
+                            repliesContainer.innerHTML = '';
+                            rsnap.forEach(rdoc => {
+                                const r = rdoc.data();
+                                const rn = document.createElement('div'); 
+                                rn.className = 'reply';
+                                const rname = userCache[r.uid]?.fullName || 'User';
+                                const rtime = (r.createdAt && typeof r.createdAt.toDate === 'function') ? r.createdAt.toDate().toLocaleString() : '';
+                                rn.innerHTML = `<div class="meta small">${rname} · ${rtime}</div><div>${escapeHtml(r.text)}</div>`;
+                                repliesContainer.appendChild(rn);
+                            });
+                        }, err => console.error('replies listen err', err));
+                }
+
+                if (focusCommentId){
+                    setTimeout(()=> {
+                        const inputEl = document.getElementById(`reply-input-${focusCommentId}`);
+                        if (inputEl) { 
+                            inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                            inputEl.focus(); 
+                        }
+                    }, 400);
+                }
+            }, err => { 
+                console.error('comments listen err', err); 
+                modalComments.innerHTML = '<div class="empty-state">Failed to load comments</div>'; 
+            });
+
+        // modal send comment (top-level)
+        modalSendComment.onclick = async ()=>{
+            const text = modalNewComment.value.trim(); 
+            if (!text) return;
+            modalSendComment.disabled = true;
+            try {
+                const cref = db.collection('posts').doc(postId).collection('comments').doc();
+                const user = firebase.auth().currentUser;
+                await cref.set({ 
+                    uid: user.uid, 
+                    text, 
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                });
+                // notify post owner
+                const postOwner = p.uid;
+                if (postOwner && postOwner !== user.uid){
+                    const senderDoc = await db.collection('users').doc(user.uid).get();
+                    await sendNotification(postOwner, 'comment', postId, senderDoc.exists ? senderDoc.data().fullName : 'Someone');
+                }
+                modalNewComment.value = '';
+            } catch(e){ console.error('modal add comment err', e); }
+            finally{ modalSendComment.disabled = false; }
+        };
+
+    }catch(e){ console.error('open modal err', e); showToast('Failed to open post'); }
+}
+
+/* Close modal */
+closePostModal.addEventListener('click', ()=> { 
+    modalBackdrop.style.display='none'; 
+    modalBackdrop.setAttribute('aria-hidden','true'); 
+    allowBodyScroll();
+    clearModal(); 
+});
+modalBackdrop.addEventListener('click', (e)=> { 
+    if (e.target === modalBackdrop){ 
+        modalBackdrop.style.display='none'; 
+        modalBackdrop.setAttribute('aria-hidden','true'); 
+        allowBodyScroll();
+        clearModal(); 
+    } 
+});
+
+/* ----------------------
+   Zoom overlay
+   ---------------------- */
+function openZoomWithMedia(type, url){
+    zoomOverlay.innerHTML = '';
+    const controls = document.createElement('div'); 
+    controls.className = 'zoom-controls';
+    const dl = document.createElement('a'); 
+    dl.href = url; 
+    dl.setAttribute('download','media'); 
+    dl.textContent = '⬇ Download'; 
+    dl.style.background='rgba(255,255,255,0.12)'; 
+    dl.style.color='#fff'; 
+    dl.style.padding='8px'; 
+    dl.style.borderRadius='8px'; 
+    dl.style.textDecoration='none';
+    
+    const btn = document.createElement('button'); 
+    btn.textContent='✕';
+    btn.addEventListener('click', ()=> { 
+        zoomOverlay.style.display='none'; 
+        zoomOverlay.innerHTML=''; 
+    });
+    
+    controls.appendChild(dl); 
+    controls.appendChild(btn);
+    zoomOverlay.appendChild(controls);
+    
+    if (type === 'image'){
+        const img = document.createElement('img'); 
+        img.src = url; 
+        img.alt='zoom'; 
+        zoomOverlay.appendChild(img);
+    } else {
+        const v = document.createElement('video'); 
+        v.src = url; 
+        v.controls = true; 
+        v.autoplay = true; 
+        zoomOverlay.appendChild(v);
+    }
+    zoomOverlay.style.display = 'flex';
+}
+zoomClose.addEventListener('click', ()=> { 
+    zoomOverlay.style.display='none'; 
+    zoomOverlay.innerHTML=''; 
+});
+
+/* ----------------------
+   Notifications send helper
+   ---------------------- */
+async function sendNotification(receiverId, type, postId=null, senderName=null, commentId=null){
+    const user = firebase.auth().currentUser;
+    if (!user || receiverId === user.uid) return;
+    senderName = senderName || user.displayName || 'Someone';
+    try{
+        await db.collection('notifications').add({
+            receiver: receiverId,
+            sender: user.uid,
+            senderName,
+            type,
+            postId: postId || null,
+            commentId: commentId || null,
+            read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }catch(e){ console.error('sendNotification error', e); }
+}
+
+/* ----------------------
+   user cache
+   ---------------------- */
+function listenToUser(uid, callback){
+    if (userCache[uid] && userCache[uid].listener) return;
+    const unsub = db.collection('users').doc(uid).onSnapshot(doc=>{
+        if (!doc.exists) return;
+        userCache[uid] = { ...doc.data(), listener: unsub };
+        if (callback) callback(userCache[uid]);
+    }, err => console.error('user listen err', err));
+}
+
+async function getUserData(uid){ 
+    if (userCache[uid]) return userCache[uid]; 
+    try{ 
+        const doc = await db.collection('users').doc(uid).get(); 
+        if (doc.exists){ 
+            userCache[uid]=doc.data(); 
+            return doc.data(); 
+        } 
+        return null; 
+    }catch(e){ console.error(e); return null; } 
+}
+
+/* ----------------------
+   Auth start
+   ---------------------- */
+auth.onAuthStateChanged(user=>{
+    if (!user) { /* optionally redirect to login */ return; }
+    currentUser = user;
+    db.collection('users').doc(user.uid).get().then(s => { 
+        if (s.exists) userCache[user.uid] = s.data(); 
+    });
+    loadFeed();
+    listenForNotifications();
+});
+
+/* Expose functions for global use */
+window.openPostModal = openPostModal;
+window.likePost = likePost;
+
+</script>
+</body>
+</html>
