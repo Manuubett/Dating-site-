@@ -1017,7 +1017,455 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+/* ----------------------
+   Horizontal Scroll for Stories
+   ---------------------- */
+function initializeStoriesScroll() {
+    const storiesContainer = document.getElementById('stories');
+    if (!storiesContainer) return;
 
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    storiesContainer.addEventListener('mousedown', (e) => {
+        isDown = true;
+        storiesContainer.classList.add('active');
+        startX = e.pageX - storiesContainer.offsetLeft;
+        scrollLeft = storiesContainer.scrollLeft;
+    });
+
+    storiesContainer.addEventListener('mouseleave', () => {
+        isDown = false;
+        storiesContainer.classList.remove('active');
+    });
+
+    storiesContainer.addEventListener('mouseup', () => {
+        isDown = false;
+        storiesContainer.classList.remove('active');
+    });
+
+    storiesContainer.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - storiesContainer.offsetLeft;
+        const walk = (x - startX) * 2;
+        storiesContainer.scrollLeft = scrollLeft - walk;
+    });
+
+    // Touch events for mobile
+    storiesContainer.addEventListener('touchstart', (e) => {
+        isDown = true;
+        startX = e.touches[0].pageX - storiesContainer.offsetLeft;
+        scrollLeft = storiesContainer.scrollLeft;
+    });
+
+    storiesContainer.addEventListener('touchend', () => {
+        isDown = false;
+    });
+
+    storiesContainer.addEventListener('touchmove', (e) => {
+        if (!isDown) return;
+        const x = e.touches[0].pageX - storiesContainer.offsetLeft;
+        const walk = (x - startX) * 2;
+        storiesContainer.scrollLeft = scrollLeft - walk;
+    });
+}
+
+/* ----------------------
+   Search Functionality
+   ---------------------- */
+function initializeSearch() {
+    if (document.querySelector('.search-container')) return;
+
+    const searchHTML = `
+    <div class="search-container">
+        <div class="search-box">
+            <div class="search-input-container">
+                <input type="text" id="searchInput" placeholder="Search posts, users...">
+                <button id="clearSearch" class="clear-search-btn">Clear</button>
+            </div>
+            <div id="searchFilters" class="search-filters">
+                <label>
+                    <input type="checkbox" id="searchPosts" checked> Posts
+                </label>
+                <label>
+                    <input type="checkbox" id="searchUsers" checked> Users
+                </label>
+                <label>
+                    <input type="checkbox" id="searchStories"> Stories
+                </label>
+            </div>
+        </div>
+        <div id="searchResults" class="search-results"></div>
+    </div>
+    `;
+
+    const pullRefresh = document.getElementById('pullRefresh');
+    if (pullRefresh) {
+        pullRefresh.insertAdjacentHTML('afterend', searchHTML);
+        setTimeout(setupSearchEvents, 100);
+    }
+}
+
+function setupSearchEvents() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const searchResults = document.getElementById('searchResults');
+    const searchPosts = document.getElementById('searchPosts');
+    const searchUsers = document.getElementById('searchUsers');
+    const searchStories = document.getElementById('searchStories');
+
+    if (!searchInput) return;
+
+    let searchTimeout;
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        
+        if (clearSearch) {
+            clearSearch.style.display = query ? 'block' : 'none';
+        }
+
+        clearTimeout(searchTimeout);
+
+        if (query.length < 2) {
+            if (searchResults) searchResults.style.display = 'none';
+            document.querySelectorAll('.feed-post').forEach(post => {
+                post.style.display = 'block';
+            });
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            performSearch(query);
+        }, 300);
+    });
+
+    if (clearSearch) {
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearch.style.display = 'none';
+            if (searchResults) searchResults.style.display = 'none';
+            document.querySelectorAll('.feed-post').forEach(post => {
+                post.style.display = 'block';
+            });
+        });
+    }
+
+    [searchPosts, searchUsers, searchStories].forEach(checkbox => {
+        if (checkbox) {
+            checkbox.addEventListener('change', () => {
+                if (searchInput.value.trim().length >= 2) {
+                    performSearch(searchInput.value.trim());
+                }
+            });
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
+}
+
+async function performSearch(query) {
+    const searchResults = document.getElementById('searchResults');
+    const searchPosts = document.getElementById('searchPosts')?.checked || false;
+    const searchUsers = document.getElementById('searchUsers')?.checked || false;
+    const searchStories = document.getElementById('searchStories')?.checked || false;
+
+    if (!searchResults) return;
+
+    searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-light);">Searching...</div>';
+    searchResults.style.display = 'block';
+
+    try {
+        const results = { posts: [], users: [], stories: [] };
+
+        document.querySelectorAll('.feed-post').forEach(post => {
+            post.style.display = 'none';
+        });
+
+        // Search Posts
+        if (searchPosts) {
+            const postsSnapshot = await db.collection('posts').orderBy('createdAt', 'desc').get();
+            postsSnapshot.forEach(doc => {
+                const post = doc.data();
+                const postText = post.text || '';
+                const author = post.author || '';
+                
+                if (postText.toLowerCase().includes(query.toLowerCase()) || 
+                    author.toLowerCase().includes(query.toLowerCase())) {
+                    results.posts.push({ id: doc.id, ...post, type: 'post' });
+                }
+            });
+        }
+
+        // Search Users
+        if (searchUsers) {
+            const usersSnapshot = await db.collection('users').get();
+            usersSnapshot.forEach(doc => {
+                const user = doc.data();
+                const fullName = user.fullName || '';
+                const email = user.email || '';
+                
+                if (fullName.toLowerCase().includes(query.toLowerCase()) || 
+                    email.toLowerCase().includes(query.toLowerCase())) {
+                    results.users.push({ id: doc.id, ...user, type: 'user' });
+                }
+            });
+        }
+
+        // Search Stories
+        if (searchStories) {
+            const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const storiesSnapshot = await db.collection('stories')
+                .where('createdAt', '>', twentyFourHoursAgo).get();
+
+            storiesSnapshot.forEach(doc => {
+                const story = doc.data();
+                const author = story.author || '';
+                
+                if (author.toLowerCase().includes(query.toLowerCase())) {
+                    results.stories.push({ id: doc.id, ...story, type: 'story' });
+                }
+            });
+        }
+
+        displaySearchResults(results, query);
+    } catch (error) {
+        console.error('Search error:', error);
+        searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-light);">Search failed. Please try again.</div>';
+    }
+}
+
+function displaySearchResults(results, query) {
+    const searchResults = document.getElementById('searchResults');
+    if (!searchResults) return;
+
+    let html = '';
+
+    // Posts Results
+    if (results.posts.length > 0) {
+        html += `
+            <div class="search-section">
+                <h3 style="margin-bottom: 1rem; color: var(--text);">Posts (${results.posts.length})</h3>
+                <div class="posts-results">
+        `;
+        
+        results.posts.forEach(post => {
+            const likeCount = post.likes?.length || 0;
+            const mediaHTML = post.mediaUrl ? 
+                (post.mediaType === 'video' ? 
+                    `<video src="${post.mediaUrl}" controls style="width:100%;border-radius:8px; max-height: 200px;"></video>` :
+                    `<img src="${post.mediaUrl}" style="width:100%;border-radius:8px; max-height: 200px;" alt="post">`
+                ) : '';
+            
+            const textHTML = post.text ? 
+                `<div class="text-post" style="background-color:${post.backgroundColor || '#ffffff'}; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; cursor: pointer;" onclick="openPostModal('${post.id}')">
+                    ${post.text}
+                </div>` : '';
+
+            html += `
+                <div class="feed-post" style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow);">
+                    <div class="user" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <a href="user.html?uid=${post.uid}" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text);">
+                            <img src="${post.photoURL || 'https://via.placeholder.com/40'}" alt="${post.author}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            <strong>${post.author}</strong>
+                        </a>
+                    </div>
+                    ${textHTML}
+                    ${mediaHTML ? `<div onclick="openPostModal('${post.id}')">${mediaHTML}</div>` : ''}
+                    <div class="actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button onclick="likePost('${post.id}')" style="background: none; border: none; color: var(--text-light); cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            🤍 <span>${likeCount}</span>
+                        </button>
+                        <button onclick="openPostModal('${post.id}')" style="background: none; border: none; color: var(--text-light); cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            💬 Comment
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div></div>`;
+    }
+
+    // Users Results
+    if (results.users.length > 0) {
+        html += `
+            <div class="search-section">
+                <h3 style="margin-bottom: 1rem; color: var(--text);">Users (${results.users.length})</h3>
+                <div class="users-results">
+        `;
+        
+        results.users.forEach(user => {
+            html += `
+                <div class="user-result" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--card-bg); border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer;" onclick="window.location.href='user.html?uid=${user.id}'">
+                    <img src="${user.photoURL || 'https://via.placeholder.com/50'}" alt="${user.fullName}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                    <div>
+                        <div style="font-weight: 500;">${user.fullName || 'User'}</div
+
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div></div>`;
+    }
+
+    // Stories Results
+    if (results.stories.length > 0) {
+        html += `
+            <div class="search-section">
+                <h3 style="margin-bottom: 1rem; color: var(--text);">Stories (${results.stories.length})</h3>
+                <div class="stories-results" style="display: flex; gap: 1rem; overflow-x: auto; padding: 0.5rem 0;">
+        `;
+        
+        results.stories.forEach((story, index) => {
+            html += `
+                <div class="story-item" style="width: 80px; height: 90px; display: flex; flex-direction: column; align-items: center; cursor: pointer; flex-shrink: 0;" onclick="openStoryViewerFromSearch(${index}, '${story.id}')">
+                    <div class="story-image-container" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; margin-bottom: 5px;">
+                        <img src="${story.mediaUrl}" alt="story" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/60'">
+                    </div>
+                    <div class="story-username" style="font-size: 0.7rem; text-align: center; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${story.author}</div>
+                </div>
+            `;
+        });
+        
+        html += `</div></div>`;
+    }
+
+    if (results.posts.length === 0 && results.users.length === 0 && results.stories.length === 0) {
+        html = `<div style="padding: 2rem; text-align: center; color: var(--text-light);">No results found for "${query}"</div>`;
+    }
+
+    searchResults.innerHTML = html;
+}
+
+function openStoryViewerFromSearch(index, storyId) {
+    const storyIndex = storiesArray.findIndex(story => story.id === storyId);
+    if (storyIndex !== -1) {
+        openStoryViewer(storyIndex);
+    } else {
+        showToast('Story not available');
+    }
+}
+
+// Add CSS for search and scroll
+const searchAndScrollCSS = `
+<style id="search-scroll-css">
+.search-container {
+    margin-bottom: 1.5rem;
+}
+
+.search-box {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.search-input-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+#searchInput {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--card-bg);
+    color: var(--text);
+}
+
+#searchInput:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.clear-search-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: none;
+}
+
+.clear-search-btn:hover {
+    background: #5a6268;
+}
+
+.search-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.search-filters label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.search-results {
+    display: none;
+    margin-top: 1rem;
+}
+
+.stories {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.stories::-webkit-scrollbar {
+    display: none;
+}
+
+.stories.active {
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
+}
+
+.story-item {
+    flex-shrink: 0;
+}
+</style>
+`;
+
+if (!document.querySelector('#search-scroll-css')) {
+    document.head.insertAdjacentHTML('beforeend', searchAndScrollCSS);
+}
+
+/* ----------------------
+   Initialize Everything
+   ---------------------- */
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSearch();
+    initializeStoriesScroll();
+});
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        setTimeout(() => {
+            initializeSearch();
+            initializeStoriesScroll();
+        }, 1000);
+    }
+});
     /* ----------------------
        DOM refs & state
        ---------------------- */
@@ -1287,6 +1735,11 @@
     function openStoryViewer(currentIndex) {
     if (currentIndex < 0 || currentIndex >= storiesArray.length) return;
     
+    // Initialize modal if not already done
+    if (!document.getElementById('viewersModal')) {
+        initializeViewersModal();
+    }
+    
     // Clear the overlay first
     zoomOverlay.innerHTML = '';
     zoomOverlay.style.display = 'flex';
@@ -1324,6 +1777,7 @@
         zoomOverlay.innerHTML = '';
         currentStoryId = null;
         clearTimeout(autoNextTimer);
+        closeViewersModal();
     };
     
     controls.appendChild(downloadBtn);
@@ -1363,7 +1817,10 @@
             const viewersButton = document.createElement('button');
             viewersButton.className = 'viewers-button';
             viewersButton.innerHTML = `👁️ Viewers ${viewersCount > 0 ? `<span class="viewers-count">${viewersCount}</span>` : ''}`;
-            viewersButton.onclick = () => openStoryViewers(storyId);
+            viewersButton.onclick = (e) => {
+                e.stopPropagation();
+                openStoryViewers(storyId);
+            };
             
             viewersSection.appendChild(viewersButton);
         }).catch(error => {
@@ -1386,7 +1843,10 @@
             reactionBtn.style.border = 'none';
             reactionBtn.style.fontSize = '2rem';
             reactionBtn.style.cursor = 'pointer';
-            reactionBtn.onclick = () => reactToStory(storyId, reaction);
+            reactionBtn.onclick = (e) => {
+                e.stopPropagation();
+                reactToStory(storyId, reaction);
+            };
             
             reactionsDiv.appendChild(reactionBtn);
         });
@@ -1422,7 +1882,10 @@
         const leftArrow = document.createElement('button');
         leftArrow.className = 'nav-arrow left-arrow';
         leftArrow.textContent = '◀';
-        leftArrow.onclick = () => goToPrev(currentIndex);
+        leftArrow.onclick = (e) => {
+            e.stopPropagation();
+            goToPrev(currentIndex);
+        };
         zoomOverlay.appendChild(leftArrow);
     }
 
@@ -1430,11 +1893,13 @@
         const rightArrow = document.createElement('button');
         rightArrow.className = 'nav-arrow right-arrow';
         rightArrow.textContent = '▶';
-        rightArrow.onclick = () => goToNext(currentIndex);
+        rightArrow.onclick = (e) => {
+            e.stopPropagation();
+            goToNext(currentIndex);
+        };
         zoomOverlay.appendChild(rightArrow);
     }
 }
-
     function goToNext(currentIndex) {
       clearTimeout(autoNextTimer);
       if (currentIndex < storiesArray.length - 1) {
@@ -1983,17 +2448,27 @@ auth.onAuthStateChanged(user => {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     
     db.collection('stories').where('createdAt', '>', twentyFourHoursAgo).orderBy('createdAt', 'desc').onSnapshot(async snapshot => {
-        // Clear stories container
-        stories.innerHTML = '<div class="story-add" onclick="uploadStory()">+</div>';
+        // Clear stories container but keep the structure
+        stories.innerHTML = '';
+        
+        // Always add "Your Story" first
+        const yourStoryElement = document.createElement('div');
+        yourStoryElement.className = 'story-item';
+        yourStoryElement.innerHTML = `
+            <div class="story-add" onclick="uploadStory()">
+                +
+            </div>
+            <div class="story-username">Your Story</div>
+        `;
+        stories.appendChild(yourStoryElement);
 
         if (snapshot.empty) {
-            storiesArray = []; // Clear the global array
+            storiesArray = [];
             return;
         }
 
         const tempStoriesArray = [];
         
-        // Process each story
         for (const doc of snapshot.docs) {
             const story = { id: doc.id, ...doc.data() };
             
@@ -2002,12 +2477,11 @@ auth.onAuthStateChanged(user => {
                     const viewerDoc = await db.collection('stories').doc(story.id).collection('viewers').doc(currentUser.uid).get();
                     story.viewed = viewerDoc.exists;
                     
-                    // Only fetch viewers count if user owns the story
                     if (story.uid === currentUser.uid) {
                         const viewersSnap = await db.collection('stories').doc(story.id).collection('viewers').get();
                         story.viewersCount = viewersSnap.size;
                     } else {
-                        story.viewersCount = 0; // Don't show count for others' stories
+                        story.viewersCount = 0;
                     }
                 } else {
                     story.viewed = false;
@@ -2022,8 +2496,27 @@ auth.onAuthStateChanged(user => {
             tempStoriesArray.push(story);
         }
 
-        // Sort stories: unseen first, then seen, with newest first in each group
-        storiesArray = tempStoriesArray.sort((a, b) => {
+        // Separate user's stories and others' stories
+        const userStories = [];
+        const otherStories = [];
+        
+        tempStoriesArray.forEach(story => {
+            if (currentUser && story.uid === currentUser.uid) {
+                userStories.push(story);
+            } else {
+                otherStories.push(story);
+            }
+        });
+
+        // Sort user's stories by creation date (newest first)
+        userStories.sort((a, b) => {
+            const timeA = a.createdAt?.toDate?.() || new Date(0);
+            const timeB = b.createdAt?.toDate?.() || new Date(0);
+            return timeB - timeA;
+        });
+
+        // Sort other stories: unseen first, then seen, with newest first in each group
+        otherStories.sort((a, b) => {
             if (a.viewed === b.viewed) {
                 const timeA = a.createdAt?.toDate?.() || new Date(0);
                 const timeB = b.createdAt?.toDate?.() || new Date(0);
@@ -2032,16 +2525,19 @@ auth.onAuthStateChanged(user => {
             return a.viewed ? 1 : -1;
         });
 
-        // Create story elements
+        // Combine arrays: user's stories first, then others' stories
+        storiesArray = [...userStories, ...otherStories];
+
+        // Create story elements for all stories
         storiesArray.forEach((story, index) => {
             const storyElement = document.createElement('div');
             storyElement.className = 'story-item';
             
-            if (story.viewed) {
+            // Add viewed styling for other users' stories
+            if (currentUser && story.uid !== currentUser.uid && story.viewed) {
                 storyElement.style.opacity = '0.7';
             }
             
-            // Only show viewers badge if user owns the story AND there are viewers
             let viewersBadge = '';
             if (currentUser && story.uid === currentUser.uid && story.viewersCount > 0) {
                 viewersBadge = `
@@ -2056,23 +2552,26 @@ auth.onAuthStateChanged(user => {
                     <img src="${story.mediaUrl}" alt="story" onerror="this.src='https://via.placeholder.com/60'">
                     ${viewersBadge}
                 </div>
-                <div class="story-username">${story.author || 'User'}</div>
+                <div class="story-username">${currentUser && story.uid === currentUser.uid ? 'Your Story' : (story.author || 'User')}</div>
                 <div class="story-timestamp">${getTimeAgo(story.createdAt)}</div>
             `;
             
             storyElement.onclick = (e) => {
                 if (e.target.tagName !== 'BUTTON') {
+                    // Adjust index because "Your Story" add button is at position 0
                     openStoryViewer(index);
                 }
             };
             
             stories.appendChild(storyElement);
         });
+
+        // Reinitialize scroll after stories are loaded
+        setTimeout(initializeStoriesScroll, 100);
     }, error => {
         console.error('Error loading stories:', error);
     });
 }
-
 // Also update the goToNext and goToPrev functions to handle the global storiesArray
 function goToNext(currentIndex) {
     clearTimeout(autoNextTimer);
