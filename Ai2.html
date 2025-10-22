@@ -1,0 +1,3024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Media Platform</title>
+  <style>
+    :root {
+      --primary: #007bff;
+      --secondary: #6c757d;
+      --background: #f5f7fa;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --border: #e0e0e0;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --gradient-no-media: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      overscroll-behavior: none;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+
+    nav {
+      background: var(--card-bg);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--primary);
+    }
+
+    .notification-container {
+      position: relative;
+      margin-left: auto;
+    }
+
+    .notif-btn {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .notif-count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      display: none;
+    }
+
+    .notif-list {
+      display: none;
+      position: absolute;
+      top: 2.5rem;
+      right: 0;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      width: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    .notif-list .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .notif-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .notif-item.unread {
+      background: #e8f0fe;
+    }
+
+    .notif-item:hover {
+      background: #f8f8f8;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      position: relative;
+    }
+
+    .pull-refresh {
+      position: absolute;
+      top: -50px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      background: var(--card-bg);
+      padding: 10px;
+      transition: top 0.3s;
+      z-index: 500;
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--primary);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .stories {
+      display: flex;
+      overflow-x: auto;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 0;
+    }
+
+    .story-item {
+      width: 80px;
+      height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .story-image-container {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+
+    .story-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .story-username {
+      font-size: 0.7rem;
+      text-align: center;
+      max-width: 70px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .story-timestamp {
+      font-size: 0.6rem;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    .story-add {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-bottom: 5px;
+    }
+
+    .story-reactions {
+      display: none;
+      position: absolute;
+      bottom: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 5px;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+    }
+
+    .story-reactions button {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      padding: 5px;
+      cursor: pointer;
+    }
+
+    .story-viewers-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .story-viewers-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+
+    .story-viewers-list div {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .post-box {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    .post-box h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .post-box textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      resize: none;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .color-option {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .color-option.selected {
+      transform: scale(1.2);
+      border: 2px solid var(--primary);
+    }
+
+    .post-box input[type="file"],
+    .post-box input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 0.5rem 0;
+    }
+
+    .post-box button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .post-box button:hover {
+      background: #0056b3;
+    }
+
+    .post-box button:disabled {
+      background: var(--secondary);
+      cursor: not-allowed;
+    }
+
+    .feed-post {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .feed-post .user {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .feed-post .user a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .feed-post .user img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .text-post {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .media-wrapper {
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+
+    .feed-post img,
+    .feed-post video {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+
+    .media-caption {
+      font-size: 0.875rem;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .actions button {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .actions button:hover {
+      color: var(--primary);
+    }
+
+    .comments-section {
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .comments-header {
+      margin-bottom: 1rem;
+    }
+
+    .comments-list .comment {
+      margin-bottom: 1rem;
+    }
+
+    .comment .meta {
+      font-size: 0.875rem;
+      color: var(--text-light);
+    }
+
+    .reply {
+      margin-left: 2rem;
+      margin-top: 0.5rem;
+    }
+
+    .reply-btn {
+      font-size: 0.875rem;
+      color: var(--text-light);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .reply-btn:hover {
+      color: var(--primary);
+    }
+
+    .comment-input,
+    .reply-input-area {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .comment-input input,
+    .reply-input-area input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .comment-input button,
+    .reply-input-area button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header img {
+      width: 32px; /* Reduced from 40px */
+      height: 32px; /* Reduced from 40px */
+      border-radius: 6px; /* Reduced from 50% */
+      object-fit: cover;
+    }
+
+    .modal-content {
+      padding: 1.5rem;
+    }
+
+    .modal-media-section {
+      max-height: 100px;
+      overflow: hidden;
+      transition: max-height 0.3s;
+      cursor: pointer;
+    }
+
+    .modal-media-section.full-size {
+      max-height: none;
+    }
+
+    .modal-media-section img,
+    .modal-media-section video {
+      max-width: 100%;
+      max-height: 100px;
+      border-radius: 8px;
+      transition: max-height 0.3s;
+    }
+
+    .modal-media-section.full-size img,
+    .modal-media-section.full-size video {
+      max-height: none;
+    }
+
+    .no-media-placeholder {
+      padding: 1rem;
+      text-align: center;
+      color: var(--text-light);
+      background: var(--gradient-no-media);
+      border-radius: 8px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-actions button {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .modal-actions button:hover {
+      color: var(--primary);
+    }
+
+    .modal-comments-section {
+      padding: 1rem 0;
+    }
+
+    .modal-comment-input {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .modal-comment-input input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .modal-comment-input button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .zoom-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .zoom-controls {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .zoom-controls a,
+    .zoom-controls button {
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+      padding: 0.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .zoom-overlay img,
+    .zoom-overlay video {
+      max-width: 90%;
+      max-height: 70%;
+    }
+
+    .zoom-reactions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .zoom-reactions button {
+      font-size: 2rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .story-progress {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      height: 3px;
+      background: rgba(255,255,255,0.3);
+      z-index: 10;
+    }
+
+    .story-progress-bar {
+      height: 100%;
+      background: white;
+      width: 0;
+      transition: width linear;
+    }
+
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+
+    .left-arrow {
+      left: 10px;
+    }
+
+    .right-arrow {
+      right: 10px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-light);
+      padding: 1rem;
+    }
+
+    #sentinel {
+      height: 1px;
+      margin: 1rem 0;
+      text-align: center;
+      color: var(--text-light);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 1rem;
+      }
+
+      .notif-list {
+        width: 90vw;
+      }
+      
+      
+      .viewers-button {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.2s;
+    }
+
+    .viewers-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .viewers-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .viewers-modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .viewers-modal-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .viewers-modal-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .viewers-modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .viewers-list {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .viewer-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 12px;
+    }
+
+    .viewer-item:last-child {
+      border-bottom: none;
+    }
+
+    .viewer-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .viewer-info {
+      flex: 1;
+    }
+
+    .viewer-name {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .viewer-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .viewer-reaction {
+      font-size: 1rem;
+    }
+
+    .viewers-count {
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      margin-left: 5px;
+    }
+
+    .no-viewers {
+      padding: 2rem;
+      text-align: center;
+      color: #666;
+    }
+
+    /* Add to existing zoom-overlay styles */
+    .zoom-overlay .viewers-section {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+
+      .modal-card {
+        max-height: 95vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="matchs.html">💞 Match</a>
+    <a href="chats.html">💬 Chats</a>
+    <a href="profile.html">👤 Profile</a>
+    <div class="notification-container" id="notificationContainer">
+      <button id="notifBtn" class="notif-btn">🔔
+        <span id="notifCount" class="notif-count">0</span>
+      </button>
+      <div id="notifList" class="notif-list" aria-hidden="true">
+        <div class="header">
+          <strong>Notifications</strong>
+          <div>
+            <button id="closeNotifBtn">Close</button>
+            <button id="deleteAllNotifBtn">Clear All</button>
+          </div>
+        </div>
+        <div id="notifItems">
+          <p>No notifications yet</p>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" id="container">
+    <div class="pull-refresh" id="pullRefresh">
+      <div class="spinner"></div>
+    </div>
+    <div class="stories" id="stories">
+      <div class="story-add" onclick="uploadStory()">+</div>
+    </div>
+    <input type="file" id="storyImage" accept="image/*,video/*" style="display:none;">
+    <div class="post-box create-post">
+      <h3>Create a post</h3>
+      <textarea id="postText" rows="3" placeholder="What's on your mind?"></textarea>
+      <div class="color-palette" id="colorPalette">
+        <div class="color-option" data-color="#ffffff" style="background:#ffffff;border:1px solid #e0e0e0;"></div>
+        <div class="color-option" data-color="#ffebee" style="background:#ffebee;"></div>
+        <div class="color-option" data-color="#e8f5e8" style="background:#e8f5e8;"></div>
+        <div class="color-option" data-color="#e3f2fd" style="background:#e3f2fd;"></div>
+        <div class="color-option" data-color="#fff3e0" style="background:#fff3e0;"></div>
+        <div class="color-option" data-color="#f3e5f5" style="background:#f3e5f5;"></div>
+      </div>
+      <div>
+        <input id="postImage" type="file" accept="image/*,video/*">
+        <input type="text" id="mediaCaption" placeholder="Add a caption for your media..." style="display:none;">
+        <div id="uploadIndicator" style="display:none;color:var(--primary);">Uploading media...</div>
+      </div>
+      <button id="postBtn">Post</button>
+    </div>
+
+    <div id="feed">
+      <div class="loading">Loading posts...</div>
+    </div>
+    <div id="sentinel">Loading more posts...</div>
+  </div>
+
+  <div id="postModalBackdrop" class="modal-backdrop" role="dialog" aria-hidden="true">
+    <div class="modal-card" id="modalCard" role="document">
+      <button id="closePostModal" class="close-modal" title="Close">✕</button>
+      <div class="modal-header">
+        <img id="modalAuthorPhoto" src="" alt="author">
+        <div>
+          <div id="modalAuthorName"></div>
+          <div id="modalTime" class="small"></div>
+        </div>
+        <button id="viewFriendProfile" style="display:none;">View Profile</button>
+      </div>
+      <div class="modal-content">
+        <div class="modal-details-section">
+          <div id="modalText" class="modal-text-content"></div>
+          <div id="modalCaption" class="media-caption" style="display:none;"></div>
+        </div>
+        <div class="modal-media-section" id="modalMedia">
+          <div class="no-media-placeholder" style="display:none;">No media in this post</div>
+        </div>
+        <div class="modal-actions">
+          <button id="modalLikeBtn" onclick="likePost(currentModalPostId)">
+            <span>🤍</span>
+            <span>Like</span>
+          </button>
+          <button onclick="document.getElementById('modalNewComment').focus()">
+            <span>💬</span>
+            <span>Comment</span>
+          </button>
+        </div>
+        <div class="modal-comments-section">
+          <div><strong>Comments</strong></div>
+          <div id="modalComments" class="modal-comments">
+            <div class="empty-state">Loading comments…</div>
+          </div>
+          <div class="modal-comment-input">
+            <input id="modalNewComment" placeholder="Write a comment...">
+            <button id="modalSendComment">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="viewersModal" class="viewers-modal">
+    <div class="viewers-modal-content">
+      <div class="viewers-modal-header">
+        <div class="viewers-modal-title">Viewers</div>
+        <button id="closeViewersModal" class="viewers-modal-close">×</button>
+      </div>
+      <div id="viewersList" class="viewers-list">
+        <div class="no-viewers">No viewers yet</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="storyViewersModal" class="story-viewers-modal">
+    <div class="story-viewers-card">
+      <button id="closeStoryViewers" class="close-modal" title="Close">✕</button>
+      <h3>Story Viewers</h3>
+      <div id="storyViewersList" class="story-viewers-list">
+        <div class="empty-state">No viewers yet</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="zoomOverlay" class="zoom-overlay">
+    <div class="zoom-controls">
+      <a id="zoomDownload" href="#" download>⬇ Download</a>
+      <button id="zoomClose">✕</button>
+    </div>
+    <div class="zoom-reactions" id="zoomReactions"></div>
+  </div>
+
+<audio id="notifSound" preload="auto">
+  <source src="new-notification-021-370045.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Like sound -->
+<audio id="likeSound" src="notification-sound-effect-372475.mp3" preload="auto"></audio>
+<!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <script>
+    /* ----------------------
+       Firebase init
+       ---------------------- */
+    const firebaseConfig = {
+      apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
+      authDomain: "smart-waste-66279.firebaseapp.com",
+      projectId: "smart-waste-66279",
+      storageBucket: "smart-waste-66279.appspot.com",
+      messagingSenderId: "619099585646",
+      appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    /* ----------------------
+       DOM refs & state
+       ---------------------- */
+    const container = document.getElementById('container');
+    const pullRefresh = document.getElementById('pullRefresh');
+    const stories = document.getElementById('stories');
+    const storyImage = document.getElementById('storyImage');
+    const feed = document.getElementById('feed');
+    const postText = document.getElementById('postText');
+    const postImage = document.getElementById('postImage');
+    const postBtn = document.getElementById('postBtn');
+    const uploadIndicator = document.getElementById('uploadIndicator');
+    const colorPalette = document.getElementById('colorPalette');
+    const mediaCaption = document.getElementById('mediaCaption');
+    const sentinel = document.getElementById('sentinel');
+    const modalCard = document.getElementById('modalCard');
+    const storyViewersModal = document.getElementById('storyViewersModal');
+    const storyViewersList = document.getElementById('storyViewersList');
+    const closeStoryViewers = document.getElementById('closeStoryViewers');
+
+    const notifBtn = document.getElementById('notifBtn');
+    const notifCount = document.getElementById('notifCount');
+    const notifList = document.getElementById('notifList');
+    const notifItems = document.getElementById('notifItems');
+    const notifSound = document.getElementById('notifSound');
+    const closeNotifBtn = document.getElementById('closeNotifBtn');
+    const deleteAllNotifBtn = document.getElementById('deleteAllNotifBtn');
+
+    const modalBackdrop = document.getElementById('postModalBackdrop');
+    const modalMedia = document.getElementById('modalMedia');
+    const modalAuthorPhoto = document.getElementById('modalAuthorPhoto');
+    const modalAuthorName = document.getElementById('modalAuthorName');
+    const modalTime = document.getElementById('modalTime');
+    const modalText = document.getElementById('modalText');
+    const modalCaption = document.getElementById('modalCaption');
+    const modalComments = document.getElementById('modalComments');
+    const modalNewComment = document.getElementById('modalNewComment');
+    const modalSendComment = document.getElementById('modalSendComment');
+    const modalLikeBtn = document.getElementById('modalLikeBtn');
+    const closePostModal = document.getElementById('closePostModal');
+    const viewFriendProfile = document.getElementById('viewFriendProfile');
+
+    const zoomOverlay = document.getElementById('zoomOverlay');
+    const zoomReactions = document.getElementById('zoomReactions');
+    const zoomClose = document.getElementById('zoomClose');
+    const zoomDownload = document.getElementById('zoomDownload');
+
+    let currentUser = null;
+    let userCache = {};
+    let lastNotifTime = 0;
+    let currentModalPostId = null;
+    let modalCommentsUnsub = null;
+    let selectedColor = '#ffffff';
+    let postUnsubs = {};
+    let lastVisible = null;
+    let isFetching = false;
+    let hasMorePosts = true;
+    let touchStartY = 0;
+    let currentStoryId = null;
+    let storiesArray = [];
+    let autoNextTimer;
+
+    /* ----------------------
+       Helper functions
+       ---------------------- */
+    function getTimeAgo(timestamp) {
+      if (!timestamp) return '';
+      const now = new Date();
+      const time = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const diffMs = now - time;
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffDays > 0) return `${diffDays}d ago`;
+      if (diffHours > 0) return `${diffHours}h ago`;
+      if (diffMins > 0) return `${diffMins}m ago`;
+      return 'Just now';
+    }
+
+
+    /* ----------------------
+       Pull to Refresh
+       ---------------------- */
+    container.addEventListener('touchstart', e => {
+      if (window.scrollY === 0) {
+        touchStartY = e.touches[0].clientY;
+      }
+    });
+
+    container.addEventListener('touchmove', e => {
+      const touchY = e.touches[0].clientY;
+      const pullDistance = touchY - touchStartY;
+      if (window.scrollY === 0 && pullDistance > 0) {
+        e.preventDefault();
+        if (pullDistance > 100) {
+          pullRefresh.style.top = '0';
+        } else {
+          pullRefresh.style.top = `-${100 - pullDistance}px`;
+        }
+      }
+    });
+
+    container.addEventListener('touchend', () => {
+      if (pullRefresh.style.top === '0') {
+        location.reload(); // Refresh the page
+      }
+      pullRefresh.style.top = '-50px';
+    });
+
+    /* ----------------------
+       Scroll Prevention Functions
+       ---------------------- */
+    function preventBodyScroll() {
+      document.body.classList.add('modal-open');
+      document.body.style.top = `-${window.scrollY}px`;
+    }
+
+    function allowBodyScroll() {
+      const scrollY = document.body.style.top;
+      document.body.classList.remove('modal-open');
+      document.body.style.top = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+
+    /* ----------------------
+       Background Color Selection
+       ---------------------- */
+    colorPalette.addEventListener('click', (e) => {
+      if (e.target.classList.contains('color-option')) {
+        document.querySelectorAll('.color-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        e.target.classList.add('selected');
+        selectedColor = e.target.dataset.color;
+        postText.style.backgroundColor = selectedColor;
+      }
+    });
+
+    /* ----------------------
+       Media Caption Handling
+       ---------------------- */
+    postImage.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        mediaCaption.style.display = 'block';
+      } else {
+        mediaCaption.style.display = 'none';
+      }
+    });
+
+    /* ----------------------
+       Audio unlocking & activity tracking
+       ---------------------- */
+    let audioUnlocked = false;
+    let lastActive = Date.now();
+    const ACTIVITY_TIMEOUT = 1000 * 60 * 3;
+
+    function unlockAudio() {
+      audioUnlocked = true;
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    }
+    window.addEventListener('click', unlockAudio, { once: true });
+    window.addEventListener('keydown', unlockAudio, { once: true });
+    window.addEventListener('touchstart', unlockAudio, { once: true });
+
+    ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'].forEach(ev => {
+      window.addEventListener(ev, () => lastActive = Date.now());
+    });
+    window.addEventListener('focus', () => { lastActive = Date.now(); });
+    window.addEventListener('blur', () => { /* will prevent playing */ });
+
+    /* ----------------------
+       Small helpers
+       ---------------------- */
+    function escapeHtml(text) {
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+    function showToast(msg, t = 2500) {
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style = 'position:fixed;left:50%;transform:translateX(-50%);top:70px;background:var(--primary);color:#fff;padding:8px 12px;border-radius:999px;z-index:3000';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), t);
+    }
+
+    /* ----------------------
+       Stories
+       ---------------------- */
+    async function uploadStory() {
+      storyImage.click();
+    }
+
+    storyImage.addEventListener('change', async (e) => {
+      if (!currentUser) { showToast('Please sign in'); return; }
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const key = 'e26f20d023a0094ee31c68ded33ab41d';
+        const form = new FormData();
+        form.append('image', file);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: 'POST', body: form });
+        const json = await res.json();
+        const mediaUrl = json.data?.url || '';
+        const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const userData = userDoc.exists ? userDoc.data() : {};
+        await db.collection('stories').add({
+          uid: currentUser.uid,
+          author: userData.fullName || 'Anonymous',
+          photoURL: userData.photoURL || '',
+          mediaUrl,
+          mediaType,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('Story uploaded');
+        storyImage.value = '';
+      } catch (e) {
+        console.error('story upload error', e);
+        showToast('Upload failed');
+      }
+    });
+
+    async function reactToStory(storyId, reaction) {
+      if (!currentUser) { showToast('Please sign in'); return; }
+      try {
+        const reactionRef = db.collection('stories').doc(storyId).collection('reactions').doc(currentUser.uid);
+        await reactionRef.set({
+          uid: currentUser.uid,
+          reaction,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        const storyDoc = await db.collection('stories').doc(storyId).get();
+        const storyData = storyDoc.data();
+        if (storyData.uid && storyData.uid !== currentUser.uid) {
+          const senderDoc = await db.collection('users').doc(currentUser.uid).get();
+          await sendNotification(storyData.uid, 'story_reaction', null, senderDoc.exists ? senderDoc.data().fullName : 'Someone', null, storyId);
+        }
+        showToast('Reaction added');
+      } catch (e) {
+        console.error('react to story error', e);
+        showToast('Failed to react');
+      }
+    }
+
+    async function markStoryViewed(storyId, ownerId) {
+      try {
+        const viewerRef = db.collection('stories').doc(storyId).collection('viewers').doc(currentUser.uid);
+        const viewerSnap = await viewerRef.get();
+        if (!viewerSnap.exists) {
+          await viewerRef.set({
+            uid: currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          const senderDoc = await db.collection('users').doc(currentUser.uid).get();
+          await sendNotification(ownerId, 'story_view', null, senderDoc.exists ? senderDoc.data().fullName : 'Someone', null, storyId);
+        }
+      } catch (e) {
+        console.error('mark story viewed error', e);
+      }
+    }
+
+    function openStoryViewer(currentIndex) {
+    if (currentIndex < 0 || currentIndex >= storiesArray.length) return;
+    
+    // Clear the overlay first
+    zoomOverlay.innerHTML = '';
+    zoomOverlay.style.display = 'flex';
+
+    const story = storiesArray[currentIndex];
+    const { mediaType, mediaUrl, uid: ownerId, id: storyId } = story;
+    currentStoryId = storyId;
+
+    // Create controls container
+    const controls = document.createElement('div');
+    controls.className = 'zoom-controls';
+    
+    // Download button
+    const downloadBtn = document.createElement('a');
+    downloadBtn.href = mediaUrl;
+    downloadBtn.download = 'story';
+    downloadBtn.textContent = '⬇ Download';
+    downloadBtn.style.background = 'rgba(255,255,255,0.12)';
+    downloadBtn.style.color = '#fff';
+    downloadBtn.style.padding = '8px';
+    downloadBtn.style.borderRadius = '8px';
+    downloadBtn.style.textDecoration = 'none';
+    
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.background = 'rgba(255,255,255,0.12)';
+    closeBtn.style.color = '#fff';
+    closeBtn.style.padding = '8px';
+    closeBtn.style.borderRadius = '8px';
+    closeBtn.style.border = 'none';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.onclick = () => {
+        zoomOverlay.style.display = 'none';
+        zoomOverlay.innerHTML = '';
+        currentStoryId = null;
+        clearTimeout(autoNextTimer);
+    };
+    
+    controls.appendChild(downloadBtn);
+    controls.appendChild(closeBtn);
+    zoomOverlay.appendChild(controls);
+
+    // Create media element
+    let mediaEl;
+    if (mediaType === 'image') {
+        mediaEl = document.createElement('img');
+        mediaEl.src = mediaUrl;
+        mediaEl.alt = 'story';
+        mediaEl.style.maxWidth = '90%';
+        mediaEl.style.maxHeight = '70%';
+        mediaEl.style.objectFit = 'contain';
+    } else {
+        mediaEl = document.createElement('video');
+        mediaEl.src = mediaUrl;
+        mediaEl.controls = true;
+        mediaEl.autoplay = true;
+        mediaEl.style.maxWidth = '90%';
+        mediaEl.style.maxHeight = '70%';
+    }
+    
+    zoomOverlay.appendChild(mediaEl);
+
+    // Create viewers section - ONLY show if user owns the story
+    const viewersSection = document.createElement('div');
+    viewersSection.className = 'viewers-section';
+    
+    // Check if current user owns this story
+    if (currentUser && currentUser.uid === ownerId) {
+        // Fetch viewers count and create viewers button
+        db.collection('stories').doc(storyId).collection('viewers').get().then(snap => {
+            const viewersCount = snap.size;
+            
+            const viewersButton = document.createElement('button');
+            viewersButton.className = 'viewers-button';
+            viewersButton.innerHTML = `👁️ Viewers ${viewersCount > 0 ? `<span class="viewers-count">${viewersCount}</span>` : ''}`;
+            viewersButton.onclick = () => openStoryViewers(storyId);
+            
+            viewersSection.appendChild(viewersButton);
+        }).catch(error => {
+            console.error('Error fetching viewers count:', error);
+        });
+        
+        zoomOverlay.appendChild(viewersSection);
+    }
+
+    // Add reactions if not owner
+    if (currentUser && currentUser.uid !== ownerId) {
+        const reactionsDiv = document.createElement('div');
+        reactionsDiv.className = 'zoom-reactions';
+        
+        const reactions = ['😊', '❤️', '🔥'];
+        reactions.forEach(reaction => {
+            const reactionBtn = document.createElement('button');
+            reactionBtn.innerHTML = reaction;
+            reactionBtn.style.background = 'none';
+            reactionBtn.style.border = 'none';
+            reactionBtn.style.fontSize = '2rem';
+            reactionBtn.style.cursor = 'pointer';
+            reactionBtn.onclick = () => reactToStory(storyId, reaction);
+            
+            reactionsDiv.appendChild(reactionBtn);
+        });
+        
+        zoomOverlay.appendChild(reactionsDiv);
+        markStoryViewed(storyId, ownerId);
+    }
+
+    // Progress bar
+    const progress = document.createElement('div');
+    progress.className = 'story-progress';
+    const bar = document.createElement('div');
+    bar.className = 'story-progress-bar';
+    progress.appendChild(bar);
+    zoomOverlay.appendChild(progress);
+
+    // Start progress bar animation
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    setTimeout(() => {
+        bar.style.transition = 'width 30s linear';
+        bar.style.width = '100%';
+    }, 100);
+
+    // Auto-advance timer
+    clearTimeout(autoNextTimer);
+    autoNextTimer = setTimeout(() => {
+        goToNext(currentIndex);
+    }, 30000);
+
+    // Navigation arrows
+    if (currentIndex > 0) {
+        const leftArrow = document.createElement('button');
+        leftArrow.className = 'nav-arrow left-arrow';
+        leftArrow.textContent = '◀';
+        leftArrow.onclick = () => goToPrev(currentIndex);
+        zoomOverlay.appendChild(leftArrow);
+    }
+
+    if (currentIndex < storiesArray.length - 1) {
+        const rightArrow = document.createElement('button');
+        rightArrow.className = 'nav-arrow right-arrow';
+        rightArrow.textContent = '▶';
+        rightArrow.onclick = () => goToNext(currentIndex);
+        zoomOverlay.appendChild(rightArrow);
+    }
+}
+
+    function goToNext(currentIndex) {
+      clearTimeout(autoNextTimer);
+      if (currentIndex < storiesArray.length - 1) {
+        openStoryViewer(currentIndex + 1);
+      } else {
+        zoomOverlay.style.display = 'none';
+        currentStoryId = null;
+      }
+    }
+
+    function goToPrev(currentIndex) {
+      clearTimeout(autoNextTimer);
+      if (currentIndex > 0) {
+        openStoryViewer(currentIndex - 1);
+      }
+    }
+
+/* ----------------------
+   Enhanced Story Viewers - Modal on top of story
+   ---------------------- */
+
+// Initialize viewers modal only once
+function initializeViewersModal() {
+    // Check if modal already exists
+    if (!document.getElementById('viewersModal')) {
+        const viewersModalHTML = `
+        <div id="viewersModal" class="viewers-modal">
+            <div class="viewers-modal-content">
+                <div class="viewers-modal-header">
+                    <div class="viewers-modal-title">Story Viewers</div>
+                    <button id="closeViewersModal" class="viewers-modal-close" title="Close">×</button>
+                </div>
+                <div id="viewersList" class="viewers-list">
+                    <div class="no-viewers">No viewers yet</div>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', viewersModalHTML);
+    }
+
+    // Add viewers modal CSS only once
+    if (!document.querySelector('#viewers-modal-css')) {
+        const viewersModalCSS = `
+        .viewers-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 4000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .viewers-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .viewers-modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+        }
+
+        .viewers-modal-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .viewers-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .viewers-modal-close:hover {
+            background: #e9ecef;
+        }
+
+        .viewers-list {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .viewer-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 12px;
+        }
+
+        .viewer-item:last-child {
+            border-bottom: none;
+        }
+
+        .viewer-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .viewer-info {
+            flex: 1;
+        }
+
+        .viewer-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .viewer-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .viewer-reaction {
+            font-size: 1rem;
+        }
+
+        .no-viewers {
+            padding: 2rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .viewers-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.2s;
+        }
+
+        .viewers-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .viewers-count {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+
+        .viewers-section {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Update zoom-overlay z-index */
+        .zoom-overlay {
+            z-index: 3000;
+        }
+        `;
+        
+        const styleElement = document.createElement('style');
+        styleElement.id = 'viewers-modal-css';
+        styleElement.textContent = viewersModalCSS;
+        document.head.appendChild(styleElement);
+    }
+
+    // Setup event listeners
+    setupViewersModalEvents();
+}
+
+function setupViewersModalEvents() {
+    // Close viewers modal event
+    const closeViewersModalBtn = document.getElementById('closeViewersModal');
+    if (closeViewersModalBtn) {
+        closeViewersModalBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeViewersModal();
+        });
+    }
+    
+    // Close viewers modal when clicking outside
+    const viewersModal = document.getElementById('viewersModal');
+    if (viewersModal) {
+        viewersModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeViewersModal();
+            }
+        });
+    }
+    
+    // Close viewers modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('viewersModal').style.display === 'flex') {
+            closeViewersModal();
+        }
+    });
+}
+
+async function openStoryViewers(storyId) {
+    // Initialize modal if not already done
+    if (!document.getElementById('viewersModal')) {
+        initializeViewersModal();
+    }
+    
+    const viewersModal = document.getElementById('viewersModal');
+    const viewersList = document.getElementById('viewersList');
+    
+    if (!viewersModal || !viewersList) {
+        console.error('Viewers modal elements not found');
+        return;
+    }
+    
+    viewersList.innerHTML = '<div class="no-viewers">Loading viewers...</div>';
+    viewersModal.style.display = 'flex';
+    
+    try {
+        // First, get the story to check ownership
+        const storyDoc = await db.collection('stories').doc(storyId).get();
+        if (!storyDoc.exists) {
+            viewersList.innerHTML = '<div class="no-viewers">Story not found</div>';
+            return;
+        }
+        
+        const storyData = storyDoc.data();
+        
+        // Check if current user owns this story
+        if (storyData.uid !== currentUser.uid) {
+            viewersList.innerHTML = '<div class="no-viewers">You can only view viewers for your own stories</div>';
+            return;
+        }
+        
+        const [viewersSnap, reactionsSnap] = await Promise.all([
+            db.collection('stories').doc(storyId).collection('viewers').orderBy('createdAt', 'desc').get(),
+            db.collection('stories').doc(storyId).collection('reactions').get()
+        ]);
+        
+        viewersList.innerHTML = '';
+        
+        if (viewersSnap.empty) {
+            viewersList.innerHTML = '<div class="no-viewers">No viewers yet</div>';
+            return;
+        }
+        
+        // Create a map of reactions by user ID
+        const reactionsMap = {};
+        reactionsSnap.forEach(doc => {
+            const reaction = doc.data();
+            reactionsMap[reaction.uid] = reaction.reaction;
+        });
+        
+        // Process viewers and fetch user data
+        const viewerPromises = [];
+        const viewersData = [];
+        
+        viewersSnap.forEach(doc => {
+            const viewer = doc.data();
+            viewerPromises.push(
+                getUserData(viewer.uid).then(userData => {
+                    viewersData.push({
+                        ...viewer,
+                        userData: userData || {},
+                        reaction: reactionsMap[viewer.uid] || ''
+                    });
+                }).catch(error => {
+                    console.error('Error fetching user data:', error);
+                    // Add viewer with minimal data
+                    viewersData.push({
+                        ...viewer,
+                        userData: { fullName: 'User' },
+                        reaction: reactionsMap[viewer.uid] || ''
+                    });
+                })
+            );
+        });
+        
+        await Promise.all(viewerPromises);
+        
+        // Create viewer list items
+        viewersData.forEach(viewer => {
+            const userData = viewer.userData || {};
+            const viewerItem = document.createElement('div');
+            viewerItem.className = 'viewer-item';
+            
+            const timeAgo = getTimeAgo(viewer.createdAt);
+            
+            viewerItem.innerHTML = `
+                <img src="${userData.photoURL || 'https://via.placeholder.com/44?text=U'}" 
+                     alt="${userData.fullName || 'User'}" 
+                     class="viewer-avatar"
+                     onerror="this.src='https://via.placeholder.com/44?text=U'">
+                <div class="viewer-info">
+                    <div class="viewer-name">${userData.fullName || 'User'}</div>
+                    <div class="viewer-meta">
+                        <span>${timeAgo}</span>
+                        ${viewer.reaction ? `<span class="viewer-reaction">${viewer.reaction}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            viewersList.appendChild(viewerItem);
+        });
+        
+    } catch (error) {
+        console.error('Error loading viewers:', error);
+        viewersList.innerHTML = '<div class="no-viewers">Failed to load viewers</div>';
+    }
+}
+
+function closeViewersModal() {
+    const viewersModal = document.getElementById('viewersModal');
+    if (viewersModal) {
+        viewersModal.style.display = 'none';
+    }
+}
+
+function openStoryViewer(currentIndex) {
+    if (currentIndex < 0 || currentIndex >= storiesArray.length) return;
+    
+    // Initialize modal if not already done
+    if (!document.getElementById('viewersModal')) {
+        initializeViewersModal();
+    }
+    
+    // Clear the overlay first
+    zoomOverlay.innerHTML = '';
+    zoomOverlay.style.display = 'flex';
+
+    const story = storiesArray[currentIndex];
+    const { mediaType, mediaUrl, uid: ownerId, id: storyId } = story;
+    currentStoryId = storyId;
+
+    // Create controls container
+    const controls = document.createElement('div');
+    controls.className = 'zoom-controls';
+    
+    // Download button
+    const downloadBtn = document.createElement('a');
+    downloadBtn.href = mediaUrl;
+    downloadBtn.download = 'story';
+    downloadBtn.textContent = '⬇ Download';
+    downloadBtn.style.background = 'rgba(255,255,255,0.12)';
+    downloadBtn.style.color = '#fff';
+    downloadBtn.style.padding = '8px';
+    downloadBtn.style.borderRadius = '8px';
+    downloadBtn.style.textDecoration = 'none';
+    
+    // Close button - now closes both story and viewers modal if open
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.background = 'rgba(255,255,255,0.12)';
+    closeBtn.style.color = '#fff';
+    closeBtn.style.padding = '8px';
+    closeBtn.style.borderRadius = '8px';
+    closeBtn.style.border = 'none';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.onclick = () => {
+        zoomOverlay.style.display = 'none';
+        zoomOverlay.innerHTML = '';
+        currentStoryId = null;
+        clearTimeout(autoNextTimer);
+        closeViewersModal(); // Also close viewers modal if open
+    };
+    
+    controls.appendChild(downloadBtn);
+    controls.appendChild(closeBtn);
+    zoomOverlay.appendChild(controls);
+
+    // Create media element
+    let mediaEl;
+    if (mediaType === 'image') {
+        mediaEl = document.createElement('img');
+        mediaEl.src = mediaUrl;
+        mediaEl.alt = 'story';
+        mediaEl.style.maxWidth = '90%';
+        mediaEl.style.maxHeight = '70%';
+        mediaEl.style.objectFit = 'contain';
+    } else {
+        mediaEl = document.createElement('video');
+        mediaEl.src = mediaUrl;
+        mediaEl.controls = true;
+        mediaEl.autoplay = true;
+        mediaEl.style.maxWidth = '90%';
+        mediaEl.style.maxHeight = '70%';
+    }
+    
+    zoomOverlay.appendChild(mediaEl);
+
+    // Create viewers section - ONLY show if user owns the story
+    const viewersSection = document.createElement('div');
+    viewersSection.className = 'viewers-section';
+    
+    // Check if current user owns this story
+    if (currentUser && currentUser.uid === ownerId) {
+        // Fetch viewers count and create viewers button
+        db.collection('stories').doc(storyId).collection('viewers').get().then(snap => {
+            const viewersCount = snap.size;
+            
+            const viewersButton = document.createElement('button');
+            viewersButton.className = 'viewers-button';
+            viewersButton.innerHTML = `👁️ Viewers ${viewersCount > 0 ? `<span class="viewers-count">${viewersCount}</span>` : ''}`;
+            viewersButton.onclick = (e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                openStoryViewers(storyId);
+            };
+            
+            viewersSection.appendChild(viewersButton);
+        }).catch(error => {
+            console.error('Error fetching viewers count:', error);
+        });
+        
+        zoomOverlay.appendChild(viewersSection);
+    }
+
+    // Add reactions if not owner
+    if (currentUser && currentUser.uid !== ownerId) {
+        const reactionsDiv = document.createElement('div');
+        reactionsDiv.className = 'zoom-reactions';
+        
+        const reactions = ['😊', '❤️', '🔥'];
+        reactions.forEach(reaction => {
+            const reactionBtn = document.createElement('button');
+            reactionBtn.innerHTML = reaction;
+            reactionBtn.style.background = 'none';
+            reactionBtn.style.border = 'none';
+            reactionBtn.style.fontSize = '2rem';
+            reactionBtn.style.cursor = 'pointer';
+            reactionBtn.onclick = (e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                reactToStory(storyId, reaction);
+            };
+            
+            reactionsDiv.appendChild(reactionBtn);
+        });
+        
+        zoomOverlay.appendChild(reactionsDiv);
+        markStoryViewed(storyId, ownerId);
+    }
+
+    // Progress bar
+    const progress = document.createElement('div');
+    progress.className = 'story-progress';
+    const bar = document.createElement('div');
+    bar.className = 'story-progress-bar';
+    progress.appendChild(bar);
+    zoomOverlay.appendChild(progress);
+
+    // Start progress bar animation
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    setTimeout(() => {
+        bar.style.transition = 'width 30s linear';
+        bar.style.width = '100%';
+    }, 100);
+
+    // Auto-advance timer
+    clearTimeout(autoNextTimer);
+    autoNextTimer = setTimeout(() => {
+        goToNext(currentIndex);
+    }, 30000);
+
+    // Navigation arrows
+    if (currentIndex > 0) {
+        const leftArrow = document.createElement('button');
+        leftArrow.className = 'nav-arrow left-arrow';
+        leftArrow.textContent = '◀';
+        leftArrow.onclick = (e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            goToPrev(currentIndex);
+        };
+        zoomOverlay.appendChild(leftArrow);
+    }
+
+    if (currentIndex < storiesArray.length - 1) {
+        const rightArrow = document.createElement('button');
+        rightArrow.className = 'nav-arrow right-arrow';
+        rightArrow.textContent = '▶';
+        rightArrow.onclick = (e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            goToNext(currentIndex);
+        };
+        zoomOverlay.appendChild(rightArrow);
+    }
+}
+
+// Call initializeViewersModal when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeViewersModal();
+});
+
+// Also call it when auth state changes to ensure it's initialized
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        // Small delay to ensure DOM is ready
+        setTimeout(initializeViewersModal, 100);
+    }
+});
+
+    // Modified loadStories function to include usernames, timestamps, and sorting
+    function loadStories() {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    db.collection('stories').where('createdAt', '>', twentyFourHoursAgo).orderBy('createdAt', 'desc').onSnapshot(async snapshot => {
+        // Clear stories container
+        stories.innerHTML = '<div class="story-add" onclick="uploadStory()">+</div>';
+
+        if (snapshot.empty) {
+            storiesArray = []; // Clear the global array
+            return;
+        }
+
+        const tempStoriesArray = [];
+        
+        // Process each story
+        for (const doc of snapshot.docs) {
+            const story = { id: doc.id, ...doc.data() };
+            
+            try {
+                if (currentUser) {
+                    const viewerDoc = await db.collection('stories').doc(story.id).collection('viewers').doc(currentUser.uid).get();
+                    story.viewed = viewerDoc.exists;
+                    
+                    // Only fetch viewers count if user owns the story
+                    if (story.uid === currentUser.uid) {
+                        const viewersSnap = await db.collection('stories').doc(story.id).collection('viewers').get();
+                        story.viewersCount = viewersSnap.size;
+                    } else {
+                        story.viewersCount = 0; // Don't show count for others' stories
+                    }
+                } else {
+                    story.viewed = false;
+                    story.viewersCount = 0;
+                }
+            } catch (e) {
+                console.error('Error processing story:', e);
+                story.viewed = false;
+                story.viewersCount = 0;
+            }
+            
+            tempStoriesArray.push(story);
+        }
+
+        // Sort stories: unseen first, then seen, with newest first in each group
+        storiesArray = tempStoriesArray.sort((a, b) => {
+            if (a.viewed === b.viewed) {
+                const timeA = a.createdAt?.toDate?.() || new Date(0);
+                const timeB = b.createdAt?.toDate?.() || new Date(0);
+                return timeB - timeA;
+            }
+            return a.viewed ? 1 : -1;
+        });
+
+        // Create story elements
+        storiesArray.forEach((story, index) => {
+            const storyElement = document.createElement('div');
+            storyElement.className = 'story-item';
+            
+            if (story.viewed) {
+                storyElement.style.opacity = '0.7';
+            }
+            
+            // Only show viewers badge if user owns the story AND there are viewers
+            let viewersBadge = '';
+            if (currentUser && story.uid === currentUser.uid && story.viewersCount > 0) {
+                viewersBadge = `
+                    <div style="position:absolute; bottom:-5px; right:-5px; background:var(--primary); color:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:2px solid white;">
+                        ${story.viewersCount}
+                    </div>
+                `;
+            }
+            
+            storyElement.innerHTML = `
+                <div class="story-image-container">
+                    <img src="${story.mediaUrl}" alt="story" onerror="this.src='https://via.placeholder.com/60'">
+                    ${viewersBadge}
+                </div>
+                <div class="story-username">${story.author || 'User'}</div>
+                <div class="story-timestamp">${getTimeAgo(story.createdAt)}</div>
+            `;
+            
+            storyElement.onclick = (e) => {
+                if (e.target.tagName !== 'BUTTON') {
+                    openStoryViewer(index);
+                }
+            };
+            
+            stories.appendChild(storyElement);
+        });
+    }, error => {
+        console.error('Error loading stories:', error);
+    });
+}
+
+// Also update the goToNext and goToPrev functions to handle the global storiesArray
+function goToNext(currentIndex) {
+    clearTimeout(autoNextTimer);
+    if (currentIndex < storiesArray.length - 1) {
+        openStoryViewer(currentIndex + 1);
+    } else {
+        zoomOverlay.style.display = 'none';
+        currentStoryId = null;
+    }
+}
+
+function goToPrev(currentIndex) {
+    clearTimeout(autoNextTimer);
+    if (currentIndex > 0) {
+        openStoryViewer(currentIndex - 1);
+    }
+}
+
+// Make sure the viewers modal HTML is properly added
+// Add this to your HTML if not already present
+const viewersModalHTML = `
+<div id="viewersModal" class="viewers-modal">
+    <div class="viewers-modal-content">
+        <div class="viewers-modal-header">
+            <div class="viewers-modal-title">Story Viewers</div>
+            <button id="closeViewersModal" class="viewers-modal-close">×</button>
+        </div>
+        <div id="viewersList" class="viewers-list">
+            <div class="no-viewers">No viewers yet</div>
+        </div>
+    </div>
+</div>
+`;
+
+// Add event listeners for the viewers modal
+document.addEventListener('DOMContentLoaded', function() {
+    // Add the viewers modal to the body if it doesn't exist
+    if (!document.getElementById('viewersModal')) {
+        document.body.insertAdjacentHTML('beforeend', viewersModalHTML);
+    }
+    
+    // Close viewers modal event
+    const closeViewersModalBtn = document.getElementById('closeViewersModal');
+    if (closeViewersModalBtn) {
+        closeViewersModalBtn.addEventListener('click', function() {
+            document.getElementById('viewersModal').style.display = 'none';
+            allowBodyScroll();
+        });
+    }
+    
+    // Close viewers modal when clicking outside
+    const viewersModal = document.getElementById('viewersModal');
+    if (viewersModal) {
+        viewersModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+                allowBodyScroll();
+            }
+        });
+    }
+});
+
+// Debug function to check if stories are loading properly
+function debugStories() {
+    console.log('Stories Array:', storiesArray);
+    console.log('Current User:', currentUser);
+    console.log('Stories Container:', stories);
+}
+
+// You can call debugStories() in the console to check what's happening
+    /* ----------------------
+       Notifications listener
+       ---------------------- */
+    function listenForNotifications() {
+  if (!currentUser) return;
+  db.collection('notifications')
+    .where('receiver', '==', currentUser.uid)
+    .orderBy('createdAt', 'desc')
+    .limit(50)
+    .onSnapshot(snapshot => {
+      if (!snapshot || snapshot.empty) {
+        notifItems.innerHTML = '<p style="padding:10px;color:#666">No notifications yet</p>';
+        notifCount.style.display = 'none';
+        return;
+      }
+
+      notifItems.innerHTML = '';
+      let newCount = 0;
+      const now = Date.now();
+
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          const n = change.doc.data() || {};
+          const notifTime = (n.createdAt && typeof n.createdAt.toMillis === 'function') ? n.createdAt.toMillis() : now;
+          // Only play sound for notifications newer than the last one and within the last 5 seconds
+          if (notifTime > lastNotifTime && (now - notifTime) < 5000) {
+            const activeRecently = (Date.now() - lastActive) < ACTIVITY_TIMEOUT;
+            if (audioUnlocked && activeRecently) {
+              notifSound.currentTime = 0;
+              notifSound.play().catch(() => {});
+              if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                try {
+                  new Notification("New Notification", {
+                    body: `${n.senderName || 'Someone'} ${n.type.replace('story_', '')} your story`,
+                    icon: 'icon.png'
+                  });
+                } catch (e) {}
+              }
+            }
+            lastNotifTime = notifTime;
+          }
+        }
+      });
+
+      snapshot.forEach(doc => {
+        const n = doc.data() || {};
+        const item = document.createElement('div');
+        item.className = 'notif-item' + (n.read ? '' : ' unread');
+        const time = (n.createdAt && typeof n.createdAt.toDate === 'function') ? n.createdAt.toDate().toLocaleString() : '';
+        const text = n.type === 'like' ? 'liked your post ❤️' :
+                     n.type === 'comment' ? 'commented on your post 💬' :
+                     n.type === 'reply' ? 'replied to your comment 💬' :
+                     n.type === 'story_view' ? 'viewed your story 👀' :
+                     n.type === 'story_reaction' ? `reacted to your story ${n.reaction || ''}` :
+                     'started following you 👤';
+        item.innerHTML = `<strong>${n.senderName || 'Someone'}</strong> ${text}<br><small style="color:#666">${time}</small>`;
+        item.addEventListener('click', async () => {
+          try {
+            await db.collection('notifications').doc(doc.id).update({ read: true });
+          } catch (e) {}
+          notifList.style.display = 'none';
+          if (n.postId) openPostModal(n.postId, n.commentId || null);
+          else if (n.storyId) openStoryViewers(n.storyId);
+          else if (n.sender) {
+            window.location.href = `user.html?uid=${n.sender}`;
+          }
+        });
+        notifItems.appendChild(item);
+        if (!n.read) newCount++;
+      });
+
+      if (newCount > 0) {
+        notifCount.style.display = 'flex';
+        notifCount.textContent = newCount > 99 ? '99+' : newCount;
+      } else {
+        notifCount.style.display = 'none';
+      }
+    }, err => console.error('Notification listener error:', err));
+}
+
+    /* ----------------------
+       Notification UI interactions
+       ---------------------- */
+    notifBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = getComputedStyle(notifList).display === 'block';
+      notifList.style.display = open ? 'none' : 'block';
+      if (!open) markAllAsRead();
+    });
+
+    closeNotifBtn.addEventListener('click', () => notifList.style.display = 'none');
+    document.addEventListener('click', (e) => {
+      if (!notifList.contains(e.target) && e.target !== notifBtn && !notifBtn.contains(e.target))
+        notifList.style.display = 'none';
+    });
+
+    async function markAllAsRead() {
+      if (!currentUser) return;
+      try {
+        const snap = await db.collection('notifications').where('receiver', '==', currentUser.uid).where('read', '==', false).get();
+        if (snap.empty) {
+          notifCount.style.display = 'none';
+          return;
+        }
+        const batch = db.batch();
+        snap.forEach(d => batch.update(d.ref, { read: true }));
+        await batch.commit();
+        notifCount.style.display = 'none';
+      } catch (e) {
+        console.error('mark all read error', e);
+      }
+    }
+
+    async function deleteAllNotifications() {
+      if (!currentUser) return;
+      if (!confirm('Permanently delete all notifications?')) return;
+      try {
+        const snap = await db.collection('notifications').where('receiver', '==', currentUser.uid).get();
+        if (snap.empty) {
+          alert('No notifications');
+          return;
+        }
+        const batch = db.batch();
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+        notifItems.innerHTML = '<p style="padding:10px;color:#666">No notifications yet</p>';
+        notifCount.style.display = 'none';
+        alert('Deleted');
+      } catch (e) {
+        console.error('delete all notif error', e);
+        alert('Failed to delete');
+      }
+    }
+
+    deleteAllNotifBtn.addEventListener('click', deleteAllNotifications);
+
+    /* ----------------------
+       Posts creation
+       ---------------------- */
+    postBtn.addEventListener('click', async () => {
+      if (!currentUser) {
+        showToast('Please sign in');
+        return;
+      }
+      const text = postText.value.trim();
+      const file = postImage.files[0];
+      const caption = mediaCaption.value.trim();
+      if (!text && !file) {
+        showToast('Write something or add media');
+        return;
+      }
+      postBtn.disabled = true;
+      postBtn.textContent = 'Posting...';
+      try {
+        let mediaUrl = '', mediaType = '';
+        if (file) {
+          uploadIndicator.style.display = 'block';
+          const key = 'e26f20d023a0094ee31c68ded33ab41d';
+          const form = new FormData();
+          form.append('image', file);
+          const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: 'POST', body: form });
+          const json = await res.json();
+          mediaUrl = json.data?.url || '';
+          mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+          uploadIndicator.style.display = 'none';
+        }
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const userData = userDoc.exists ? userDoc.data() : {};
+        const newRef = db.collection('posts').doc();
+        await newRef.set({
+          uid: currentUser.uid,
+          author: userData.fullName || 'Anonymous',
+          photoURL: userData.photoURL || '',
+          text: escapeHtml(text),
+          backgroundColor: selectedColor,
+          mediaUrl,
+          mediaType,
+          mediaCaption: caption,
+          likes: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        await db.collection('users').doc(currentUser.uid).collection('posts').doc(newRef.id).set({
+          text: escapeHtml(text),
+          backgroundColor: selectedColor,
+          mediaUrl,
+          mediaType,
+          mediaCaption: caption,
+          likes: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        postText.value = '';
+        postImage.value = '';
+        mediaCaption.value = '';
+        mediaCaption.style.display = 'none';
+        postText.style.backgroundColor = '#ffffff';
+        selectedColor = '#ffffff';
+        document.querySelectorAll('.color-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        showToast('Posted');
+      } catch (e) {
+        console.error('post error', e);
+        showToast('Post failed');
+      } finally {
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post';
+      }
+    });
+
+    /* ----------------------
+       Infinite Scroll Feed
+       ---------------------- */
+    function loadFeed() {
+  feed.innerHTML = '<div class="loading">Loading posts...</div>';
+  let firstQuery = db.collection('posts').orderBy('createdAt', 'desc').limit(10);
+
+  function fetchPosts(query) {
+    isFetching = true;
+    sentinel.textContent = 'Loading more posts...';
+    query.get().then(snapshot => {
+      if (snapshot.empty) {
+        feed.innerHTML = '<div class="empty-state"><h3>No posts yet</h3><p>Be the first!</p></div>';
+        sentinel.textContent = '';
+        hasMorePosts = false;
+        isFetching = false;
+        return;
+      }
+
+      if (feed.querySelector('.loading')) {
+        feed.innerHTML = '';
+      }
+
+      snapshot.forEach(doc => {
+        const p = doc.data();
+        const postId = doc.id;
+        const div = document.createElement('div');
+        div.className = 'feed-post';
+        div.id = `post-${postId}`;
+
+        let mediaHTML = '';
+        if (p.mediaUrl) {
+          if (p.mediaType === 'video') mediaHTML = `<video src="${p.mediaUrl}" controls style="width:100%;border-radius:8px"></video>`;
+          else mediaHTML = `<img src="${p.mediaUrl}" style="width:100%;border-radius:8px" alt="post">`;
+          if (p.mediaCaption) {
+            mediaHTML += `<div class="media-caption">${escapeHtml(p.mediaCaption)}</div>`;
+          }
+        } else {
+          mediaHTML = `<div style="padding:18px;border-radius:8px;background:var(--gradient-no-media);text-align:center;font-weight:600;">${p.text ? '' : 'No media'}</div>`;
+        }
+
+        let textHTML = '';
+        if (p.text) {
+          const bgColor = p.backgroundColor || '#ffffff';
+          textHTML = `<div class="text-post" style="background-color:${bgColor}" onclick="openPostModal('${postId}')">${p.text}</div>`;
+        }
+
+        div.innerHTML = `
+          <div class="user">
+            <a href="user.html?uid=${p.uid}">
+              <img src="${p.photoURL || 'https://via.placeholder.com/44'}" alt="${p.author}">
+              <strong>${p.author}</strong>
+            </a>
+          </div>
+          ${textHTML}
+          <div class="media-wrapper" onclick="openPostModal('${postId}')">
+            ${mediaHTML}
+          </div>
+          <div class="actions">
+            <button id="likeBtn-${postId}" onclick="likePost('${postId}')">
+              <span id="likeIcon-${postId}">🤍</span> 
+              <span id="likeCount-${postId}">${p.likes?.length || 0}</span>
+            </button>
+            <button id="commentBtn-${postId}" onclick="toggleComments('${postId}')">💬 <span id="commentCount-${postId}">0</span></button>
+          </div>
+          <div id="comments-${postId}" class="comments-section" style="display:none">
+            <div class="comments-header"><strong>Comments</strong></div>
+            <div class="comments-list"></div>
+            <div class="comment-input">
+              <input id="newComment-${postId}" placeholder="Write a comment...">
+              <button onclick="sendComment('${postId}')">Send</button>
+            </div>
+          </div>
+        `;
+        feed.appendChild(div);
+        loadCommentsCount(postId);
+
+        // Add real-time listener for likes
+        const unsub = db.collection('posts').doc(postId).onSnapshot(docSnap => {
+          if (docSnap.exists) {
+            const data = docSnap.data();
+            const likes = data.likes || [];
+            const likeCountEl = document.getElementById(`likeCount-${postId}`);
+            const likeIconEl = document.getElementById(`likeIcon-${postId}`);
+            if (likeCountEl) likeCountEl.textContent = likes.length;
+            if (likeIconEl) {
+              likeIconEl.textContent = currentUser && likes.includes(currentUser.uid) ? '❤️' : '🤍';
+            }
+          }
+        }, err => console.error('like listener err', err));
+        postUnsubs[postId] = postUnsubs[postId] || [];
+        postUnsubs[postId].push(unsub);
+      });
+
+      if (snapshot.size < 10) {
+        hasMorePosts = false;
+        sentinel.textContent = 'No more posts';
+      }
+      isFetching = false;
+    }).catch(err => {
+      console.error('load feed err', err);
+      feed.innerHTML = '<div class="empty-state"><h3>Error loading posts</h3></div>';
+      sentinel.textContent = '';
+      isFetching = false;
+    });
+  }
+
+  // Initial fetch
+  fetchPosts(firstQuery);
+
+  // IntersectionObserver for infinite scroll
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && hasMorePosts && !isFetching) {
+      const nextQuery = db.collection('posts').orderBy('createdAt', 'desc').startAfter(lastVisible).limit(10);
+      fetchPosts(nextQuery);
+    }
+  }, { threshold: 0.1 });
+
+  observer.observe(sentinel);
+
+  // Cleanup on page leave
+  window.addEventListener('beforeunload', () => {
+    Object.keys(postUnsubs).forEach(postId => {
+      postUnsubs[postId].forEach(unsub => unsub());
+    });
+  });
+}
+
+    function loadCommentsCount(postId) {
+      const unsub = db.collection('posts').doc(postId).collection('comments').onSnapshot(snap => {
+        const btn = document.getElementById(`commentCount-${postId}`);
+        if (btn) btn.textContent = snap.size;
+      }, err => console.error('comments count err', err));
+      postUnsubs[postId] = postUnsubs[postId] || [];
+      postUnsubs[postId].push(unsub);
+    }
+
+    /* ----------------------
+       Comments on Feed
+       ---------------------- */
+    function toggleComments(postId) {
+      const div = document.getElementById(`comments-${postId}`);
+      const shown = div.style.display === 'block';
+      div.style.display = shown ? 'none' : 'block';
+      if (shown) {
+        if (postUnsubs[postId]) {
+          postUnsubs[postId].forEach(unsub => unsub());
+          delete postUnsubs[postId];
+        }
+      } else {
+        loadFeedComments(postId);
+      }
+    }
+
+    function loadFeedComments(postId) {
+      const list = document.querySelector(`#comments-${postId} .comments-list`);
+      list.innerHTML = '<div class="empty-state">Loading...</div>';
+      postUnsubs[postId] = [];
+      const commentsUnsub = db.collection('posts').doc(postId).collection('comments').orderBy('createdAt', 'asc')
+        .onSnapshot(snap => {
+          list.innerHTML = '';
+          if (snap.empty) {
+            list.innerHTML = '<div class="empty-state">No comments yet. Be the first!</div>';
+            return;
+          }
+          snap.forEach(d => {
+            const c = d.data();
+            const cid = d.id;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'comment';
+            const commenterName = userCache[c.uid]?.fullName || 'User';
+            const meta = document.createElement('div');
+            meta.className = 'meta small';
+            meta.textContent = `${commenterName} · ${c.createdAt && typeof c.createdAt.toDate === 'function' ? c.createdAt.toDate().toLocaleString() : ''}`;
+            const text = document.createElement('div');
+            text.innerHTML = escapeHtml(c.text);
+            const repliesContainer = document.createElement('div');
+            repliesContainer.id = `replies-${cid}`;
+            const replyArea = document.createElement('div');
+            replyArea.className = 'reply-input-area';
+            replyArea.style.marginTop = '8px';
+            const replyBtn = document.createElement('button');
+            replyBtn.className = 'reply-btn';
+            replyBtn.textContent = 'Reply';
+            const replyInput = document.createElement('input');
+            replyInput.id = `reply-input-${cid}`;
+            replyInput.placeholder = 'Write a reply...';
+            replyInput.style.display = 'none';
+            const replySend = document.createElement('button');
+            replySend.textContent = 'Send';
+            replySend.style.display = 'none';
+            replyBtn.addEventListener('click', () => {
+              const show = replyInput.style.display === 'none';
+              replyInput.style.display = show ? 'inline-block' : 'none';
+              replySend.style.display = show ? 'inline-block' : 'none';
+              if (show) replyInput.focus();
+            });
+            replySend.addEventListener('click', async () => {
+              const textVal = replyInput.value.trim();
+              if (!textVal) return;
+              replySend.disabled = true;
+              try {
+                const user = firebase.auth().currentUser;
+                const rref = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc();
+                await rref.set({
+                  uid: user.uid,
+                  text: textVal,
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                if (c.uid && c.uid !== user.uid) {
+                  const senderDoc = await db.collection('users').doc(user.uid).get();
+                  await sendNotification(c.uid, 'reply', postId, senderDoc.exists ? senderDoc.data().fullName : 'Someone', cid);
+                }
+                replyInput.value = '';
+                replyInput.style.display = 'none';
+                replySend.style.display = 'none';
+              } catch (e) {
+                console.error('reply send err', e);
+              } finally {
+                replySend.disabled = false;
+              }
+            });
+            replyArea.appendChild(replyBtn);
+            replyArea.appendChild(replyInput);
+            replyArea.appendChild(replySend);
+            wrapper.appendChild(meta);
+            wrapper.appendChild(text);
+            wrapper.appendChild(replyArea);
+            wrapper.appendChild(repliesContainer);
+            list.appendChild(wrapper);
+
+            const repliesUnsub = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').orderBy('createdAt', 'asc')
+              .onSnapshot(rsnap => {
+                repliesContainer.innerHTML = '';
+                rsnap.forEach(rdoc => {
+                  const r = rdoc.data();
+                  const rn = document.createElement('div');
+                  rn.className = 'reply';
+                  const rname = userCache[r.uid]?.fullName || 'User';
+                  const rtime = (r.createdAt && typeof r.createdAt.toDate === 'function') ? r.createdAt.toDate().toLocaleString() : '';
+                  rn.innerHTML = `<div class="meta small">${rname} · ${rtime}</div><div>${escapeHtml(r.text)}</div>`;
+                  repliesContainer.appendChild(rn);
+                });
+              }, err => console.error('replies listen err', err));
+            postUnsubs[postId].push(repliesUnsub);
+          });
+        }, err => {
+          console.error('comments listen err', err);
+          list.innerHTML = '<div class="empty-state">Failed to load comments</div>';
+        });
+      postUnsubs[postId].push(commentsUnsub);
+    }
+
+    async function sendComment(postId) {
+      const input = document.getElementById(`newComment-${postId}`);
+      const text = input.value.trim();
+      if (!text) return;
+      input.disabled = true;
+      try {
+        const cref = db.collection('posts').doc(postId).collection('comments').doc();
+        const user = firebase.auth().currentUser;
+        await cref.set({
+          uid: user.uid,
+          text,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        const postDoc = await db.collection('posts').doc(postId).get();
+        const p = postDoc.data();
+        const postOwner = p.uid;
+        if (postOwner && postOwner !== user.uid) {
+          const senderDoc = await db.collection('users').doc(user.uid).get();
+          await sendNotification(postOwner, 'comment', postId, senderDoc.exists ? senderDoc.data().fullName : 'Someone');
+        }
+        input.value = '';
+      } catch (e) {
+        console.error('add comment err', e);
+      } finally {
+        input.disabled = false;
+      }
+    }
+
+    /* ----------------------
+       Like logic
+       ---------------------- */
+    async function likePost(postId) {
+      try {
+        const ref = db.collection('posts').doc(postId);
+        const snap = await ref.get();
+        if (!snap.exists) return;
+        const data = snap.data();
+        const likes = data.likes || [];
+        const idx = likes.indexOf(currentUser.uid);
+        const already = idx > -1;
+        if (already) likes.splice(idx, 1);
+        else {
+          likes.push(currentUser.uid);
+          document.getElementById('likeSound').currentTime = 0;
+          document.getElementById('likeSound').play().catch(() => {});
+        }
+        await ref.update({ likes });
+        if (!already && data.uid && data.uid !== currentUser.uid) {
+          const senderDoc = await db.collection('users').doc(currentUser.uid).get();
+          await sendNotification(data.uid, 'like', postId, senderDoc.exists ? senderDoc.data().fullName : 'Someone');
+        }
+      } catch (e) {
+        console.error('like error', e);
+        showToast('Like failed');
+      }
+    }
+
+    /* ----------------------
+       Modal: open post, comments & replies
+       ---------------------- */
+    function clearModal() {
+      modalMedia.innerHTML = '';
+      modalAuthorPhoto.src = '';
+      modalAuthorName.textContent = '';
+      modalTime.textContent = '';
+      modalText.innerHTML = '';
+      modalComments.innerHTML = '';
+      modalNewComment.value = '';
+      currentModalPostId = null;
+      modalCaption.style.display = 'none';
+      viewFriendProfile.style.display = 'none';
+      if (modalCommentsUnsub) {
+        modalCommentsUnsub();
+        modalCommentsUnsub = null;
+      }
+      zoomOverlay.style.display = 'none';
+      zoomOverlay.innerHTML = '';
+      modalMedia.classList.remove('full-size');
+    }
+
+    async function openPostModal(postId, focusCommentId = null) {
+      if (!postId) return;
+      try {
+        const postDoc = await db.collection('posts').doc(postId).get();
+        if (!postDoc.exists) {
+          showToast('Post not found');
+          return;
+        }
+        const p = postDoc.data();
+        currentModalPostId = postId;
+
+        preventBodyScroll();
+
+        modalAuthorPhoto.src = p.photoURL || 'https://via.placeholder.com/44';
+        modalAuthorName.textContent = p.author || 'Unknown';
+        modalTime.textContent = p.createdAt && typeof p.createdAt.toDate === 'function' ? p.createdAt.toDate().toLocaleString() : '';
+
+        if (p.text) {
+          const bgColor = p.backgroundColor || '#ffffff';
+          modalText.innerHTML = `<div class="text-post" style="background-color:${bgColor}">${p.text}</div>`;
+        } else {
+          modalText.innerHTML = '';
+        }
+
+        if (p.mediaCaption) {
+          modalCaption.textContent = p.mediaCaption;
+          modalCaption.style.display = 'block';
+        } else {
+          modalCaption.style.display = 'none';
+        }
+
+        if (p.uid && p.uid !== currentUser.uid) {
+          viewFriendProfile.style.display = 'inline-block';
+          viewFriendProfile.onclick = () => {
+            window.location.href = `user.html?uid=${p.uid}`;
+          };
+        } else {
+          viewFriendProfile.style.display = 'none';
+        }
+
+        modalMedia.innerHTML = '';
+        const noMediaPlaceholder = modalMedia.querySelector('.no-media-placeholder');
+        if (noMediaPlaceholder) noMediaPlaceholder.style.display = 'none';
+
+        if (p.mediaUrl) {
+          if (p.mediaType === 'video') {
+            const v = document.createElement('video');
+            v.src = p.mediaUrl;
+            v.controls = true;
+            v.style.maxWidth = '100%';
+            v.style.maxHeight = '100px';
+            v.addEventListener('click', () => {
+              modalMedia.classList.toggle('full-size');
+            });
+            modalMedia.appendChild(v);
+          } else {
+            const img = document.createElement('img');
+            img.src = p.mediaUrl;
+            img.alt = 'post';
+            img.style.cursor = 'pointer';
+            img.style.maxHeight = '100px';
+            img.addEventListener('click', () => {
+              modalMedia.classList.toggle('full-size');
+            });
+            modalMedia.appendChild(img);
+          }
+        } else {
+          const placeholder = modalMedia.querySelector('.no-media-placeholder') || document.createElement('div');
+          placeholder.className = 'no-media-placeholder';
+          placeholder.textContent = 'No media in this post';
+          placeholder.style.display = 'block';
+          modalMedia.appendChild(placeholder);
+        }
+
+        const likes = p.likes || [];
+        const isLiked = currentUser && likes.includes(currentUser.uid);
+        modalLikeBtn.innerHTML = isLiked ?
+          '<span>❤️</span><span>Liked</span>' :
+          '<span>🤍</span><span>Like</span>';
+
+        modalBackdrop.style.display = 'flex';
+        modalBackdrop.setAttribute('aria-hidden', 'false');
+
+        if (modalCommentsUnsub) modalCommentsUnsub();
+        modalComments.innerHTML = '<div class="empty-state">Loading comments…</div>';
+        modalCommentsUnsub = db.collection('posts').doc(postId).collection('comments').orderBy('createdAt', 'asc')
+          .onSnapshot(async snap => {
+            modalComments.innerHTML = '';
+            if (snap.empty) {
+              modalComments.innerHTML = '<div class="empty-state">No comments yet. Be the first!</div>';
+              return;
+            }
+
+            for (const d of snap.docs) {
+              const c = d.data();
+              const cid = d.id;
+              const wrapper = document.createElement('div');
+              wrapper.className = 'comment';
+
+              const commenterName = userCache[c.uid]?.fullName || 'User';
+              const meta = document.createElement('div');
+              meta.className = 'meta small';
+              meta.textContent = `${commenterName} · ${c.createdAt && typeof c.createdAt.toDate === 'function' ? c.createdAt.toDate().toLocaleString() : ''}`;
+
+              const text = document.createElement('div');
+              text.innerHTML = escapeHtml(c.text);
+
+              const repliesContainer = document.createElement('div');
+              repliesContainer.id = `replies-${cid}`;
+
+              const replyArea = document.createElement('div');
+              replyArea.style.marginTop = '8px';
+
+              const replyBtn = document.createElement('button');
+              replyBtn.className = 'reply-btn';
+              replyBtn.textContent = 'Reply';
+              replyBtn.style.background = 'none';
+              replyBtn.style.border = 'none';
+              replyBtn.style.color = '#666';
+              replyBtn.style.cursor = 'pointer';
+              replyBtn.style.fontSize = '0.875rem';
+
+              const replyInput = document.createElement('input');
+              replyInput.id = `reply-input-${cid}`;
+              replyInput.placeholder = 'Write a reply...';
+              replyInput.style.display = 'none';
+              replyInput.style.width = '68%';
+              replyInput.style.padding = '6px';
+              replyInput.style.border = '1px solid #eee';
+              replyInput.style.borderRadius = '6px';
+
+              const replySend = document.createElement('button');
+              replySend.textContent = 'Send';
+              replySend.style.display = 'none';
+              replySend.style.marginLeft = '6px';
+              replySend.style.background = 'var(--primary)';
+              replySend.style.color = 'white';
+              replySend.style.border = 'none';
+              replySend.style.padding = '6px 12px';
+              replySend.style.borderRadius = '6px';
+              replySend.style.cursor = 'pointer';
+
+              replyBtn.addEventListener('click', () => {
+                const show = replyInput.style.display === 'none';
+                replyInput.style.display = show ? 'inline-block' : 'none';
+                replySend.style.display = show ? 'inline-block' : 'none';
+                if (show) replyInput.focus();
+              });
+
+              replySend.addEventListener('click', async () => {
+                const textVal = replyInput.value.trim();
+                if (!textVal) return;
+                replySend.disabled = true;
+                try {
+                  const user = firebase.auth().currentUser;
+                  const rref = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc();
+                  await rref.set({
+                    uid: user.uid,
+                    text: textVal,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+                  if (c.uid && c.uid !== user.uid) {
+                    const senderDoc = await db.collection('users').doc(user.uid).get();
+                    await sendNotification(c.uid, 'reply', postId, senderDoc.exists ? senderDoc.data().fullName : 'Someone', cid);
+                  }
+                  replyInput.value = '';
+                  replyInput.style.display = 'none';
+                  replySend.style.display = 'none';
+                } catch (e) {
+                  console.error('reply send err', e);
+                } finally {
+                  replySend.disabled = false;
+                }
+              });
+
+              replyArea.appendChild(replyBtn);
+              replyArea.appendChild(replyInput);
+              replyArea.appendChild(replySend);
+              wrapper.appendChild(meta);
+              wrapper.appendChild(text);
+              wrapper.appendChild(replyArea);
+              wrapper.appendChild(repliesContainer);
+              modalComments.appendChild(wrapper);
+
+              db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').orderBy('createdAt', 'asc')
+                .onSnapshot(rsnap => {
+                  repliesContainer.innerHTML = '';
+                  rsnap.forEach(rdoc => {
+                    const r = rdoc.data();
+                    const rn = document.createElement('div');
+                    rn.className = 'reply';
+                    const rname = userCache[r.uid]?.fullName || 'User';
+                    const rtime = (r.createdAt && typeof r.createdAt.toDate === 'function') ? r.createdAt.toDate().toLocaleString() : '';
+                    rn.innerHTML = `<div class="meta small">${rname} · ${rtime}</div><div>${escapeHtml(r.text)}</div>`;
+                    repliesContainer.appendChild(rn);
+                  });
+                }, err => console.error('replies listen err', err));
+            }
+
+            if (focusCommentId) {
+              setTimeout(() => {
+                const inputEl = document.getElementById(`reply-input-${focusCommentId}`);
+                if (inputEl) {
+                  inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  inputEl.focus();
+                }
+              }, 400);
+            }
+          }, err => {
+            console.error('comments listen err', err);
+            modalComments.innerHTML = '<div class="empty-state">Failed to load comments</div>';
+          });
+
+        modalSendComment.onclick = async () => {
+          const text = modalNewComment.value.trim();
+          if (!text) return;
+          modalSendComment.disabled = true;
+          try {
+            const cref = db.collection('posts').doc(postId).collection('comments').doc();
+            const user = firebase.auth().currentUser;
+            await cref.set({
+              uid: user.uid,
+              text,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            const postOwner = p.uid;
+            if (postOwner && postOwner !== user.uid) {
+              const senderDoc = await db.collection('users').doc(user.uid).get();
+              await sendNotification(postOwner, 'comment', postId, senderDoc.exists ? senderDoc.data().fullName : 'Someone');
+            }
+            modalNewComment.value = '';
+          } catch (e) {
+            console.error('modal add comment err', e);
+          } finally {
+            modalSendComment.disabled = false;
+          }
+        };
+
+      } catch (e) {
+        console.error('open modal err', e);
+        showToast('Failed to open post');
+      }
+    }
+
+    /* Close modal */
+    closePostModal.addEventListener('click', () => {
+      modalBackdrop.style.display = 'none';
+      modalBackdrop.setAttribute('aria-hidden', 'true');
+      allowBodyScroll();
+      clearModal();
+    });
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
+        modalBackdrop.style.display = 'none';
+        modalBackdrop.setAttribute('aria-hidden', 'true');
+        allowBodyScroll();
+        clearModal();
+      }
+    });
+
+    /* ----------------------
+       Notifications send helper
+       ---------------------- */
+    async function sendNotification(receiverId, type, postId = null, senderName = null, commentId = null, storyId = null) {
+      const user = firebase.auth().currentUser;
+      if (!user || receiverId === user.uid) return;
+      senderName = senderName || user.displayName || 'Someone';
+      try {
+        await db.collection('notifications').add({
+          receiver: receiverId,
+          sender: user.uid,
+          senderName,
+          type,
+          postId: postId || null,
+          commentId: commentId || null,
+          storyId: storyId || null,
+          read: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (e) {
+        console.error('sendNotification error', e);
+      }
+    }
+
+    /* ----------------------
+       User cache
+       ---------------------- */
+    function listenToUser(uid, callback) {
+      if (userCache[uid] && userCache[uid].listener) return;
+      const unsub = db.collection('users').doc(uid).onSnapshot(doc => {
+        if (!doc.exists) return;
+        userCache[uid] = { ...doc.data(), listener: unsub };
+        if (callback) callback(userCache[uid]);
+      }, err => console.error('user listen err', err));
+    }
+
+    async function getUserData(uid) {
+      if (userCache[uid]) return userCache[uid];
+      try {
+        const doc = await db.collection('users').doc(uid).get();
+        if (doc.exists) {
+          userCache[uid] = doc.data();
+          return doc.data();
+        }
+        return null;
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    }
+
+    /* ----------------------
+       Auth start
+       ---------------------- */
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        return;
+      }
+      currentUser = user;
+      db.collection('users').doc(user.uid).get().then(s => {
+        if (s.exists) userCache[user.uid] = s.data();
+      });
+      loadStories();
+      loadFeed();
+      listenForNotifications();
+    });
+
+    /* Expose functions for global use */
+    window.openPostModal = openPostModal;
+    window.likePost = likePost;
+    window.toggleComments = toggleComments;
+    window.sendComment = sendComment;
+    window.uploadStory = uploadStory;
+    window.reactToStory = reactToStory;
+  </script>
+</body>
+</html>
