@@ -5,66 +5,337 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DateLink — Advanced Call (WebRTC)</title>
   <style>
-    :root{
-      --primary:#6C63FF; --primary-dark:#5651D9; --secondary:#FF6584;
-      --bg:#F9F9FF; --surface:#FFF; --on-surface:#333; --muted:#777;
-      --radius:16px; --radius-sm:8px; --shadow:0 6px 18px rgba(0,0,0,0.08);
+    :root {
+      --primary: #6C63FF;
+      --primary-dark: #5651D9;
+      --secondary: #FF6584;
+      --bg: #F9F9FF;
+      --surface: #FFF;
+      --on-surface: #333;
+      --muted: #777;
+      --radius: 16px;
+      --radius-sm: 8px;
+      --shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
-    *{box-sizing:border-box}
-    body{
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;
-      margin:0; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); color:var(--on-surface);
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--on-surface);
     }
-    nav{
-      position:fixed; top:0; left:0; right:0; height:60px; display:flex; gap:6px; align-items:center; justify-content:space-around;
-      background:var(--surface); box-shadow:var(--shadow); z-index:120; padding:0 12px;
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: space-around;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      z-index: 120;
+      padding: 0 12px;
     }
-    nav a{ text-decoration:none; color:var(--muted); font-weight:500; font-size:13px; display:flex; flex-direction:column; align-items:center; padding:6px 10px; border-radius:8px;}
-    nav a:hover, nav a.active{ color:var(--primary); background:rgba(108,99,255,0.05);}
-    .nav-notif-dot{ position:absolute; top:6px; right:6px; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; color:white; background:var(--secondary); }
-    .container{ display:flex; flex-direction:column; align-items:center; gap:18px; padding:86px 16px 110px; width:100%; max-width:1100px; margin:0 auto; }
-    .card{ width:100%; background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; display:flex; flex-direction:column; align-items:center; }
-    .call-header{ display:flex; gap:12px; align-items:center; width:100%; }
-    .call-header img{ width:64px; height:64px; border-radius:50%; object-fit:cover; border:3px solid var(--primary); }
-    .call-header h2{ margin:0; font-size:18px; }
-    .call-header p{ margin:0; color:var(--muted); font-size:13px; }
-    .video-row{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:16px; position:relative; }
-    .video-feed{ width:320px; height:240px; border-radius:12px; background:#000; border:2px solid #eee; object-fit:cover; transition: all 0.3s ease; cursor:pointer; }
-    .video-feed.fullscreen{ position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90vw; height:90vh; z-index:1000; border:3px solid var(--primary); }
-    .video-feed.minimized{ width:120px; height:90px; position:absolute; bottom:10px; right:10px; z-index:1001; border:2px solid var(--secondary); }
-    .video-controls{ position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:1002; }
-    .video-controls button{ background:rgba(0,0,0,0.7); color:white; border:none; border-radius:20px; padding:8px 12px; font-size:12px; cursor:pointer; }
-    .controls{ display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; justify-content:center; }
-    .btn{ padding:10px 16px; border-radius:12px; border:0; cursor:pointer; font-weight:600; font-size:14px; transition: all 0.2s ease; }
-    .btn.primary{ background:var(--primary); color:#fff; }
-    .btn.secondary{ background:#f1f1f5; color:var(--on-surface); }
-    .btn.end{ background:var(--secondary); color:#fff; }
-    .btn:disabled{ opacity:0.55; cursor:not-allowed; transform:none; }
-    .btn:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.15); }
-    .toggles{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
-    .toggle{ padding:8px 12px; border-radius:10px; border:0; cursor:pointer; background:#f3f3f7; font-weight:600; transition: all 0.2s ease; }
-    .toggle.active{ background:var(--primary); color:white; }
-    .toggle:hover{ transform:translateY(-1px); }
-    .advanced-controls{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
-    .advanced-btn{ padding:8px 12px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:12px; transition: all 0.2s ease; }
-    .advanced-btn.active{ background:var(--primary-dark); color:white; border-color:var(--primary-dark); }
-    .advanced-btn:hover{ background:#f0f0f5; }
-    .status{ color:var(--muted); font-size:13px; margin-top:12px; text-align:center; min-height:20px; }
-    .incoming{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); background:var(--surface); padding:18px; border-radius:14px; box-shadow:0 18px 50px rgba(0,0,0,0.25); display:none; z-index:1000; width:320px; text-align:center;}
-    .incoming h3{ margin:4px 0 6px; }
-    .bottom-bar{ position:fixed; bottom:0; left:0; right:0; background:transparent; padding:10px 16px; display:flex; justify-content:center; pointer-events:none;}
-    .ring{ display:none; }
-    .call-animation{ display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:999; }
-    .pulsating-ring{ width:100px; height:100px; border:3px solid var(--primary); border-radius:50%; animation:pulse 1.5s infinite; }
-    @keyframes pulse{ 0%{ transform:scale(0.8); opacity:1; } 100%{ transform:scale(1.5); opacity:0; } }
-    @media (max-width:760px){ .video-feed{ width:260px; height:180px } .incoming{ width:90%; } }
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+    nav a:hover, nav a.active {
+      color: var(--primary);
+      background: rgba(108,99,255,0.05);
+    }
+    .nav-notif-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+      color: white;
+      background: var(--secondary);
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      padding: 86px 16px 110px;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .card {
+      width: 100%;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .call-header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+    }
+    .call-header img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary);
+    }
+    .call-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .call-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .video-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 16px;
+      position: relative;
+    }
+    .video-feed {
+      width: 320px;
+      height: 240px;
+      border-radius: 12px;
+      background: #000;
+      border: 2px solid #eee;
+      object-fit: cover;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .video-feed.fullscreen {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90vw;
+      height: 90vh;
+      z-index: 1000;
+      border: 3px solid var(--primary);
+    }
+    .video-feed.minimized {
+      width: 120px;
+      height: 90px;
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      z-index: 1001;
+      border: 2px solid var(--secondary);
+    }
+    .video-controls {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 1002;
+    }
+    .video-controls button {
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 0;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn.secondary {
+      background: #f1f1f5;
+      color: var(--on-surface);
+    }
+    .btn.end {
+      background: var(--secondary);
+      color: #fff;
+    }
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .toggles {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .toggle {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 0;
+      cursor: pointer;
+      background: #f3f3f7;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .toggle.active {
+      background: var(--primary);
+      color: white;
+    }
+    .toggle:hover {
+      transform: translateY(-1px);
+    }
+    .advanced-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .advanced-btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+    .advanced-btn.active {
+      background: var(--primary-dark);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+    .advanced-btn:hover {
+      background: #f0f0f5;
+    }
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 12px;
+      text-align: center;
+      min-height: 20px;
+    }
+    .incoming {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--surface);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.25);
+      display: none;
+      z-index: 1000;
+      width: 400px;
+      text-align: center;
+    }
+    .incoming h3 {
+      margin: 4px 0 8px;
+      font-size: 20px;
+    }
+    .incoming p {
+      font-size: 16px;
+      color: var(--muted);
+    }
+    .incoming .btn {
+      padding: 12px 20px;
+      font-size: 16px;
+    }
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: transparent;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .ring {
+      display: none;
+    }
+    .call-animation {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 999;
+    }
+    .pulsating-ring {
+      width: 100px;
+      height: 100px;
+      border: 3px solid var(--primary);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    @media (max-width: 760px) {
+      .video-feed { width: 260px; height: 180px; }
+      .incoming { width: 90%; max-width: 360px; }
+      .incoming h3 { font-size: 18px; }
+      .incoming p { font-size: 14px; }
+      .incoming .btn { padding: 10px 16px; font-size: 14px; }
+    }
   </style>
 </head>
 <body>
   <nav>
     <a href="home2.html">🏠<span style="font-size:11px;">Home</span></a>
     <a href="matchs.html">💞<span style="font-size:11px;">Match</span></a>
-    <a href="chats.html" style="position:relative;">💬<span style="font-size:11px;">Chats</span><span id="navNotifDot" class="nav-notif-dot" style="display:none;"></span></a>
+    <a href="chats.html" style="position:relative;">
+      💬<span style="font-size:11px;">Chats</span>
+      <span id="navNotifDot" class="nav-notif-dot" style="display:none;"></span>
+    </a>
     <a href="profile.html">👤<span style="font-size:11px;">Profile</span></a>
     <a href="#" onclick="logout()">🚪<span style="font-size:11px;">Logout</span></a>
   </nav>
@@ -124,7 +395,7 @@
   <div id="incomingCallAlert" class="incoming" role="dialog" aria-modal="true">
     <h3>Incoming Call</h3>
     <p id="incomingCallerName">Someone is calling...</p>
-    <div style="margin-top:12px; display:flex; gap:10px; justify-content:center;">
+    <div style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
       <button id="acceptCallBtn" class="btn primary">Accept</button>
       <button id="rejectCallBtn" class="btn end">Reject</button>
     </div>
@@ -216,7 +487,7 @@
     let answerCandidatesUnsub = null;
     
     // Advanced features variables
-    let currentFacingMode = 'user'; // 'user' for front, 'environment' for back
+    let currentFacingMode = 'user';
     let isFlashOn = false;
     let flashTrack = null;
     let isRingerPlaying = false;
@@ -228,7 +499,11 @@
     // ICE servers configuration
     const ICE_SERVERS = [
       { urls: 'stun:stun.l.google.com:19302' },
-      // Add your TURN servers here if needed
+      {
+        urls: 'turn:your.turn.server:3478', // Replace with actual TURN server
+        username: 'your-username', // Replace with actual username
+        credential: 'your-credential' // Replace with actual credential
+      }
     ];
 
     // Utility functions
@@ -250,9 +525,18 @@
       // Create remote stream and attach to remoteVideo
       remoteStream = new MediaStream();
       remoteVideo.srcObject = remoteStream;
+      console.log('remoteVideo srcObject set:', remoteVideo.srcObject);
 
       pc.ontrack = (event) => {
-        event.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+        console.log('ontrack event:', event);
+        event.streams[0].getTracks().forEach(track => {
+          console.log('Adding remote track:', track.kind, 'enabled:', track.enabled);
+          remoteStream.addTrack(track);
+          if (track.kind === 'video' && !track.enabled) {
+            logStatus('Remote user has disabled their video');
+          }
+        });
+        console.log('remoteStream tracks after ontrack:', remoteStream.getTracks());
       };
 
       pc.onicecandidate = async (event) => {
@@ -260,7 +544,6 @@
           const cand = event.candidate.toJSON();
           try {
             if (!callDocRef) return;
-            
             if (pc.localRole === 'caller') {
               await addDoc(offerCandidatesCol, cand);
             } else {
@@ -268,6 +551,7 @@
             }
           } catch (e) {
             console.error('Error adding ICE candidate to Firestore', e);
+            logStatus('Error adding ICE candidate');
           }
         }
       };
@@ -278,12 +562,15 @@
           logStatus('Peer connection established');
           stopConnectingSound();
           hideCallAnimation();
+          stopRingtone();
         } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
           logStatus('Peer disconnected/failed');
           stopConnectingSound();
+          stopRingtone();
         } else if (pc.connectionState === 'closed') {
           logStatus('Peer connection closed');
           stopConnectingSound();
+          stopRingtone();
         }
       };
 
@@ -293,7 +580,6 @@
     // Initialize local media with camera selection
     async function initLocalMedia(facingMode = 'user') {
       if (localStream) {
-        // Stop existing stream
         localStream.getTracks().forEach(track => track.stop());
       }
       
@@ -313,7 +599,6 @@
         currentFacingMode = facingMode;
         updateToggleButtons();
         
-        // Update switch camera button text
         switchCameraBtn.textContent = facingMode === 'user' ? 'Back Camera' : 'Front Camera';
         
       } catch (err) {
@@ -326,12 +611,11 @@
 
     // Add local tracks to pc
     function addLocalTracksToPc() {
-      if (!pc) return;
-      if (!localStream) return;
+      if (!pc || !localStream) return;
       localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
     }
 
-    // Toggle flashlight (only works on mobile devices with flash)
+    // Toggle flashlight
     async function toggleFlash() {
       if (!localStream) return;
       
@@ -378,7 +662,6 @@
         await initLocalMedia(newFacingMode);
         
         if (pc) {
-          // Replace the video track in the peer connection
           const videoTrack = localStream.getVideoTracks()[0];
           const sender = pc.getSenders().find(s => 
             s.track && s.track.kind === 'video'
@@ -399,11 +682,9 @@
     // Video zoom and minimize functions
     function zoomLocalVideo() {
       if (isLocalZoomed) return;
-      
       localVideo.classList.add('fullscreen');
       isLocalZoomed = true;
       isLocalMinimized = false;
-      
       if (isRemoteZoomed) {
         remoteVideo.classList.remove('fullscreen');
         isRemoteZoomed = false;
@@ -412,7 +693,6 @@
 
     function minimizeLocalVideo() {
       if (isLocalMinimized) return;
-      
       localVideo.classList.add('minimized');
       isLocalMinimized = true;
       isLocalZoomed = false;
@@ -427,11 +707,9 @@
 
     function zoomRemoteVideo() {
       if (isRemoteZoomed) return;
-      
       remoteVideo.classList.add('fullscreen');
       isRemoteZoomed = true;
       isRemoteMinimized = false;
-      
       if (isLocalZoomed) {
         localVideo.classList.remove('fullscreen');
         isLocalZoomed = false;
@@ -440,7 +718,6 @@
 
     function minimizeRemoteVideo() {
       if (isRemoteMinimized) return;
-      
       remoteVideo.classList.add('minimized');
       isRemoteMinimized = true;
       isRemoteZoomed = false;
@@ -453,7 +730,6 @@
       isRemoteMinimized = false;
     }
 
-    // Click handlers for video elements
     localVideo.addEventListener('click', () => {
       if (isLocalMinimized) {
         resetLocalVideo();
@@ -499,6 +775,19 @@
       connectingSound.currentTime = 0;
     }
 
+    function playRingtone() {
+      try {
+        ringtone.play().catch(e => console.log('Ringtone play error:', e));
+      } catch (e) {}
+    }
+
+    function stopRingtone() {
+      try {
+        ringtone.pause();
+        ringtone.currentTime = 0;
+      } catch (e) {}
+    }
+
     function showCallAnimation() {
       callAnimation.style.display = 'block';
     }
@@ -513,33 +802,28 @@
       if (!targetUserId) { logStatus('No target user set (URL param ?uid=...)'); return; }
       try {
         logStatus('Starting call (creating offer)...');
+        playRingtone(); // Play ringtone when starting call
         await initLocalMedia();
 
-        // Play connecting sound and show animation
         playConnectingSound();
         showCallAnimation();
 
-        // Create PC
         createPeerConnection();
         pc.localRole = 'caller';
 
-        // Prepare Firestore doc/cols
         channelName = buildChannelName(currentUserId, targetUserId);
         channelNameDisplay.textContent = channelName;
         callDocRef = doc(db, 'calls', channelName);
         offerCandidatesCol = collection(callDocRef, 'offerCandidates');
         answerCandidatesCol = collection(callDocRef, 'answerCandidates');
 
-        // Add local tracks
         addLocalTracksToPc();
 
-        // Create offer
         const offerDescription = await pc.createOffer();
         await pc.setLocalDescription(offerDescription);
 
         const offer = { type: offerDescription.type, sdp: offerDescription.sdp };
 
-        // Write call doc
         await setDoc(callDocRef, {
           callerId: currentUserId,
           receiverId: targetUserId,
@@ -549,23 +833,29 @@
           timestamp: serverTimestamp()
         });
 
-        // Listen for remote answer
+        const timeout = setTimeout(() => {
+          if (pc.connectionState !== 'connected') {
+            logStatus('Call timed out — remote user did not answer');
+            endCall();
+          }
+        }, 30000); // 30 seconds timeout
+
         callDocUnsubscribe = onSnapshot(callDocRef, async snap => {
           const data = snap.data();
           if (!data) return;
-          // If answer arrived, set remote description
           if (data.answer && !pc.currentRemoteDescription) {
+            clearTimeout(timeout);
             const answerDesc = new RTCSessionDescription(data.answer);
             await pc.setRemoteDescription(answerDesc);
             logStatus('Received answer, remote description set');
           }
           if (data.status === 'ended' || data.status === 'rejected') {
+            clearTimeout(timeout);
             logStatus('Call ended by remote');
             endCall();
           }
         });
 
-        // Listen for answer candidates
         answerCandidatesUnsub = onSnapshot(answerCandidatesCol, snapshot => {
           snapshot.docChanges().forEach(change => {
             if (change.type === 'added') {
@@ -581,6 +871,7 @@
       } catch (err) {
         console.error('startCall error', err);
         logStatus(`Error starting call: ${err.message || err}`);
+        stopRingtone();
         stopConnectingSound();
         hideCallAnimation();
         await cleanupCallResources();
@@ -598,21 +889,18 @@
         logStatus('Accepting call — creating answer...');
         await initLocalMedia();
 
-        // Play connecting sound and show animation
         playConnectingSound();
         showCallAnimation();
 
         createPeerConnection();
         pc.localRole = 'callee';
 
-        // Prepare refs
         callDocRef = doc(db, 'calls', channelName);
         offerCandidatesCol = collection(callDocRef, 'offerCandidates');
         answerCandidatesCol = collection(callDocRef, 'answerCandidates');
 
         addLocalTracksToPc();
 
-        // Listen for offer candidates
         offerCandidatesUnsub = onSnapshot(offerCandidatesCol, snapshot => {
           snapshot.docChanges().forEach(change => {
             if (change.type === 'added') {
@@ -622,7 +910,6 @@
           });
         });
 
-        // Fetch call doc to get offer
         const callSnap = await getDoc(callDocRef);
         if (!callSnap.exists()) {
           logStatus('Call no longer exists');
@@ -637,15 +924,12 @@
         const offerDesc = new RTCSessionDescription(callData.offer);
         await pc.setRemoteDescription(offerDesc);
 
-        // Create answer
         const answerDesc = await pc.createAnswer();
         await pc.setLocalDescription(answerDesc);
 
-        // Write answer back to call doc
         const answer = { type: answerDesc.type, sdp: answerDesc.sdp };
         await updateDoc(callDocRef, { answer, status: 'in-progress' });
 
-        // Listen for call status changes
         callDocUnsubscribe = onSnapshot(callDocRef, snap => {
           const data = snap.data();
           if (!data) return;
@@ -680,7 +964,7 @@
         console.error('rejectIncomingCall error', err);
         logStatus(`Error rejecting call: ${err.message || err}`);
       } finally {
-        cleanupCallResources();
+        await cleanupCallResources();
       }
     }
 
@@ -704,35 +988,31 @@
 
     // Cleanup local resources and listeners
     async function cleanupCallResources() {
-      // Remove Firestore listeners
       if (incomingCallUnsubscribe) { incomingCallUnsubscribe(); incomingCallUnsubscribe = null; }
       if (callDocUnsubscribe) { callDocUnsubscribe(); callDocUnsubscribe = null; }
       if (offerCandidatesUnsub) { offerCandidatesUnsub(); offerCandidatesUnsub = null; }
       if (answerCandidatesUnsub) { answerCandidatesUnsub(); answerCandidatesUnsub = null; }
 
-      // Stop local media tracks
       if (localStream) {
         localStream.getTracks().forEach(t => t.stop());
         localStream = null;
       }
 
-      // Close peer connection
       if (pc) {
         try { pc.close(); } catch (e) { }
         pc = null;
       }
 
-      // Clear variables
       if (remoteStream) {
         remoteStream.getTracks().forEach(t => t.stop());
         remoteStream = null;
       }
       
-      // Reset advanced features
       isFlashOn = false;
       toggleFlashBtn.textContent = 'Flash Off';
       toggleFlashBtn.classList.remove('active');
       
+      stopRingtone();
       stopConnectingSound();
       hideCallAnimation();
       resetLocalVideo();
@@ -813,15 +1093,7 @@
       stopRingtone();
     }
 
-    function playRingtone() {
-      try { ringtone.play().catch(() => { }); } catch (e) { }
-    }
-    
-    function stopRingtone() {
-      try { ringtone.pause(); ringtone.currentTime = 0; } catch (e) { }
-    }
-
-    // Listen for incoming calls targeted at currentUserId
+    // Listen for incoming calls
     function listenForIncomingCalls() {
       if (!currentUserId) return;
       const q = query(collection(db, 'calls'), where('receiverId', '==', currentUserId), where('status', '==', 'calling'));
@@ -858,6 +1130,7 @@
         });
       }, err => {
         console.error('listenForIncomingCalls error', err);
+        logStatus('Error listening for incoming calls');
       });
     }
 
@@ -918,7 +1191,6 @@
           selfIdEl.textContent = currentUserId;
           await updateDoc(doc(db, 'users', currentUserId), { online: true, lastSeen: serverTimestamp() }).catch(() => {});
 
-          // If ?uid=... is present in URL, set as target
           const params = new URLSearchParams(window.location.search);
           const paramUid = params.get('uid');
           if (paramUid) {
@@ -940,11 +1212,9 @@
             statusText.textContent = 'No target UID in URL. Add ?uid=<userId> to call someone.';
           }
 
-          // Start listening for incoming calls
           listenForIncomingCalls();
           updateNavNotifDot();
 
-          // Watch unread messages
           const q = query(collection(db, 'messages'), where('to', '==', currentUserId), where('read', '==', false));
           onSnapshot(q, snap => {
             const notifCounts = JSON.parse(localStorage.getItem('unreadMessages') || '{}');
@@ -980,7 +1250,6 @@
     acceptCallBtn.addEventListener('click', acceptIncomingCall);
     rejectCallBtn.addEventListener('click', rejectIncomingCall);
     
-    // Advanced controls event listeners
     zoomLocalBtn.addEventListener('click', zoomLocalVideo);
     minimizeLocalBtn.addEventListener('click', minimizeLocalVideo);
     zoomRemoteBtn.addEventListener('click', zoomRemoteVideo);
@@ -993,7 +1262,6 @@
     window.addEventListener('online', () => statusText.textContent = '');
     window.addEventListener('offline', () => statusText.textContent = 'Offline — check your network.');
 
-    // Start initialization when DOM ready
     document.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
