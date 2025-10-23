@@ -315,10 +315,55 @@
       border-radius: 50%;
       animation: pulse 1.5s infinite;
     }
+    
+    /* Global Modal Styles */
+    .global-call-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .global-call-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
     @keyframes pulse {
       0% { transform: scale(0.8); opacity: 1; }
       100% { transform: scale(1.5); opacity: 0; }
     }
+    
     @media (max-width: 760px) {
       .video-feed { width: 260px; height: 180px; }
       .incoming { width: 90%; max-width: 360px; }
@@ -380,6 +425,7 @@
         <button id="switchCameraBtn" class="advanced-btn">Switch Camera</button>
         <button id="toggleFlashBtn" class="advanced-btn">Flash Off</button>
         <button id="ringerBtn" class="advanced-btn">Play Ringer</button>
+        <button id="noiseSuppressionBtn" class="advanced-btn active">Noise Reduction On</button>
       </div>
 
       <div class="controls">
@@ -412,6 +458,65 @@
   <audio id="connectingSound" class="ring" loop>
     <source src="connecting.mp3" type="audio/mpeg">
   </audio>
+
+  <!-- Global Call Modal -->
+  <div id="globalCallModal" class="global-call-modal">
+    <div class="global-call-content">
+      <div class="caller-info" style="margin-bottom: 20px;">
+        <img id="globalCallerPhoto" src="" alt="Caller" style="
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 3px solid #6C63FF;
+          margin-bottom: 15px;
+        ">
+        <h3 id="globalCallerName" style="margin: 10px 0 5px; color: #333;">Incoming Call</h3>
+        <p style="color: #666; margin: 0;">is calling you...</p>
+      </div>
+      
+      <div class="call-actions" style="display: flex; gap: 12px; justify-content: center;">
+        <button id="globalAcceptCall" class="btn primary" style="
+          padding: 12px 24px;
+          font-size: 16px;
+          border-radius: 12px;
+          border: none;
+          background: #6C63FF;
+          color: white;
+          cursor: pointer;
+          flex: 1;
+        ">
+          ✅ Accept
+        </button>
+        <button id="globalRejectCall" class="btn end" style="
+          padding: 12px 24px;
+          font-size: 16px;
+          border-radius: 12px;
+          border: none;
+          background: #FF6584;
+          color: white;
+          cursor: pointer;
+          flex: 1;
+        ">
+          ❌ Decline
+        </button>
+      </div>
+      
+      <div class="call-options" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+        <button id="globalMessageReply" class="btn secondary" style="
+          padding: 10px 20px;
+          border: 1px solid #ddd;
+          background: white;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #666;
+        ">
+          💬 Reply with message
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div class="bottom-bar" aria-hidden="true"></div>
 
@@ -467,6 +572,13 @@
     const toggleFlashBtn = document.getElementById('toggleFlashBtn');
     const ringerBtn = document.getElementById('ringerBtn');
     const callAnimation = document.getElementById('callAnimation');
+    const noiseSuppressionBtn = document.getElementById('noiseSuppressionBtn');
+    const globalCallModal = document.getElementById('globalCallModal');
+    const globalCallerName = document.getElementById('globalCallerName');
+    const globalCallerPhoto = document.getElementById('globalCallerPhoto');
+    const globalAcceptBtn = document.getElementById('globalAcceptCall');
+    const globalRejectBtn = document.getElementById('globalRejectCall');
+    const globalMessageBtn = document.getElementById('globalMessageReply');
 
     // WebRTC / call variables
     let pc = null;
@@ -489,22 +601,59 @@
     // Advanced features variables
     let currentFacingMode = 'user';
     let isFlashOn = false;
-    let flashTrack = null;
     let isRingerPlaying = false;
     let isLocalZoomed = false;
     let isRemoteZoomed = false;
     let isLocalMinimized = false;
     let isRemoteMinimized = false;
+    let isNoiseSuppressionOn = true;
+    let audioContext = null;
+    let audioSource = null;
+    let audioDestination = null;
+    let noiseSuppressionNode = null;
+    let compressorNode = null;
 
-    // ICE servers configuration
-    const ICE_SERVERS = [
-      { urls: 'stun:stun.l.google.com:19302' },
-      {
-        urls: 'turn:your.turn.server:3478', // Replace with actual TURN server
-        username: 'your-username', // Replace with actual username
-        credential: 'your-credential' // Replace with actual credential
-      }
-    ];
+    // Enhanced ICE servers for better geographical connectivity
+    const ICE_SERVERS = {
+      iceServers: [
+        // Google STUN servers (multiple for redundancy)
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        
+        // Additional public STUN servers
+        { urls: 'stun:stun.voiparound.com' },
+        { urls: 'stun:stun.voipbuster.com' },
+        { urls: 'stun:stun.voipstunt.com' },
+        
+        // Free TURN servers
+        {
+          urls: 'turn:numb.viagenie.ca',
+          credential: 'muazkh',
+          username: 'webrtc@live.com'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:80',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        }
+      ],
+      iceCandidatePoolSize: 10, // Increased candidate pool
+      bundlePolicy: 'max-bundle',
+      rtcpMuxPolicy: 'require'
+    };
 
     // Utility functions
     function buildChannelName(idA, idB) {
@@ -520,12 +669,22 @@
 
     // Create RTCPeerConnection and wire events
     function createPeerConnection() {
-      pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      pc = new RTCPeerConnection(ICE_SERVERS);
+
+      // Set timeouts and retry configurations
+      pc.iceConnectionState = 'new';
+      
+      // Enhanced ICE gathering
+      pc.onicegatheringstatechange = () => {
+        console.log('ICE gathering state:', pc.iceGatheringState);
+        if (pc.iceGatheringState === 'complete') {
+          logStatus('ICE gathering complete');
+        }
+      };
 
       // Create remote stream and attach to remoteVideo
       remoteStream = new MediaStream();
       remoteVideo.srcObject = remoteStream;
-      console.log('remoteVideo srcObject set:', remoteVideo.srcObject);
 
       pc.ontrack = (event) => {
         console.log('ontrack event:', event);
@@ -536,7 +695,6 @@
             logStatus('Remote user has disabled their video');
           }
         });
-        console.log('remoteStream tracks after ontrack:', remoteStream.getTracks());
       };
 
       pc.onicecandidate = async (event) => {
@@ -551,47 +709,76 @@
             }
           } catch (e) {
             console.error('Error adding ICE candidate to Firestore', e);
-            logStatus('Error adding ICE candidate');
           }
+        } else {
+          // No more candidates
+          logStatus('ICE candidate gathering complete');
         }
       };
 
-      pc.onconnectionstatechange = () => {
-        console.log('pc connection state:', pc.connectionState);
-        if (pc.connectionState === 'connected') {
-          logStatus('Peer connection established');
+      pc.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', pc.iceConnectionState);
+        const state = pc.iceConnectionState;
+        
+        if (state === 'connected') {
+          logStatus('Connected successfully!');
           stopConnectingSound();
           hideCallAnimation();
           stopRingtone();
-        } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
-          logStatus('Peer disconnected/failed');
+        } else if (state === 'disconnected') {
+          logStatus('Connection unstable - attempting to reconnect...');
+          // Implement reconnection logic
+          setTimeout(() => {
+            if (pc.iceConnectionState === 'disconnected') {
+              reconnectCall();
+            }
+          }, 2000);
+        } else if (state === 'failed') {
+          logStatus('Connection failed - please check your network');
           stopConnectingSound();
           stopRingtone();
-        } else if (pc.connectionState === 'closed') {
-          logStatus('Peer connection closed');
-          stopConnectingSound();
-          stopRingtone();
+        } else if (state === 'closed') {
+          logStatus('Call ended');
         }
       };
 
       return pc;
     }
 
-    // Initialize local media with camera selection
+    // Enhanced audio constraints with noise suppression
     async function initLocalMedia(facingMode = 'user') {
       if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
       }
       
       try {
+        // Enhanced audio constraints for noise reduction
+        const audioConstraints = {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          googEchoCancellation: true,
+          googAutoGainControl: true,
+          googNoiseSuppression: true,
+          googHighpassFilter: true,
+          // Experimental: voice isolation (if supported)
+          googEchoCancellation2: true,
+          googNoiseSuppression2: true
+        };
+
         localStream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
             facingMode: facingMode,
             width: { ideal: 1280 },
             height: { ideal: 720 }
           }, 
-          audio: true 
+          audio: isNoiseSuppressionOn ? audioConstraints : true
         });
+        
+        // Apply additional audio processing if noise suppression is enabled
+        if (isNoiseSuppressionOn) {
+          await applyAudioEnhancements(localStream);
+        }
         
         localVideo.srcObject = localStream;
         isVideoEnabled = true;
@@ -603,16 +790,93 @@
         
       } catch (err) {
         console.error('getUserMedia error', err);
-        if (err.name === 'NotAllowedError') logStatus('Camera/microphone permission denied');
-        else logStatus(`Media error: ${err.message || err}`);
-        throw err;
+        // Fallback to basic audio constraints
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: facingMode },
+            audio: true // Basic fallback
+          });
+          localVideo.srcObject = localStream;
+        } catch (fallbackErr) {
+          logStatus('Camera/microphone permission denied or not available');
+          throw fallbackErr;
+        }
       }
     }
 
-    // Add local tracks to pc
-    function addLocalTracksToPc() {
-      if (!pc || !localStream) return;
-      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    // Advanced audio processing
+    async function applyAudioEnhancements(stream) {
+      if (!stream || !isNoiseSuppressionOn) return;
+      
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioSource = audioContext.createMediaStreamSource(stream);
+        audioDestination = audioContext.createMediaStreamDestination();
+        
+        // Create noise suppression filter
+        noiseSuppressionNode = audioContext.createBiquadFilter();
+        noiseSuppressionNode.type = 'bandpass';
+        noiseSuppressionNode.frequency.value = 300; // Focus on voice frequencies
+        noiseSuppressionNode.Q.value = 1;
+        
+        // Create compressor to normalize audio levels
+        compressorNode = audioContext.createDynamicsCompressor();
+        compressorNode.threshold.value = -50;
+        compressorNode.knee.value = 40;
+        compressorNode.ratio.value = 12;
+        compressorNode.attack.value = 0.003;
+        compressorNode.release.value = 0.25;
+        
+        // Connect audio nodes: source -> noise suppression -> compressor -> destination
+        audioSource.connect(noiseSuppressionNode);
+        noiseSuppressionNode.connect(compressorNode);
+        compressorNode.connect(audioDestination);
+        
+        // Replace audio tracks with processed ones
+        const processedStream = audioDestination.stream;
+        const audioTracks = processedStream.getAudioTracks();
+        
+        if (audioTracks.length > 0) {
+          // Remove original audio tracks
+          stream.getAudioTracks().forEach(track => track.stop());
+          
+          // Add processed audio tracks
+          audioTracks.forEach(track => {
+            stream.addTrack(track);
+          });
+        }
+        
+        logStatus('Audio enhancements applied');
+      } catch (error) {
+        console.warn('Audio processing not available:', error);
+        // Continue without audio processing
+      }
+    }
+
+    // Toggle noise suppression
+    async function toggleNoiseSuppression() {
+      isNoiseSuppressionOn = !isNoiseSuppressionOn;
+      noiseSuppressionBtn.textContent = isNoiseSuppressionOn ? 'Noise Reduction On' : 'Noise Reduction Off';
+      noiseSuppressionBtn.classList.toggle('active', isNoiseSuppressionOn);
+      
+      if (localStream) {
+        // Reinitialize media with new noise suppression setting
+        await initLocalMedia(currentFacingMode);
+        
+        if (pc && isInCall) {
+          // Replace audio track in the peer connection
+          const audioTrack = localStream.getAudioTracks()[0];
+          const sender = pc.getSenders().find(s => 
+            s.track && s.track.kind === 'audio'
+          );
+          
+          if (sender && audioTrack) {
+            await sender.replaceTrack(audioTrack);
+          }
+        }
+      }
+      
+      logStatus(`Noise suppression ${isNoiseSuppressionOn ? 'enabled' : 'disabled'}`);
     }
 
     // Toggle flashlight
@@ -661,7 +925,7 @@
         const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
         await initLocalMedia(newFacingMode);
         
-        if (pc) {
+        if (pc && isInCall) {
           const videoTrack = localStream.getVideoTracks()[0];
           const sender = pc.getSenders().find(s => 
             s.track && s.track.kind === 'video'
@@ -796,6 +1060,32 @@
       callAnimation.style.display = 'none';
     }
 
+    // Reconnection logic
+    async function reconnectCall() {
+      if (!isInCall) return;
+      
+      logStatus('Attempting to reconnect...');
+      try {
+        // Create new offer/answer to reestablish connection
+        if (pc.localRole === 'caller') {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          await updateDoc(callDocRef, {
+            offer: { type: offer.type, sdp: offer.sdp },
+            timestamp: serverTimestamp()
+          });
+        }
+      } catch (error) {
+        console.error('Reconnection failed:', error);
+      }
+    }
+
+    // Add local tracks to pc
+    function addLocalTracksToPc() {
+      if (!pc || !localStream) return;
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+
     // Create call (caller)
     async function startCall() {
       if (!navigator.onLine) { logStatus('No internet connection'); return; }
@@ -881,6 +1171,7 @@
     // Answer call (callee)
     async function acceptIncomingCall() {
       hideIncomingAlert();
+      hideGlobalIncomingAlert();
       if (!channelName) {
         logStatus('No incoming channel to join');
         return;
@@ -954,6 +1245,7 @@
     // Reject incoming call
     async function rejectIncomingCall() {
       hideIncomingAlert();
+      hideGlobalIncomingAlert();
       try {
         if (channelName && callDocRef) {
           await updateDoc(callDocRef, { status: 'rejected' }).catch(() => {});
@@ -1006,6 +1298,18 @@
       if (remoteStream) {
         remoteStream.getTracks().forEach(t => t.stop());
         remoteStream = null;
+      }
+      
+      // Clean up audio processing
+      if (audioContext) {
+        try { 
+          audioContext.close(); 
+        } catch (e) { }
+        audioContext = null;
+        audioSource = null;
+        audioDestination = null;
+        noiseSuppressionNode = null;
+        compressorNode = null;
       }
       
       isFlashOn = false;
@@ -1071,6 +1375,7 @@
       callStatusEl.textContent = 'In call';
       stopRingtone();
       hideIncomingAlert();
+      hideGlobalIncomingAlert();
     }
 
     function updateUIOnCallEnd() {
@@ -1093,6 +1398,49 @@
       stopRingtone();
     }
 
+    // Global modal functions
+    function showGlobalIncomingAlert(callerName, callerPhoto, callerId) {
+      if (globalCallerName) globalCallerName.textContent = callerName || 'Someone';
+      if (globalCallerPhoto) globalCallerPhoto.src = callerPhoto || 'https://via.placeholder.com/80';
+      
+      globalCallModal.style.display = 'flex';
+      
+      // Auto-reject after 45 seconds if no action
+      setTimeout(() => {
+        if (globalCallModal.style.display === 'flex') {
+          hideGlobalIncomingAlert();
+          rejectIncomingCall();
+        }
+      }, 45000);
+      
+      // Play ringtone
+      playRingtone();
+    }
+
+    function hideGlobalIncomingAlert() {
+      globalCallModal.style.display = 'none';
+      stopRingtone();
+    }
+
+    // Quick message function
+    async function sendQuickMessage(message) {
+      if (!currentUserId || !targetUserId) return;
+      
+      try {
+        await addDoc(collection(db, 'messages'), {
+          from: currentUserId,
+          to: targetUserId,
+          text: `[Quick Reply] ${message}`,
+          timestamp: serverTimestamp(),
+          type: 'system',
+          read: false
+        });
+        logStatus('Quick message sent');
+      } catch (error) {
+        console.error('Error sending quick message:', error);
+      }
+    }
+
     // Listen for incoming calls
     function listenForIncomingCalls() {
       if (!currentUserId) return;
@@ -1112,19 +1460,26 @@
               const callerDoc = await getDoc(doc(db, 'users', callData.callerId));
               if (callerDoc && callerDoc.exists()) {
                 const cd = callerDoc.data();
-                targetUserPhoto.src = cd.photoURL || targetUserPhoto.src;
-                targetUserNameEl.textContent = cd.fullName || cd.displayName || 'User';
-                showIncomingAlert(cd.fullName || cd.displayName || 'User');
+                const callerPhoto = cd.photoURL || 'https://via.placeholder.com/80';
+                const callerName = cd.fullName || cd.displayName || 'User';
+                
+                // Use global modal instead of page-specific one
+                showGlobalIncomingAlert(callerName, callerPhoto, callData.callerId);
+                
+                // Update call page if we're on it
+                if (targetUserPhoto && targetUserNameEl) {
+                  targetUserPhoto.src = callerPhoto;
+                  targetUserNameEl.textContent = callerName;
+                }
               } else {
-                targetUserNameEl.textContent = 'User';
-                showIncomingAlert('User');
+                showGlobalIncomingAlert('User', 'https://via.placeholder.com/80', callData.callerId);
               }
               
               receiveCallBtn.style.display = 'inline-block';
               targetUserId = callData.callerId;
             } catch (e) {
               console.error('fetch caller error', e);
-              showIncomingAlert('User');
+              showGlobalIncomingAlert('User', 'https://via.placeholder.com/80', callData.callerId);
             }
           }
         });
@@ -1154,6 +1509,19 @@
       } catch (e) { console.warn('setUserOnline error', e); }
     }
 
+    // Auto-accept call when redirected to call page
+    function checkAutoAccept() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('autoAccept') === 'true') {
+        const autoChannel = params.get('channel');
+        if (autoChannel && autoChannel === channelName) {
+          setTimeout(() => {
+            acceptIncomingCall();
+          }, 1000);
+        }
+      }
+    }
+
     // Logout function
     window.logout = function() {
       try {
@@ -1169,9 +1537,44 @@
       }
     };
 
+    // Setup global modal event listeners
+    function setupGlobalModalListeners() {
+      if (globalAcceptBtn) {
+        globalAcceptBtn.addEventListener('click', () => {
+          // Redirect to call page and accept call
+          if (!window.location.pathname.includes('call.html')) {
+            window.location.href = `call.html?autoAccept=true&channel=${channelName}`;
+          } else {
+            acceptIncomingCall();
+          }
+        });
+      }
+      
+      if (globalRejectBtn) {
+        globalRejectBtn.addEventListener('click', () => {
+          rejectIncomingCall();
+        });
+      }
+      
+      if (globalMessageBtn) {
+        globalMessageBtn.addEventListener('click', () => {
+          const message = prompt('Send a quick message to the caller:');
+          if (message) {
+            sendQuickMessage(message);
+            rejectIncomingCall(); // Automatically reject call after messaging
+          } else {
+            hideGlobalIncomingAlert();
+          }
+        });
+      }
+    }
+
     // Main initialization function
     async function initApp() {
       try {
+        // Setup global modal listeners
+        setupGlobalModalListeners();
+        
         const loggedInUser = localStorage.getItem('loggedInUser');
         if (!loggedInUser) {
           statusText.textContent = 'No user logged in — redirecting to login...';
@@ -1190,6 +1593,9 @@
           currentUserId = user.uid;
           selfIdEl.textContent = currentUserId;
           await updateDoc(doc(db, 'users', currentUserId), { online: true, lastSeen: serverTimestamp() }).catch(() => {});
+
+          // Check for auto-accept parameter
+          checkAutoAccept();
 
           const params = new URLSearchParams(window.location.search);
           const paramUid = params.get('uid');
@@ -1257,6 +1663,7 @@
     switchCameraBtn.addEventListener('click', switchCamera);
     toggleFlashBtn.addEventListener('click', toggleFlash);
     ringerBtn.addEventListener('click', toggleRinger);
+    noiseSuppressionBtn.addEventListener('click', toggleNoiseSuppression);
 
     window.addEventListener('beforeunload', () => setUserOnline(false));
     window.addEventListener('online', () => statusText.textContent = '');
