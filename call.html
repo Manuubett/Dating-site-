@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DateLink — Advanced Call (WebRTC)</title>
+  <style>
+    :root{
+      --primary:#6C63FF; --primary-dark:#5651D9; --secondary:#FF6584;
+      --bg:#F9F9FF; --surface:#FFF; --on-surface:#333; --muted:#777;
+      --radius:16px; --radius-sm:8px; --shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+      margin:0; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); color:var(--on-surface);
+    }
+    nav{
+      position:fixed; top:0; left:0; right:0; height:60px; display:flex; gap:6px; align-items:center; justify-content:space-around;
+      background:var(--surface); box-shadow:var(--shadow); z-index:120; padding:0 12px;
+    }
+    nav a{ text-decoration:none; color:var(--muted); font-weight:500; font-size:13px; display:flex; flex-direction:column; align-items:center; padding:6px 10px; border-radius:8px;}
+    nav a:hover, nav a.active{ color:var(--primary); background:rgba(108,99,255,0.05);}
+    .nav-notif-dot{ position:absolute; top:6px; right:6px; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; color:white; background:var(--secondary); }
+    .container{ display:flex; flex-direction:column; align-items:center; gap:18px; padding:86px 16px 110px; width:100%; max-width:1100px; margin:0 auto; }
+    .card{ width:100%; background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; display:flex; flex-direction:column; align-items:center; }
+    .call-header{ display:flex; gap:12px; align-items:center; width:100%; }
+    .call-header img{ width:64px; height:64px; border-radius:50%; object-fit:cover; border:3px solid var(--primary); }
+    .call-header h2{ margin:0; font-size:18px; }
+    .call-header p{ margin:0; color:var(--muted); font-size:13px; }
+    .video-row{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:16px; position:relative; }
+    .video-feed{ width:320px; height:240px; border-radius:12px; background:#000; border:2px solid #eee; object-fit:cover; transition: all 0.3s ease; cursor:pointer; }
+    .video-feed.fullscreen{ position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90vw; height:90vh; z-index:1000; border:3px solid var(--primary); }
+    .video-feed.minimized{ width:120px; height:90px; position:absolute; bottom:10px; right:10px; z-index:1001; border:2px solid var(--secondary); }
+    .video-controls{ position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:1002; }
+    .video-controls button{ background:rgba(0,0,0,0.7); color:white; border:none; border-radius:20px; padding:8px 12px; font-size:12px; cursor:pointer; }
+    .controls{ display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; justify-content:center; }
+    .btn{ padding:10px 16px; border-radius:12px; border:0; cursor:pointer; font-weight:600; font-size:14px; transition: all 0.2s ease; }
+    .btn.primary{ background:var(--primary); color:#fff; }
+    .btn.secondary{ background:#f1f1f5; color:var(--on-surface); }
+    .btn.end{ background:var(--secondary); color:#fff; }
+    .btn:disabled{ opacity:0.55; cursor:not-allowed; transform:none; }
+    .btn:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    .toggles{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
+    .toggle{ padding:8px 12px; border-radius:10px; border:0; cursor:pointer; background:#f3f3f7; font-weight:600; transition: all 0.2s ease; }
+    .toggle.active{ background:var(--primary); color:white; }
+    .toggle:hover{ transform:translateY(-1px); }
+    .advanced-controls{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
+    .advanced-btn{ padding:8px 12px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:12px; transition: all 0.2s ease; }
+    .advanced-btn.active{ background:var(--primary-dark); color:white; border-color:var(--primary-dark); }
+    .advanced-btn:hover{ background:#f0f0f5; }
+    .status{ color:var(--muted); font-size:13px; margin-top:12px; text-align:center; min-height:20px; }
+    .incoming{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); background:var(--surface); padding:18px; border-radius:14px; box-shadow:0 18px 50px rgba(0,0,0,0.25); display:none; z-index:1000; width:320px; text-align:center;}
+    .incoming h3{ margin:4px 0 6px; }
+    .bottom-bar{ position:fixed; bottom:0; left:0; right:0; background:transparent; padding:10px 16px; display:flex; justify-content:center; pointer-events:none;}
+    .ring{ display:none; }
+    .call-animation{ display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:999; }
+    .pulsating-ring{ width:100px; height:100px; border:3px solid var(--primary); border-radius:50%; animation:pulse 1.5s infinite; }
+    @keyframes pulse{ 0%{ transform:scale(0.8); opacity:1; } 100%{ transform:scale(1.5); opacity:0; } }
+    @media (max-width:760px){ .video-feed{ width:260px; height:180px } .incoming{ width:90%; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="home2.html">🏠<span style="font-size:11px;">Home</span></a>
+    <a href="matchs.html">💞<span style="font-size:11px;">Match</span></a>
+    <a href="chats.html" style="position:relative;">💬<span style="font-size:11px;">Chats</span><span id="navNotifDot" class="nav-notif-dot" style="display:none;"></span></a>
+    <a href="profile.html">👤<span style="font-size:11px;">Profile</span></a>
+    <a href="#" onclick="logout()">🚪<span style="font-size:11px;">Logout</span></a>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <div class="call-header" style="width:100%;">
+        <img id="targetUserPhoto" src="https://via.placeholder.com/64" alt="User">
+        <div style="flex:1;">
+          <h2 id="targetUserName">Loading...</h2>
+          <p id="callStatus">Ready</p>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div style="font-size:12px;color:var(--muted)">You: <span id="selfId">...</span></div>
+          <div style="font-size:12px;color:var(--muted)">Channel: <span id="channelNameDisplay">-</span></div>
+        </div>
+      </div>
+
+      <div class="video-row">
+        <div class="video-container">
+          <video id="localVideo" class="video-feed" autoplay muted playsinline></video>
+          <div class="video-controls">
+            <button id="zoomLocalBtn">Zoom</button>
+            <button id="minimizeLocalBtn">Minimize</button>
+          </div>
+        </div>
+        <div class="video-container">
+          <video id="remoteVideo" class="video-feed" autoplay playsinline></video>
+          <div class="video-controls">
+            <button id="zoomRemoteBtn">Zoom</button>
+            <button id="minimizeRemoteBtn">Minimize</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toggles">
+        <button id="toggleVideoBtn" class="toggle">Turn Video On</button>
+        <button id="toggleAudioBtn" class="toggle">Unmute Audio</button>
+      </div>
+
+      <div class="advanced-controls">
+        <button id="switchCameraBtn" class="advanced-btn">Switch Camera</button>
+        <button id="toggleFlashBtn" class="advanced-btn">Flash Off</button>
+        <button id="ringerBtn" class="advanced-btn">Play Ringer</button>
+      </div>
+
+      <div class="controls">
+        <button id="startCallBtn" class="btn primary">Start Call</button>
+        <button id="receiveCallBtn" class="btn secondary" style="display:none;">Receive Call</button>
+        <button id="endCallBtn" class="btn end" disabled>End Call</button>
+      </div>
+
+      <div class="status" id="status">Status messages will appear here</div>
+    </div>
+  </div>
+
+  <div id="incomingCallAlert" class="incoming" role="dialog" aria-modal="true">
+    <h3>Incoming Call</h3>
+    <p id="incomingCallerName">Someone is calling...</p>
+    <div style="margin-top:12px; display:flex; gap:10px; justify-content:center;">
+      <button id="acceptCallBtn" class="btn primary">Accept</button>
+      <button id="rejectCallBtn" class="btn end">Reject</button>
+    </div>
+  </div>
+
+  <div id="callAnimation" class="call-animation">
+    <div class="pulsating-ring"></div>
+  </div>
+
+  <audio id="ringtone" class="ring" loop>
+    <source src="ring.mp3" type="audio/mpeg">
+  </audio>
+  
+  <audio id="connectingSound" class="ring" loop>
+    <source src="connecting.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="bottom-bar" aria-hidden="true"></div>
+
+  <!-- Firebase SDKs (v10, modular) -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import {
+      getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot,
+      where, query, serverTimestamp, addDoc, getDoc
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
+      authDomain: "smart-waste-66279.firebaseapp.com",
+      projectId: "smart-waste-66279",
+      storageBucket: "smart-waste-66279.appspot.com",
+      messagingSenderId: "619099585646",
+      appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
+    };
+
+    // Firebase init
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // DOM elements
+    const startCallBtn = document.getElementById('startCallBtn');
+    const receiveCallBtn = document.getElementById('receiveCallBtn');
+    const endCallBtn = document.getElementById('endCallBtn');
+    const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+    const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+    const acceptCallBtn = document.getElementById('acceptCallBtn');
+    const rejectCallBtn = document.getElementById('rejectCallBtn');
+    const incomingCallAlert = document.getElementById('incomingCallAlert');
+    const incomingCallerName = document.getElementById('incomingCallerName');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const callStatusEl = document.getElementById('callStatus');
+    const statusText = document.getElementById('status');
+    const ringtone = document.getElementById('ringtone');
+    const connectingSound = document.getElementById('connectingSound');
+    const channelNameDisplay = document.getElementById('channelNameDisplay');
+    const selfIdEl = document.getElementById('selfId');
+    const targetUserPhoto = document.getElementById('targetUserPhoto');
+    const targetUserNameEl = document.getElementById('targetUserName');
+    const navNotifDot = document.getElementById('navNotifDot');
+    const zoomLocalBtn = document.getElementById('zoomLocalBtn');
+    const minimizeLocalBtn = document.getElementById('minimizeLocalBtn');
+    const zoomRemoteBtn = document.getElementById('zoomRemoteBtn');
+    const minimizeRemoteBtn = document.getElementById('minimizeRemoteBtn');
+    const switchCameraBtn = document.getElementById('switchCameraBtn');
+    const toggleFlashBtn = document.getElementById('toggleFlashBtn');
+    const ringerBtn = document.getElementById('ringerBtn');
+    const callAnimation = document.getElementById('callAnimation');
+
+    // WebRTC / call variables
+    let pc = null;
+    let localStream = null;
+    let remoteStream = null;
+    let currentUserId = null;
+    let targetUserId = null;
+    let channelName = null;
+    let callDocRef = null;
+    let offerCandidatesCol = null;
+    let answerCandidatesCol = null;
+    let isInCall = false;
+    let isVideoEnabled = false;
+    let isAudioEnabled = false;
+    let incomingCallUnsubscribe = null;
+    let callDocUnsubscribe = null;
+    let offerCandidatesUnsub = null;
+    let answerCandidatesUnsub = null;
+    
+    // Advanced features variables
+    let currentFacingMode = 'user'; // 'user' for front, 'environment' for back
+    let isFlashOn = false;
+    let flashTrack = null;
+    let isRingerPlaying = false;
+    let isLocalZoomed = false;
+    let isRemoteZoomed = false;
+    let isLocalMinimized = false;
+    let isRemoteMinimized = false;
+
+    // ICE servers configuration
+    const ICE_SERVERS = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      // Add your TURN servers here if needed
+    ];
+
+    // Utility functions
+    function buildChannelName(idA, idB) {
+      if (!idA || !idB) return null;
+      const [a, b] = [idA, idB].map(String).sort();
+      return `call_${a}_${b}`;
+    }
+
+    function logStatus(msg) {
+      console.log(msg);
+      statusText.textContent = msg;
+    }
+
+    // Create RTCPeerConnection and wire events
+    function createPeerConnection() {
+      pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+
+      // Create remote stream and attach to remoteVideo
+      remoteStream = new MediaStream();
+      remoteVideo.srcObject = remoteStream;
+
+      pc.ontrack = (event) => {
+        event.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+      };
+
+      pc.onicecandidate = async (event) => {
+        if (event.candidate) {
+          const cand = event.candidate.toJSON();
+          try {
+            if (!callDocRef) return;
+            
+            if (pc.localRole === 'caller') {
+              await addDoc(offerCandidatesCol, cand);
+            } else {
+              await addDoc(answerCandidatesCol, cand);
+            }
+          } catch (e) {
+            console.error('Error adding ICE candidate to Firestore', e);
+          }
+        }
+      };
+
+      pc.onconnectionstatechange = () => {
+        console.log('pc connection state:', pc.connectionState);
+        if (pc.connectionState === 'connected') {
+          logStatus('Peer connection established');
+          stopConnectingSound();
+          hideCallAnimation();
+        } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+          logStatus('Peer disconnected/failed');
+          stopConnectingSound();
+        } else if (pc.connectionState === 'closed') {
+          logStatus('Peer connection closed');
+          stopConnectingSound();
+        }
+      };
+
+      return pc;
+    }
+
+    // Initialize local media with camera selection
+    async function initLocalMedia(facingMode = 'user') {
+      if (localStream) {
+        // Stop existing stream
+        localStream.getTracks().forEach(track => track.stop());
+      }
+      
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: facingMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }, 
+          audio: true 
+        });
+        
+        localVideo.srcObject = localStream;
+        isVideoEnabled = true;
+        isAudioEnabled = true;
+        currentFacingMode = facingMode;
+        updateToggleButtons();
+        
+        // Update switch camera button text
+        switchCameraBtn.textContent = facingMode === 'user' ? 'Back Camera' : 'Front Camera';
+        
+      } catch (err) {
+        console.error('getUserMedia error', err);
+        if (err.name === 'NotAllowedError') logStatus('Camera/microphone permission denied');
+        else logStatus(`Media error: ${err.message || err}`);
+        throw err;
+      }
+    }
+
+    // Add local tracks to pc
+    function addLocalTracksToPc() {
+      if (!pc) return;
+      if (!localStream) return;
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+
+    // Toggle flashlight (only works on mobile devices with flash)
+    async function toggleFlash() {
+      if (!localStream) return;
+      
+      try {
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (!videoTrack) {
+          logStatus('No video track available');
+          return;
+        }
+        
+        const capabilities = videoTrack.getCapabilities();
+        if (!capabilities.torch) {
+          logStatus('Flash not supported on this device');
+          return;
+        }
+        
+        if (!isFlashOn) {
+          await videoTrack.applyConstraints({
+            advanced: [{ torch: true }]
+          });
+          isFlashOn = true;
+          toggleFlashBtn.textContent = 'Flash On';
+          toggleFlashBtn.classList.add('active');
+          logStatus('Flash turned on');
+        } else {
+          await videoTrack.applyConstraints({
+            advanced: [{ torch: false }]
+          });
+          isFlashOn = false;
+          toggleFlashBtn.textContent = 'Flash Off';
+          toggleFlashBtn.classList.remove('active');
+          logStatus('Flash turned off');
+        }
+      } catch (err) {
+        console.error('Error toggling flash:', err);
+        logStatus('Error toggling flash');
+      }
+    }
+
+    // Switch between front and back camera
+    async function switchCamera() {
+      try {
+        const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        await initLocalMedia(newFacingMode);
+        
+        if (pc) {
+          // Replace the video track in the peer connection
+          const videoTrack = localStream.getVideoTracks()[0];
+          const sender = pc.getSenders().find(s => 
+            s.track && s.track.kind === 'video'
+          );
+          
+          if (sender) {
+            await sender.replaceTrack(videoTrack);
+          }
+        }
+        
+        logStatus(`Switched to ${newFacingMode === 'user' ? 'front' : 'back'} camera`);
+      } catch (err) {
+        console.error('Error switching camera:', err);
+        logStatus('Error switching camera');
+      }
+    }
+
+    // Video zoom and minimize functions
+    function zoomLocalVideo() {
+      if (isLocalZoomed) return;
+      
+      localVideo.classList.add('fullscreen');
+      isLocalZoomed = true;
+      isLocalMinimized = false;
+      
+      if (isRemoteZoomed) {
+        remoteVideo.classList.remove('fullscreen');
+        isRemoteZoomed = false;
+      }
+    }
+
+    function minimizeLocalVideo() {
+      if (isLocalMinimized) return;
+      
+      localVideo.classList.add('minimized');
+      isLocalMinimized = true;
+      isLocalZoomed = false;
+    }
+
+    function resetLocalVideo() {
+      localVideo.classList.remove('fullscreen');
+      localVideo.classList.remove('minimized');
+      isLocalZoomed = false;
+      isLocalMinimized = false;
+    }
+
+    function zoomRemoteVideo() {
+      if (isRemoteZoomed) return;
+      
+      remoteVideo.classList.add('fullscreen');
+      isRemoteZoomed = true;
+      isRemoteMinimized = false;
+      
+      if (isLocalZoomed) {
+        localVideo.classList.remove('fullscreen');
+        isLocalZoomed = false;
+      }
+    }
+
+    function minimizeRemoteVideo() {
+      if (isRemoteMinimized) return;
+      
+      remoteVideo.classList.add('minimized');
+      isRemoteMinimized = true;
+      isRemoteZoomed = false;
+    }
+
+    function resetRemoteVideo() {
+      remoteVideo.classList.remove('fullscreen');
+      remoteVideo.classList.remove('minimized');
+      isRemoteZoomed = false;
+      isRemoteMinimized = false;
+    }
+
+    // Click handlers for video elements
+    localVideo.addEventListener('click', () => {
+      if (isLocalMinimized) {
+        resetLocalVideo();
+      } else if (!isLocalZoomed) {
+        zoomLocalVideo();
+      } else {
+        resetLocalVideo();
+      }
+    });
+
+    remoteVideo.addEventListener('click', () => {
+      if (isRemoteMinimized) {
+        resetRemoteVideo();
+      } else if (!isRemoteZoomed) {
+        zoomRemoteVideo();
+      } else {
+        resetRemoteVideo();
+      }
+    });
+
+    // Ringer control
+    function toggleRinger() {
+      if (isRingerPlaying) {
+        ringtone.pause();
+        ringtone.currentTime = 0;
+        isRingerPlaying = false;
+        ringerBtn.textContent = 'Play Ringer';
+        ringerBtn.classList.remove('active');
+      } else {
+        ringtone.play().catch(e => console.log('Ringer play error:', e));
+        isRingerPlaying = true;
+        ringerBtn.textContent = 'Stop Ringer';
+        ringerBtn.classList.add('active');
+      }
+    }
+
+    function playConnectingSound() {
+      connectingSound.play().catch(e => console.log('Connecting sound play error:', e));
+    }
+
+    function stopConnectingSound() {
+      connectingSound.pause();
+      connectingSound.currentTime = 0;
+    }
+
+    function showCallAnimation() {
+      callAnimation.style.display = 'block';
+    }
+
+    function hideCallAnimation() {
+      callAnimation.style.display = 'none';
+    }
+
+    // Create call (caller)
+    async function startCall() {
+      if (!navigator.onLine) { logStatus('No internet connection'); return; }
+      if (!targetUserId) { logStatus('No target user set (URL param ?uid=...)'); return; }
+      try {
+        logStatus('Starting call (creating offer)...');
+        await initLocalMedia();
+
+        // Play connecting sound and show animation
+        playConnectingSound();
+        showCallAnimation();
+
+        // Create PC
+        createPeerConnection();
+        pc.localRole = 'caller';
+
+        // Prepare Firestore doc/cols
+        channelName = buildChannelName(currentUserId, targetUserId);
+        channelNameDisplay.textContent = channelName;
+        callDocRef = doc(db, 'calls', channelName);
+        offerCandidatesCol = collection(callDocRef, 'offerCandidates');
+        answerCandidatesCol = collection(callDocRef, 'answerCandidates');
+
+        // Add local tracks
+        addLocalTracksToPc();
+
+        // Create offer
+        const offerDescription = await pc.createOffer();
+        await pc.setLocalDescription(offerDescription);
+
+        const offer = { type: offerDescription.type, sdp: offerDescription.sdp };
+
+        // Write call doc
+        await setDoc(callDocRef, {
+          callerId: currentUserId,
+          receiverId: targetUserId,
+          channelName,
+          offer,
+          status: 'calling',
+          timestamp: serverTimestamp()
+        });
+
+        // Listen for remote answer
+        callDocUnsubscribe = onSnapshot(callDocRef, async snap => {
+          const data = snap.data();
+          if (!data) return;
+          // If answer arrived, set remote description
+          if (data.answer && !pc.currentRemoteDescription) {
+            const answerDesc = new RTCSessionDescription(data.answer);
+            await pc.setRemoteDescription(answerDesc);
+            logStatus('Received answer, remote description set');
+          }
+          if (data.status === 'ended' || data.status === 'rejected') {
+            logStatus('Call ended by remote');
+            endCall();
+          }
+        });
+
+        // Listen for answer candidates
+        answerCandidatesUnsub = onSnapshot(answerCandidatesCol, snapshot => {
+          snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+              const cand = change.doc.data();
+              pc.addIceCandidate(new RTCIceCandidate(cand)).catch(e => console.error('addIceCandidate error', e));
+            }
+          });
+        });
+
+        isInCall = true;
+        updateUIOnCallStart();
+        logStatus('Call created — waiting for answer');
+      } catch (err) {
+        console.error('startCall error', err);
+        logStatus(`Error starting call: ${err.message || err}`);
+        stopConnectingSound();
+        hideCallAnimation();
+        await cleanupCallResources();
+      }
+    }
+
+    // Answer call (callee)
+    async function acceptIncomingCall() {
+      hideIncomingAlert();
+      if (!channelName) {
+        logStatus('No incoming channel to join');
+        return;
+      }
+      try {
+        logStatus('Accepting call — creating answer...');
+        await initLocalMedia();
+
+        // Play connecting sound and show animation
+        playConnectingSound();
+        showCallAnimation();
+
+        createPeerConnection();
+        pc.localRole = 'callee';
+
+        // Prepare refs
+        callDocRef = doc(db, 'calls', channelName);
+        offerCandidatesCol = collection(callDocRef, 'offerCandidates');
+        answerCandidatesCol = collection(callDocRef, 'answerCandidates');
+
+        addLocalTracksToPc();
+
+        // Listen for offer candidates
+        offerCandidatesUnsub = onSnapshot(offerCandidatesCol, snapshot => {
+          snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+              const cand = change.doc.data();
+              pc.addIceCandidate(new RTCIceCandidate(cand)).catch(e => console.error('addIceCandidate error', e));
+            }
+          });
+        });
+
+        // Fetch call doc to get offer
+        const callSnap = await getDoc(callDocRef);
+        if (!callSnap.exists()) {
+          logStatus('Call no longer exists');
+          return;
+        }
+        const callData = callSnap.data();
+        if (!callData.offer) {
+          logStatus('No offer found on call doc');
+          return;
+        }
+
+        const offerDesc = new RTCSessionDescription(callData.offer);
+        await pc.setRemoteDescription(offerDesc);
+
+        // Create answer
+        const answerDesc = await pc.createAnswer();
+        await pc.setLocalDescription(answerDesc);
+
+        // Write answer back to call doc
+        const answer = { type: answerDesc.type, sdp: answerDesc.sdp };
+        await updateDoc(callDocRef, { answer, status: 'in-progress' });
+
+        // Listen for call status changes
+        callDocUnsubscribe = onSnapshot(callDocRef, snap => {
+          const data = snap.data();
+          if (!data) return;
+          if (data.status === 'ended' || data.status === 'rejected') {
+            logStatus('Call ended by remote');
+            endCall();
+          }
+        });
+
+        isInCall = true;
+        updateUIOnCallStart();
+        logStatus('Call accepted — in progress');
+      } catch (err) {
+        console.error('acceptIncomingCall error', err);
+        logStatus(`Error accepting call: ${err.message || err}`);
+        stopConnectingSound();
+        hideCallAnimation();
+        await cleanupCallResources();
+      }
+    }
+
+    // Reject incoming call
+    async function rejectIncomingCall() {
+      hideIncomingAlert();
+      try {
+        if (channelName && callDocRef) {
+          await updateDoc(callDocRef, { status: 'rejected' }).catch(() => {});
+          await deleteDoc(callDocRef).catch(() => {});
+        }
+        logStatus('Call rejected');
+      } catch (err) {
+        console.error('rejectIncomingCall error', err);
+        logStatus(`Error rejecting call: ${err.message || err}`);
+      } finally {
+        cleanupCallResources();
+      }
+    }
+
+    // End call and cleanup
+    async function endCall() {
+      try {
+        logStatus('Ending call...');
+        if (callDocRef && channelName) {
+          try {
+            await updateDoc(callDocRef, { status: 'ended', endedAt: serverTimestamp() }).catch(() => {});
+            await deleteDoc(callDocRef).catch(() => {});
+          } catch (e) { console.warn('Could not update/delete call doc', e); }
+        }
+      } catch (e) {
+        console.warn('endCall top error', e);
+      } finally {
+        await cleanupCallResources();
+        logStatus('Call ended');
+      }
+    }
+
+    // Cleanup local resources and listeners
+    async function cleanupCallResources() {
+      // Remove Firestore listeners
+      if (incomingCallUnsubscribe) { incomingCallUnsubscribe(); incomingCallUnsubscribe = null; }
+      if (callDocUnsubscribe) { callDocUnsubscribe(); callDocUnsubscribe = null; }
+      if (offerCandidatesUnsub) { offerCandidatesUnsub(); offerCandidatesUnsub = null; }
+      if (answerCandidatesUnsub) { answerCandidatesUnsub(); answerCandidatesUnsub = null; }
+
+      // Stop local media tracks
+      if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+      }
+
+      // Close peer connection
+      if (pc) {
+        try { pc.close(); } catch (e) { }
+        pc = null;
+      }
+
+      // Clear variables
+      if (remoteStream) {
+        remoteStream.getTracks().forEach(t => t.stop());
+        remoteStream = null;
+      }
+      
+      // Reset advanced features
+      isFlashOn = false;
+      toggleFlashBtn.textContent = 'Flash Off';
+      toggleFlashBtn.classList.remove('active');
+      
+      stopConnectingSound();
+      hideCallAnimation();
+      resetLocalVideo();
+      resetRemoteVideo();
+      
+      channelName = null;
+      callDocRef = null;
+      offerCandidatesCol = null;
+      answerCandidatesCol = null;
+      isInCall = false;
+      isVideoEnabled = false;
+      isAudioEnabled = false;
+      updateUIOnCallEnd();
+    }
+
+    // Toggle video on/off
+    async function toggleVideo() {
+      if (!localStream) return;
+      try {
+        isVideoEnabled = !isVideoEnabled;
+        localStream.getVideoTracks().forEach(track => track.enabled = isVideoEnabled);
+        toggleVideoBtn.classList.toggle('active', isVideoEnabled);
+        toggleVideoBtn.textContent = isVideoEnabled ? 'Turn Video Off' : 'Turn Video On';
+      } catch (err) {
+        console.error('toggleVideo error', err);
+        logStatus(`Error toggling video: ${err.message || err}`);
+      }
+    }
+
+    // Toggle audio (mute/unmute)
+    async function toggleAudio() {
+      if (!localStream) return;
+      try {
+        isAudioEnabled = !isAudioEnabled;
+        localStream.getAudioTracks().forEach(track => track.enabled = isAudioEnabled);
+        toggleAudioBtn.classList.toggle('active', isAudioEnabled);
+        toggleAudioBtn.textContent = isAudioEnabled ? 'Mute Audio' : 'Unmute Audio';
+      } catch (err) {
+        console.error('toggleAudio error', err);
+        logStatus(`Error toggling audio: ${err.message || err}`);
+      }
+    }
+
+    // UI helpers
+    function updateToggleButtons() {
+      toggleVideoBtn.textContent = isVideoEnabled ? 'Turn Video Off' : 'Turn Video On';
+      toggleAudioBtn.textContent = isAudioEnabled ? 'Mute Audio' : 'Unmute Audio';
+      toggleVideoBtn.classList.toggle('active', isVideoEnabled);
+      toggleAudioBtn.classList.toggle('active', isAudioEnabled);
+    }
+
+    function updateUIOnCallStart() {
+      startCallBtn.disabled = true;
+      endCallBtn.disabled = false;
+      receiveCallBtn.style.display = 'none';
+      callStatusEl.textContent = 'In call';
+      stopRingtone();
+      hideIncomingAlert();
+    }
+
+    function updateUIOnCallEnd() {
+      startCallBtn.disabled = false;
+      endCallBtn.disabled = true;
+      receiveCallBtn.style.display = 'none';
+      callStatusEl.textContent = 'Ready';
+      channelNameDisplay.textContent = '-';
+      selfIdEl.textContent = currentUserId || '...';
+    }
+
+    function showIncomingAlert(callerName) {
+      incomingCallerName.textContent = `${callerName || 'User'} is calling you`;
+      incomingCallAlert.style.display = 'block';
+      playRingtone();
+    }
+
+    function hideIncomingAlert() {
+      incomingCallAlert.style.display = 'none';
+      stopRingtone();
+    }
+
+    function playRingtone() {
+      try { ringtone.play().catch(() => { }); } catch (e) { }
+    }
+    
+    function stopRingtone() {
+      try { ringtone.pause(); ringtone.currentTime = 0; } catch (e) { }
+    }
+
+    // Listen for incoming calls targeted at currentUserId
+    function listenForIncomingCalls() {
+      if (!currentUserId) return;
+      const q = query(collection(db, 'calls'), where('receiverId', '==', currentUserId), where('status', '==', 'calling'));
+      incomingCallUnsubscribe = onSnapshot(q, snapshot => {
+        snapshot.docChanges().forEach(async change => {
+          if (change.type === 'added') {
+            const docSnap = change.doc;
+            const callData = docSnap.data();
+            if (!callData) return;
+            
+            channelName = callData.channelName;
+            channelNameDisplay.textContent = channelName;
+            callDocRef = doc(db, 'calls', channelName);
+            
+            try {
+              const callerDoc = await getDoc(doc(db, 'users', callData.callerId));
+              if (callerDoc && callerDoc.exists()) {
+                const cd = callerDoc.data();
+                targetUserPhoto.src = cd.photoURL || targetUserPhoto.src;
+                targetUserNameEl.textContent = cd.fullName || cd.displayName || 'User';
+                showIncomingAlert(cd.fullName || cd.displayName || 'User');
+              } else {
+                targetUserNameEl.textContent = 'User';
+                showIncomingAlert('User');
+              }
+              
+              receiveCallBtn.style.display = 'inline-block';
+              targetUserId = callData.callerId;
+            } catch (e) {
+              console.error('fetch caller error', e);
+              showIncomingAlert('User');
+            }
+          }
+        });
+      }, err => {
+        console.error('listenForIncomingCalls error', err);
+      });
+    }
+
+    // Update notification dot
+    function updateNavNotifDot() {
+      const notifCounts = JSON.parse(localStorage.getItem('unreadMessages') || '{}');
+      const total = Object.values(notifCounts).reduce((s, n) => s + (n || 0), 0);
+      if (total > 0) {
+        navNotifDot.style.display = 'flex';
+        navNotifDot.textContent = total > 99 ? '99+' : total;
+      } else {
+        navNotifDot.style.display = 'none';
+      }
+    }
+
+    // Set user online status
+    async function setUserOnline(online) {
+      if (!currentUserId) return;
+      try {
+        await updateDoc(doc(db, 'users', currentUserId), { online, lastSeen: serverTimestamp() }).catch(() => {});
+      } catch (e) { console.warn('setUserOnline error', e); }
+    }
+
+    // Logout function
+    window.logout = function() {
+      try {
+        localStorage.removeItem('loggedInUser');
+        setUserOnline(false);
+        signOut(auth).then(() => window.location.href = 'login.html').catch(err => {
+          console.error('logout error', err);
+          window.location.href = 'login.html';
+        });
+      } catch (e) {
+        console.error(e);
+        window.location.href = 'login.html';
+      }
+    };
+
+    // Main initialization function
+    async function initApp() {
+      try {
+        const loggedInUser = localStorage.getItem('loggedInUser');
+        if (!loggedInUser) {
+          statusText.textContent = 'No user logged in — redirecting to login...';
+          setTimeout(() => window.location.href = 'login.html', 800);
+          return;
+        }
+
+        onAuthStateChanged(auth, async user => {
+          if (!user || user.uid !== loggedInUser) {
+            console.log('auth mismatch, redirecting to login...');
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'login.html';
+            return;
+          }
+
+          currentUserId = user.uid;
+          selfIdEl.textContent = currentUserId;
+          await updateDoc(doc(db, 'users', currentUserId), { online: true, lastSeen: serverTimestamp() }).catch(() => {});
+
+          // If ?uid=... is present in URL, set as target
+          const params = new URLSearchParams(window.location.search);
+          const paramUid = params.get('uid');
+          if (paramUid) {
+            targetUserId = paramUid;
+            try {
+              const tdoc = await getDoc(doc(db, 'users', targetUserId));
+              if (tdoc && tdoc.exists()) {
+                const td = tdoc.data();
+                targetUserNameEl.textContent = td.fullName || td.displayName || 'User';
+                if (td.photoURL) targetUserPhoto.src = td.photoURL;
+              } else {
+                statusText.textContent = 'Target user data not found, but you can still call by UID.';
+              }
+            } catch (e) {
+              console.warn('fetch target user error', e);
+              statusText.textContent = 'Could not fetch target user details.';
+            }
+          } else {
+            statusText.textContent = 'No target UID in URL. Add ?uid=<userId> to call someone.';
+          }
+
+          // Start listening for incoming calls
+          listenForIncomingCalls();
+          updateNavNotifDot();
+
+          // Watch unread messages
+          const q = query(collection(db, 'messages'), where('to', '==', currentUserId), where('read', '==', false));
+          onSnapshot(q, snap => {
+            const notifCounts = JSON.parse(localStorage.getItem('unreadMessages') || '{}');
+            snap.docChanges().forEach(c => {
+              if (c.type === 'added') {
+                const msg = c.doc.data();
+                notifCounts[msg.from] = (notifCounts[msg.from] || 0) + 1;
+              }
+            });
+            localStorage.setItem('unreadMessages', JSON.stringify(notifCounts));
+            updateNavNotifDot();
+          });
+        });
+      } catch (err) {
+        console.error('initApp error', err);
+        statusText.textContent = `Init error: ${err.message || err}`;
+      }
+    }
+
+    // Event listeners
+    startCallBtn.addEventListener('click', async () => {
+      if (!targetUserId) {
+        const uid = prompt('Enter the UID of the user you want to call:');
+        if (!uid) return;
+        targetUserId = uid.trim();
+      }
+      await startCall();
+    });
+    receiveCallBtn.addEventListener('click', acceptIncomingCall);
+    endCallBtn.addEventListener('click', endCall);
+    toggleVideoBtn.addEventListener('click', toggleVideo);
+    toggleAudioBtn.addEventListener('click', toggleAudio);
+    acceptCallBtn.addEventListener('click', acceptIncomingCall);
+    rejectCallBtn.addEventListener('click', rejectIncomingCall);
+    
+    // Advanced controls event listeners
+    zoomLocalBtn.addEventListener('click', zoomLocalVideo);
+    minimizeLocalBtn.addEventListener('click', minimizeLocalVideo);
+    zoomRemoteBtn.addEventListener('click', zoomRemoteVideo);
+    minimizeRemoteBtn.addEventListener('click', minimizeRemoteVideo);
+    switchCameraBtn.addEventListener('click', switchCamera);
+    toggleFlashBtn.addEventListener('click', toggleFlash);
+    ringerBtn.addEventListener('click', toggleRinger);
+
+    window.addEventListener('beforeunload', () => setUserOnline(false));
+    window.addEventListener('online', () => statusText.textContent = '');
+    window.addEventListener('offline', () => statusText.textContent = 'Offline — check your network.');
+
+    // Start initialization when DOM ready
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
