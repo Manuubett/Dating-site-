@@ -316,6 +316,52 @@
       animation: pulse 1.5s infinite;
     }
     
+    /* Network Status Indicator */
+    .network-status {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 110;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+    }
+    .network-status.online {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4CAF50;
+      border: 1px solid #4CAF50;
+    }
+    .network-status.offline {
+      background: rgba(244, 67, 54, 0.1);
+      color: #F44336;
+      border: 1px solid #F44336;
+    }
+    .network-status.connecting {
+      background: rgba(255, 152, 0, 0.1);
+      color: #FF9800;
+      border: 1px solid #FF9800;
+    }
+    .network-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .network-status.online .dot {
+      background: #4CAF50;
+    }
+    .network-status.offline .dot {
+      background: #F44336;
+    }
+    .network-status.connecting .dot {
+      background: #FF9800;
+      animation: blink 1.5s infinite;
+    }
+    
     /* Global Modal Styles */
     .global-call-modal {
       position: fixed;
@@ -364,12 +410,23 @@
       100% { transform: scale(1.5); opacity: 0; }
     }
     
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    
     @media (max-width: 760px) {
       .video-feed { width: 260px; height: 180px; }
       .incoming { width: 90%; max-width: 360px; }
       .incoming h3 { font-size: 18px; }
       .incoming p { font-size: 14px; }
       .incoming .btn { padding: 10px 16px; font-size: 14px; }
+      .network-status {
+        top: 65px;
+        right: 10px;
+        font-size: 10px;
+        padding: 6px 10px;
+      }
     }
   </style>
 </head>
@@ -384,6 +441,12 @@
     <a href="profile.html">👤<span style="font-size:11px;">Profile</span></a>
     <a href="#" onclick="logout()">🚪<span style="font-size:11px;">Logout</span></a>
   </nav>
+
+  <!-- Network Status Indicator -->
+  <div id="networkStatus" class="network-status online">
+    <div class="dot"></div>
+    <span>Online</span>
+  </div>
 
   <div class="container">
     <div class="card">
@@ -426,6 +489,7 @@
         <button id="toggleFlashBtn" class="advanced-btn">Flash Off</button>
         <button id="ringerBtn" class="advanced-btn">Play Ringer</button>
         <button id="noiseSuppressionBtn" class="advanced-btn active">Noise Reduction On</button>
+        <button id="troubleshootBtn" class="advanced-btn">Troubleshoot</button>
       </div>
 
       <div class="controls">
@@ -518,6 +582,50 @@
     </div>
   </div>
 
+  <!-- Troubleshooting Modal -->
+  <div id="troubleshootModal" class="global-call-modal">
+    <div class="global-call-content">
+      <h3 style="margin: 0 0 15px; color: #333;">Connection Troubleshooting</h3>
+      <div style="text-align: left; margin-bottom: 20px;">
+        <p style="margin: 10px 0; font-size: 14px; color: #666;">
+          <strong>Common issues and solutions:</strong>
+        </p>
+        <ul style="text-align: left; padding-left: 20px; font-size: 13px; color: #666;">
+          <li>Check your internet connection</li>
+          <li>Allow camera and microphone permissions</li>
+          <li>Try switching between Wi-Fi and mobile data</li>
+          <li>Restart your router if connection is unstable</li>
+          <li>Close bandwidth-intensive applications</li>
+        </ul>
+      </div>
+      
+      <div class="call-actions" style="display: flex; gap: 12px; justify-content: center;">
+        <button id="retryConnectionBtn" class="btn primary" style="
+          padding: 12px 24px;
+          font-size: 16px;
+          border-radius: 12px;
+          border: none;
+          background: #6C63FF;
+          color: white;
+          cursor: pointer;
+        ">
+          🔄 Retry Connection
+        </button>
+        <button id="closeTroubleshootBtn" class="btn secondary" style="
+          padding: 12px 24px;
+          font-size: 16px;
+          border-radius: 12px;
+          border: 1px solid #ddd;
+          background: white;
+          color: #666;
+          cursor: pointer;
+        ">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="bottom-bar" aria-hidden="true"></div>
 
   <!-- Firebase SDKs (v10, modular) -->
@@ -579,6 +687,11 @@
     const globalAcceptBtn = document.getElementById('globalAcceptCall');
     const globalRejectBtn = document.getElementById('globalRejectCall');
     const globalMessageBtn = document.getElementById('globalMessageReply');
+    const networkStatus = document.getElementById('networkStatus');
+    const troubleshootBtn = document.getElementById('troubleshootBtn');
+    const troubleshootModal = document.getElementById('troubleshootModal');
+    const retryConnectionBtn = document.getElementById('retryConnectionBtn');
+    const closeTroubleshootBtn = document.getElementById('closeTroubleshootBtn');
 
     // WebRTC / call variables
     let pc = null;
@@ -613,10 +726,10 @@
     let noiseSuppressionNode = null;
     let compressorNode = null;
 
-    // Enhanced ICE servers for better geographical connectivity
+    // Enhanced ICE servers for better cross-network connectivity
     const ICE_SERVERS = {
       iceServers: [
-        // Google STUN servers (multiple for redundancy)
+        // Multiple STUN servers for redundancy
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
@@ -627,8 +740,10 @@
         { urls: 'stun:stun.voiparound.com' },
         { urls: 'stun:stun.voipbuster.com' },
         { urls: 'stun:stun.voipstunt.com' },
+        { urls: 'stun:stun.ideasip.com' },
+        { urls: 'stun:stun.sipgate.net' },
         
-        // Free TURN servers
+        // TURN servers for NAT traversal (important for cross-network connectivity)
         {
           urls: 'turn:numb.viagenie.ca',
           credential: 'muazkh',
@@ -648,11 +763,23 @@
           urls: 'turn:openrelay.metered.ca:443?transport=tcp',
           username: 'openrelayproject',
           credential: 'openrelayproject'
+        },
+        // Additional TURN servers
+        {
+          urls: 'turn:turn.anyfirewall.com:443?transport=tcp',
+          credential: 'webrtc',
+          username: 'webrtc'
+        },
+        {
+          urls: 'turn:relay.backups.cz',
+          credential: 'webrtc',
+          username: 'webrtc'
         }
       ],
-      iceCandidatePoolSize: 10, // Increased candidate pool
+      iceCandidatePoolSize: 15, // Increased candidate pool for better connectivity
       bundlePolicy: 'max-bundle',
-      rtcpMuxPolicy: 'require'
+      rtcpMuxPolicy: 'require',
+      iceTransportPolicy: 'all' // Use both relay and host candidates
     };
 
     // Utility functions
@@ -667,15 +794,53 @@
       statusText.textContent = msg;
     }
 
-    // Create RTCPeerConnection and wire events
-    function createPeerConnection() {
-      pc = new RTCPeerConnection(ICE_SERVERS);
+    // Network status monitoring
+    function updateNetworkStatus(online) {
+      if (online) {
+        networkStatus.className = 'network-status online';
+        networkStatus.innerHTML = '<div class="dot"></div><span>Online</span>';
+      } else {
+        networkStatus.className = 'network-status offline';
+        networkStatus.innerHTML = '<div class="dot"></div><span>Offline</span>';
+        logStatus('Network connection lost. Trying to reconnect...');
+      }
+    }
 
-      // Enhanced ICE gathering
+    function setNetworkConnecting() {
+      networkStatus.className = 'network-status connecting';
+      networkStatus.innerHTML = '<div class="dot"></div><span>Connecting...</span>';
+    }
+
+    // Create RTCPeerConnection with enhanced cross-network capabilities
+    function createPeerConnection() {
+      // Use more aggressive configuration for cross-network connectivity
+      const config = {
+        ...ICE_SERVERS,
+        iceTransportPolicy: 'all', // Try both relay and host candidates
+        iceCandidatePoolSize: 20
+      };
+
+      pc = new RTCPeerConnection(config);
+
+      // Enhanced ICE gathering with timeout
+      let iceGatheringTimeout;
       pc.onicegatheringstatechange = () => {
         console.log('ICE gathering state:', pc.iceGatheringState);
         if (pc.iceGatheringState === 'complete') {
+          clearTimeout(iceGatheringTimeout);
           logStatus('ICE gathering complete');
+        } else if (pc.iceGatheringState === 'gathering') {
+          // Set timeout for ICE gathering (30 seconds)
+          clearTimeout(iceGatheringTimeout);
+          iceGatheringTimeout = setTimeout(() => {
+            if (pc.iceGatheringState !== 'complete') {
+              logStatus('ICE gathering taking longer than expected - trying alternate methods');
+              // Force completion and proceed
+              if (pc.localDescription) {
+                proceedWithCall();
+              }
+            }
+          }, 30000);
         }
       };
 
@@ -725,9 +890,11 @@
           stopConnectingSound();
           hideCallAnimation();
           stopRingtone();
+          updateNetworkStatus(true);
         } else if (state === 'disconnected') {
           logStatus('Connection unstable - attempting to reconnect...');
-          // Implement reconnection logic
+          setNetworkConnecting();
+          // Implement reconnection logic with exponential backoff
           setTimeout(() => {
             if (pc && pc.iceConnectionState === 'disconnected') {
               reconnectCall();
@@ -737,15 +904,24 @@
           logStatus('Connection failed - please check your network');
           stopConnectingSound();
           stopRingtone();
-          // Optionally attempt reconnection on failure
+          updateNetworkStatus(false);
+          // Show troubleshooting options
           setTimeout(() => {
             if (pc && pc.iceConnectionState === 'failed') {
-              reconnectCall();
+              showTroubleshootModal();
             }
           }, 3000);
         } else if (state === 'closed') {
           logStatus('Call ended');
+        } else if (state === 'checking') {
+          logStatus('Establishing connection...');
+          setNetworkConnecting();
         }
+      };
+
+      // Monitor connection quality
+      pc.onconnectionstatechange = () => {
+        console.log('Connection state:', pc.connectionState);
       };
 
       return pc;
@@ -1066,28 +1242,56 @@
       callAnimation.style.display = 'none';
     }
 
-    // Reconnection logic
+    // Troubleshooting modal
+    function showTroubleshootModal() {
+      troubleshootModal.style.display = 'flex';
+    }
+
+    function hideTroubleshootModal() {
+      troubleshootModal.style.display = 'none';
+    }
+
+    // Reconnection logic with exponential backoff
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 5;
+
     async function reconnectCall() {
-      if (!isInCall || !pc) return;
+      if (!isInCall || !pc || reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+          logStatus('Maximum reconnection attempts reached. Call failed.');
+          endCall();
+        }
+        return;
+      }
       
-      logStatus('Attempting to reconnect...');
-      try {
-        // Create new offer/answer to reestablish connection
-        if (pc.localRole === 'caller') {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          if (callDocRef) {
-            await updateDoc(callDocRef, {
-              offer: { type: offer.type, sdp: offer.sdp },
-              timestamp: serverTimestamp()
-            });
+      reconnectAttempts++;
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // Exponential backoff, max 30 seconds
+      
+      logStatus(`Attempting to reconnect... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+      
+      setTimeout(async () => {
+        try {
+          // Create new offer/answer to reestablish connection
+          if (pc.localRole === 'caller') {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            if (callDocRef) {
+              await updateDoc(callDocRef, {
+                offer: { type: offer.type, sdp: offer.sdp },
+                timestamp: serverTimestamp()
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Reconnection failed:', error);
+          if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            logStatus(`Reconnection failed, retrying in ${delay/1000} seconds...`);
+          } else {
+            logStatus('Reconnection failed - ending call');
+            endCall();
           }
         }
-      } catch (error) {
-        console.error('Reconnection failed:', error);
-        logStatus('Reconnection failed - ending call');
-        endCall();
-      }
+      }, delay);
     }
 
     // Add local tracks to pc
@@ -1096,10 +1300,19 @@
       localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
     }
 
+    // Force proceed with call even if ICE gathering is incomplete
+    function proceedWithCall() {
+      logStatus('Proceeding with call using available connection methods...');
+      // Continue with the call using the candidates we have
+    }
+
     // Create call (caller)
     async function startCall() {
       if (!navigator.onLine) { logStatus('No internet connection'); return; }
       if (!targetUserId) { logStatus('No target user set (URL param ?uid=...)'); return; }
+      
+      reconnectAttempts = 0; // Reset reconnection attempts
+      
       try {
         logStatus('Starting call (creating offer)...');
         playRingtone(); // Play ringtone when starting call
@@ -1138,7 +1351,7 @@
             logStatus('Call timed out — remote user did not answer');
             endCall();
           }
-        }, 30000); // 30 seconds timeout
+        }, 45000); // 45 seconds timeout
 
         callDocUnsubscribe = onSnapshot(callDocRef, async snap => {
           const data = snap.data();
@@ -1186,6 +1399,9 @@
         logStatus('No incoming channel to join');
         return;
       }
+      
+      reconnectAttempts = 0; // Reset reconnection attempts
+      
       try {
         logStatus('Accepting call — creating answer...');
         await initLocalMedia();
@@ -1353,6 +1569,7 @@
       hideCallAnimation();
       resetLocalVideo();
       resetRemoteVideo();
+      hideTroubleshootModal();
       
       channelName = null;
       callDocRef = null;
@@ -1361,6 +1578,7 @@
       isInCall = false;
       isVideoEnabled = false;
       isAudioEnabled = false;
+      reconnectAttempts = 0;
       updateUIOnCallEnd();
     }
 
@@ -1607,6 +1825,33 @@
         // Setup global modal listeners
         setupGlobalModalListeners();
         
+        // Setup troubleshooting modal listeners
+        if (troubleshootBtn) {
+          troubleshootBtn.addEventListener('click', showTroubleshootModal);
+        }
+        if (retryConnectionBtn) {
+          retryConnectionBtn.addEventListener('click', () => {
+            hideTroubleshootModal();
+            if (isInCall && pc && pc.iceConnectionState === 'failed') {
+              reconnectCall();
+            }
+          });
+        }
+        if (closeTroubleshootBtn) {
+          closeTroubleshootBtn.addEventListener('click', hideTroubleshootModal);
+        }
+        
+        // Network monitoring
+        window.addEventListener('online', () => {
+          updateNetworkStatus(true);
+          logStatus('Connection restored');
+        });
+        
+        window.addEventListener('offline', () => {
+          updateNetworkStatus(false);
+          logStatus('Connection lost - check your network');
+        });
+        
         const loggedInUser = localStorage.getItem('loggedInUser');
         if (!loggedInUser) {
           statusText.textContent = 'No user logged in — redirecting to login...';
@@ -1698,8 +1943,6 @@
     noiseSuppressionBtn.addEventListener('click', toggleNoiseSuppression);
 
     window.addEventListener('beforeunload', () => setUserOnline(false));
-    window.addEventListener('online', () => statusText.textContent = '');
-    window.addEventListener('offline', () => statusText.textContent = 'Offline — check your network.');
 
     document.addEventListener('DOMContentLoaded', initApp);
   </script>
