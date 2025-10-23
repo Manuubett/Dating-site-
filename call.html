@@ -671,9 +671,6 @@
     function createPeerConnection() {
       pc = new RTCPeerConnection(ICE_SERVERS);
 
-      // Set timeouts and retry configurations
-      pc.iceConnectionState = 'new';
-      
       // Enhanced ICE gathering
       pc.onicegatheringstatechange = () => {
         console.log('ICE gathering state:', pc.iceGatheringState);
@@ -701,7 +698,10 @@
         if (event.candidate) {
           const cand = event.candidate.toJSON();
           try {
-            if (!callDocRef) return;
+            if (!callDocRef) {
+              console.warn('No call document reference for ICE candidate');
+              return;
+            }
             if (pc.localRole === 'caller') {
               await addDoc(offerCandidatesCol, cand);
             } else {
@@ -729,7 +729,7 @@
           logStatus('Connection unstable - attempting to reconnect...');
           // Implement reconnection logic
           setTimeout(() => {
-            if (pc.iceConnectionState === 'disconnected') {
+            if (pc && pc.iceConnectionState === 'disconnected') {
               reconnectCall();
             }
           }, 2000);
@@ -737,6 +737,12 @@
           logStatus('Connection failed - please check your network');
           stopConnectingSound();
           stopRingtone();
+          // Optionally attempt reconnection on failure
+          setTimeout(() => {
+            if (pc && pc.iceConnectionState === 'failed') {
+              reconnectCall();
+            }
+          }, 3000);
         } else if (state === 'closed') {
           logStatus('Call ended');
         }
@@ -1062,7 +1068,7 @@
 
     // Reconnection logic
     async function reconnectCall() {
-      if (!isInCall) return;
+      if (!isInCall || !pc) return;
       
       logStatus('Attempting to reconnect...');
       try {
@@ -1070,13 +1076,17 @@
         if (pc.localRole === 'caller') {
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
-          await updateDoc(callDocRef, {
-            offer: { type: offer.type, sdp: offer.sdp },
-            timestamp: serverTimestamp()
-          });
+          if (callDocRef) {
+            await updateDoc(callDocRef, {
+              offer: { type: offer.type, sdp: offer.sdp },
+              timestamp: serverTimestamp()
+            });
+          }
         }
       } catch (error) {
         console.error('Reconnection failed:', error);
+        logStatus('Reconnection failed - ending call');
+        endCall();
       }
     }
 
@@ -1280,38 +1290,60 @@
 
     // Cleanup local resources and listeners
     async function cleanupCallResources() {
-      if (incomingCallUnsubscribe) { incomingCallUnsubscribe(); incomingCallUnsubscribe = null; }
-      if (callDocUnsubscribe) { callDocUnsubscribe(); callDocUnsubscribe = null; }
-      if (offerCandidatesUnsub) { offerCandidatesUnsub(); offerCandidatesUnsub = null; }
-      if (answerCandidatesUnsub) { answerCandidatesUnsub(); answerCandidatesUnsub = null; }
-
+      // Stop all media tracks first
       if (localStream) {
         localStream.getTracks().forEach(t => t.stop());
         localStream = null;
-      }
-
-      if (pc) {
-        try { pc.close(); } catch (e) { }
-        pc = null;
       }
 
       if (remoteStream) {
         remoteStream.getTracks().forEach(t => t.stop());
         remoteStream = null;
       }
-      
+
+      // Close peer connection
+      if (pc) {
+        try { 
+          pc.close(); 
+        } catch (e) { 
+          console.warn('Error closing peer connection:', e);
+        }
+        pc = null;
+      }
+
       // Clean up audio processing
       if (audioContext) {
         try { 
-          audioContext.close(); 
-        } catch (e) { }
+          await audioContext.close(); 
+        } catch (e) { 
+          console.warn('Error closing audio context:', e);
+        }
         audioContext = null;
         audioSource = null;
         audioDestination = null;
         noiseSuppressionNode = null;
         compressorNode = null;
       }
-      
+
+      // Unsubscribe from Firestore listeners
+      if (incomingCallUnsubscribe) { 
+        incomingCallUnsubscribe(); 
+        incomingCallUnsubscribe = null; 
+      }
+      if (callDocUnsubscribe) { 
+        callDocUnsubscribe(); 
+        callDocUnsubscribe = null; 
+      }
+      if (offerCandidatesUnsub) { 
+        offerCandidatesUnsub(); 
+        offerCandidatesUnsub = null; 
+      }
+      if (answerCandidatesUnsub) { 
+        answerCandidatesUnsub(); 
+        answerCandidatesUnsub = null; 
+      }
+
+      // Reset UI and state
       isFlashOn = false;
       toggleFlashBtn.textContent = 'Flash Off';
       toggleFlashBtn.classList.remove('active');
