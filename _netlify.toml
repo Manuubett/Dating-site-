@@ -1,11 +1,11 @@
 [[redirects]]
-  from = "/*"
-  to = "/:splat.html"
-  status = 200
-  force = true
-  
-[[redirects]]
   from = "/ads.txt"
   to = "https://srv.adstxtmanager.com/19390/bett.website"
   status = 302
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/:splat.html"
+  status = 200
   force = true
