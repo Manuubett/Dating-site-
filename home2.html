@@ -859,14 +859,17 @@
       .modal-card {
         max-height: 95vh;
       }
+      
     }
   </style>
 </head>
 <body>
   <nav>
-    <a href="matchs.html">💞 Match</a>
-    <a href="chats.html">💬 Chats</a>
-    <a href="profile.html">👤 Profile</a>
+    <a href="home2.html" class="active"><span>🏠</span><span>Home</span></a>
+    <a href="matchs.html"><span>💞</span><span>Match</span></a>
+    <a href="chats.html"><span>💬</span><span>Chats</span><span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <a href="profile.html"><span>👤</span><span>Profile</span></a>
+    
     <div class="notification-container" id="notificationContainer">
       <button id="notifBtn" class="notif-btn">🔔
         <span id="notifCount" class="notif-count">0</span>
@@ -1006,18 +1009,375 @@
     /* ----------------------
        Firebase init
        ---------------------- */
-    const firebaseConfig = {
-      apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
-      authDomain: "smart-waste-66279.firebaseapp.com",
-      projectId: "smart-waste-66279",
-      storageBucket: "smart-waste-66279.appspot.com",
-      messagingSenderId: "619099585646",
-      appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    // In home2.html, matchs.html, profile.html
+const firebaseConfig = {
+  apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
+  authDomain: "smart-waste-66279.firebaseapp.com",
+  projectId: "smart-waste-66279",
+  storageBucket: "smart-waste-66279.appspot.com",
+  messagingSenderId: "619099585646",
+  appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUserId = null;
+
+async function initializeApp() {
+  try {
+    const loggedInUser = localStorage.getItem('loggedInUser');
+    if (!loggedInUser) {
+      window.location.href = 'login.html';
+      return;
+    }
+    auth.onAuthStateChanged(async (user) => {
+      try {
+        if (!user || user.uid !== loggedInUser) {
+          localStorage.removeItem('loggedInUser');
+          await setUserOnline(false);
+          window.location.href = 'login.html';
+          return;
+        }
+        currentUserId = user.uid;
+        await db.collection('users').doc(currentUserId).update({
+          online: true,
+          lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        // Page-specific initialization (e.g., load posts, matches, profile)
+      } catch (err) {
+        console.error('Auth state error:', err);
+        document.getElementById('status').textContent = 'Error initializing: ' + err.message;
+      }
+    });
+  } catch (err) {
+    console.error('Initialization error:', err);
+    document.getElementById('status').textContent = 'Error: ' + err.message;
+  }
+}
+
+async function setUserOnline(status) {
+  try {
+    if (currentUserId) {
+      await db.collection('users').doc(currentUserId).update({
+        online: status,
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch (err) {
+    console.error('Error setting online status:', err);
+  }
+}
+
+function logout() {
+  try {
+    localStorage.removeItem('loggedInUser');
+    setUserOnline(false);
+    auth.signOut().then(() => {
+      window.location.href = 'login.html';
+    }).catch(err => {
+      console.error('Logout error:', err);
+      document.getElementById('status').textContent = 'Error logging out: ' + err.message;
+    });
+  } catch (err) {
+    console.error('Logout error:', err);
+    document.getElementById('status').textContent = 'Error logging out: ' + err.message;
+  }
+}
+
+window.addEventListener('beforeunload', () => setUserOnline(false));
+initializeApp();
 /* ----------------------
+
+const navNotifDot = document.getElementById('navNotifDot');
+const notifSound = new Audio('https://www.soundjay.com/phone/sounds/telephone-ring-01a.mp3');
+let unsubscribeNotifications = null;
+
+// Sound budget control
+let lastMessageSoundTime = 0;
+const MESSAGE_SOUND_BUDGET = 30000; // 30 seconds between sounds
+let dailySoundCount = 0;
+const MAX_DAILY_SOUNDS = 50;
+let lastDailyReset = Date.now();
+
+// Reset daily counter every 24 hours
+function resetDailyCounter() {
+    const now = Date.now();
+    if (now - lastDailyReset >= 24 * 60 * 60 * 1000) {
+        dailySoundCount = 0;
+        lastDailyReset = now;
+        console.log('Daily sound counter reset');
+        updateNavBudgetDisplay(); // Update display when reset
+    }
+}
+
+function canPlayMessageSound() {
+    resetDailyCounter();
+    const now = Date.now();
+    
+    // Check time budget (30 seconds between sounds)
+    if (now - lastMessageSoundTime < MESSAGE_SOUND_BUDGET) {
+        console.log('Sound budget: Too soon since last sound');
+        return false;
+    }
+    
+    // Check daily budget (max 50 sounds per day)
+    if (dailySoundCount >= MAX_DAILY_SOUNDS) {
+        console.log('Sound budget: Daily limit reached (' + dailySoundCount + '/' + MAX_DAILY_SOUNDS + ')');
+        return false;
+    }
+    
+    // Check if user is active recently
+    const activeRecently = (Date.now() - lastActive) < ACTIVITY_TIMEOUT;
+    if (!activeRecently) {
+        console.log('Sound budget: User inactive');
+        return false;
+    }
+    
+    // Check if audio is unlocked
+    if (!audioUnlocked) {
+        console.log('Sound budget: Audio not unlocked');
+        return false;
+    }
+    
+    return true;
+}
+
+function playMessageSound() {
+    if (canPlayMessageSound()) {
+        notifSound.currentTime = 0;
+        notifSound.play().catch(err => console.error('Audio playback failed:', err));
+        lastMessageSoundTime = Date.now();
+        dailySoundCount++;
+        console.log(`Message sound played. Daily count: ${dailySoundCount}/${MAX_DAILY_SOUNDS}`);
+        updateNavBudgetDisplay(); // Update display after playing sound
+        return true;
+    }
+    return false;
+}
+
+// Function to update the budget display in navigationfunction updateNavBudgetDisplay() {
+    const navNotifDot = document.getElementById('navNotifDot');
+    const chatLink = document.getElementById('chatLink');
+    if (!navNotifDot || !chatLink) return;
+
+    const totalUnread = Object.values(JSON.parse(localStorage.getItem('unreadMessages') || '{}'))
+        .reduce((sum, count) => sum + (count || 0), 0);
+
+    const remainingSounds = Math.max(0, MAX_DAILY_SOUNDS - dailySoundCount);
+    const timeUntilNextSound = Math.max(0, MESSAGE_SOUND_BUDGET - (Date.now() - lastMessageSoundTime));
+
+    // Tooltip
+    let tooltip = `Unread messages: ${totalUnread}`;
+    tooltip += `\nSounds today: ${dailySoundCount}/${MAX_DAILY_SOUNDS}`;
+    tooltip += `\nRemaining: ${remainingSounds}`;
+    tooltip += timeUntilNextSound > 0
+        ? `\nNext sound in: ${Math.ceil(timeUntilNextSound / 1000)}s`
+        : `\nReady for next sound`;
+
+    // --- Update unread dot ---
+    if (totalUnread > 0) {
+        navNotifDot.textContent = totalUnread > 10 ? '10+' : totalUnread;
+        navNotifDot.style.display = 'flex';
+        navNotifDot.title = tooltip;
+    } else {
+        navNotifDot.style.display = 'flex';
+        navNotifDot.textContent = remainingSounds; // fallback to budget number
+        navNotifDot.title = tooltip;
+    }
+
+    // --- Update beside chat icon ---
+    let budgetDisplay = chatLink.querySelector('.nav-budget');
+    if (!budgetDisplay) {
+        budgetDisplay = document.createElement('span');
+        budgetDisplay.className = 'nav-budget';
+        chatLink.appendChild(budgetDisplay);
+    }
+
+    budgetDisplay.textContent = ` (${remainingSounds})`;
+    budgetDisplay.title = tooltip;
+
+    // Color indicators
+    if (remainingSounds <= 10) {
+        navNotifDot.style.background = '#ff6b6b';
+        budgetDisplay.style.color = '#ff6b6b';
+    } else if (remainingSounds <= 25) {
+        navNotifDot.style.background = '#ffa726';
+        budgetDisplay.style.color = '#ffa726';
+    } else {
+        navNotifDot.style.background = '#4caf50';
+        budgetDisplay.style.color = '#4caf50';
+    }
+}
+
+    // Update the nav dot content and title
+    if (totalUnread > 0) {
+        navNotifDot.textContent = totalUnread > 10 ? '10+' : totalUnread;
+        navNotifDot.style.display = 'flex';
+        navNotifDot.title = budgetTooltip;
+        
+        // Add budget indicator as a small badge
+        if (!navNotifDot.querySelector('.budget-badge')) {
+            const budgetBadge = document.createElement('span');
+            budgetBadge.className = 'budget-badge';
+            budgetBadge.textContent = remainingSounds;
+            budgetBadge.title = `Remaining sounds: ${remainingSounds}`;
+            navNotifDot.appendChild(budgetBadge);
+        } else {
+            const budgetBadge = navNotifDot.querySelector('.budget-badge');
+            budgetBadge.textContent = remainingSounds;
+        }
+        
+        // Color code based on remaining sounds
+        if (remainingSounds <= 10) {
+            navNotifDot.style.background = '#ff6b6b'; // Red when low
+        } else if (remainingSounds <= 25) {
+            navNotifDot.style.background = '#ffa726'; // Orange when medium
+        } else {
+            navNotifDot.style.background = ''; // Default color when plenty
+        }
+    } else {
+        navNotifDot.style.display = 'none';
+    }
+}
+
+auth.onAuthStateChanged(user => {
+    if (!user) return (window.location.href = 'login.html');
+
+    const notifCounts = JSON.parse(localStorage.getItem('unreadMessages') || '{}');
+    updateNavBudgetDisplay(); // Use the new function
+
+    unsubscribeNotifications = db.collection('messages')
+        .where('to', '==', user.uid)
+        .where('read', '==', false)
+        .onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added') {
+                    const msg = change.doc.data();
+                    notifCounts[msg.from] = (notifCounts[msg.from] || 0) + 1;
+                    
+                    // Play sound with budget control
+                    const soundPlayed = playMessageSound();
+                    
+                    // Show notification only if user is active
+                    const activeRecently = (Date.now() - lastActive) < ACTIVITY_TIMEOUT;
+                    
+                    if ('Notification' in window && Notification.permission === 'granted' && activeRecently) {
+                        db.collection('users').doc(msg.from).get().then(userDoc => {
+                            const senderUser = userDoc.data();
+                            const title = `New message from ${senderUser.fullName || 'Someone'}`;
+                            const options = {
+                                body: msg.text || (msg.mediaUrl ? '[media]' : '[Message]'),
+                                icon: senderUser.photoURL || 'https://via.placeholder.com/50',
+                                tag: msg.from,
+                                badge: '/icon.png',
+                                requireInteraction: false
+                            };
+                            
+                            const shouldShowNotification = soundPlayed || (Date.now() - lastMessageSoundTime > 120000);
+                            
+                            if (shouldShowNotification) {
+                                const notif = new Notification(title, options);
+                                notif.onclick = () => {
+                                    window.location.href = `chats.html?uid=${msg.from}`;
+                                    notif.close();
+                                };
+                                
+                                setTimeout(() => {
+                                    notif.close();
+                                }, 5000);
+                            }
+                        }).catch(err => {
+                            console.error('Error getting sender user data:', err);
+                        });
+                    } else if ('Notification' in window && Notification.permission === 'default') {
+                        const lastPermissionAsk = localStorage.getItem('lastNotificationPermissionAsk');
+                        if (!lastPermissionAsk || (Date.now() - parseInt(lastPermissionAsk)) > 7 * 24 * 60 * 60 * 1000) {
+                            Notification.requestPermission().then(permission => {
+                                localStorage.setItem('lastNotificationPermissionAsk', Date.now().toString());
+                            });
+                        }
+                    }
+                }
+            });
+            localStorage.setItem('unreadMessages', JSON.stringify(notifCounts));
+            updateNavBudgetDisplay(); // Update display with new counts
+        }, err => console.error('Error listening for message notifications:', err));
+
+    // Update budget display periodically to show countdown
+    setInterval(updateNavBudgetDisplay, 1000);
+
+    window.addEventListener('beforeunload', () => {
+        if (unsubscribeNotifications) unsubscribeNotifications();
+    });
+});
+
+// Add CSS for the budget badge
+const budgetCSS = `
+<style>
+.nav-notif-dot {
+    position: relative;
+}
+
+.budget-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff6b6b;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    font-weight: bold;
+}
+
+.nav-notif-dot[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: pre-line;
+    z-index: 1000;
+    min-width: 200px;
+    text-align: center;
+}
+</style>
+`;
+
+// Inject the CSS
+document.head.insertAdjacentHTML('beforeend', budgetCSS);
+
+// Add function to manually check sound budget (for debugging)
+window.checkSoundBudget = function() {
+    resetDailyCounter();
+    console.log('Sound Budget Status:');
+    console.log('- Daily sounds: ' + dailySoundCount + '/' + MAX_DAILY_SOUNDS);
+    console.log('- Time since last sound: ' + (Date.now() - lastMessageSoundTime) + 'ms');
+    console.log('- Audio unlocked: ' + audioUnlocked);
+    console.log('- User active: ' + ((Date.now() - lastActive) < ACTIVITY_TIMEOUT));
+    console.log('- Can play sound: ' + canPlayMessageSound());
+    updateNavBudgetDisplay();
+};
+
+// Add function to reset sound budget (for testing)
+window.resetSoundBudget = function() {
+    dailySoundCount = 0;
+    lastMessageSoundTime = 0;
+    lastDailyReset = Date.now();
+    console.log('Sound budget reset');
+    updateNavBudgetDisplay();
+};
    Horizontal Scroll for Stories
    ---------------------- */
 function initializeStoriesScroll() {
@@ -2007,6 +2367,50 @@ function initializeViewersModal() {
             justify-content: center;
             border-radius: 50%;
         }
+        .loading-state, .error-state, .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-light);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.retry-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-size: 1rem;
+}
+
+.retry-btn:hover {
+    background: var(--primary-dark);
+}
+
+.error-state {
+    color: #e74c3c;
+}
+
+.empty-state h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
 
         .viewers-modal-close:hover {
             background: #e9ecef;
@@ -2855,130 +3259,209 @@ function debugStories() {
        Infinite Scroll Feed
        ---------------------- */
     function loadFeed() {
-  feed.innerHTML = '<div class="loading">Loading posts...</div>';
-  let firstQuery = db.collection('posts').orderBy('createdAt', 'desc').limit(10);
+    feed.innerHTML = '<div class="loading">Loading posts...</div>';
+    let firstQuery = db.collection('posts').orderBy('createdAt', 'desc').limit(10);
 
-  function fetchPosts(query) {
-    isFetching = true;
-    sentinel.textContent = 'Loading more posts...';
-    query.get().then(snapshot => {
-      if (snapshot.empty) {
-        feed.innerHTML = '<div class="empty-state"><h3>No posts yet</h3><p>Be the first!</p></div>';
-        sentinel.textContent = '';
-        hasMorePosts = false;
-        isFetching = false;
-        return;
-      }
-
-      if (feed.querySelector('.loading')) {
-        feed.innerHTML = '';
-      }
-
-      snapshot.forEach(doc => {
-        const p = doc.data();
-        const postId = doc.id;
-        const div = document.createElement('div');
-        div.className = 'feed-post';
-        div.id = `post-${postId}`;
-
-        let mediaHTML = '';
-        if (p.mediaUrl) {
-          if (p.mediaType === 'video') mediaHTML = `<video src="${p.mediaUrl}" controls style="width:100%;border-radius:8px"></video>`;
-          else mediaHTML = `<img src="${p.mediaUrl}" style="width:100%;border-radius:8px" alt="post">`;
-          if (p.mediaCaption) {
-            mediaHTML += `<div class="media-caption">${escapeHtml(p.mediaCaption)}</div>`;
-          }
-        } else {
-          mediaHTML = `<div style="padding:18px;border-radius:8px;background:var(--gradient-no-media);text-align:center;font-weight:600;">${p.text ? '' : 'No media'}</div>`;
+    // Add loading timeout to prevent infinite loading state
+    const loadingTimeout = setTimeout(() => {
+        if (feed.innerHTML.includes('Loading posts')) {
+            feed.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Taking longer than expected...</p>
+                    <button onclick="retryFeedLoad()" class="retry-btn">Retry Loading</button>
+                </div>
+            `;
         }
+    }, 8000); // Show retry after 8 seconds
 
-        let textHTML = '';
-        if (p.text) {
-          const bgColor = p.backgroundColor || '#ffffff';
-          textHTML = `<div class="text-post" style="background-color:${bgColor}" onclick="openPostModal('${postId}')">${p.text}</div>`;
-        }
+    function fetchPosts(query, isInitialLoad = false) {
+        if (isFetching) return;
+        
+        isFetching = true;
+        sentinel.textContent = 'Loading posts...';
 
-        div.innerHTML = `
-          <div class="user">
-            <a href="user.html?uid=${p.uid}">
-              <img src="${p.photoURL || 'https://via.placeholder.com/44'}" alt="${p.author}">
-              <strong>${p.author}</strong>
-            </a>
-          </div>
-          ${textHTML}
-          <div class="media-wrapper" onclick="openPostModal('${postId}')">
-            ${mediaHTML}
-          </div>
-          <div class="actions">
-            <button id="likeBtn-${postId}" onclick="likePost('${postId}')">
-              <span id="likeIcon-${postId}">🤍</span> 
-              <span id="likeCount-${postId}">${p.likes?.length || 0}</span>
-            </button>
-            <button id="commentBtn-${postId}" onclick="toggleComments('${postId}')">💬 <span id="commentCount-${postId}">0</span></button>
-          </div>
-          <div id="comments-${postId}" class="comments-section" style="display:none">
-            <div class="comments-header"><strong>Comments</strong></div>
-            <div class="comments-list"></div>
-            <div class="comment-input">
-              <input id="newComment-${postId}" placeholder="Write a comment...">
-              <button onclick="sendComment('${postId}')">Send</button>
-            </div>
-          </div>
-        `;
-        feed.appendChild(div);
-        loadCommentsCount(postId);
-
-        // Add real-time listener for likes
-        const unsub = db.collection('posts').doc(postId).onSnapshot(docSnap => {
-          if (docSnap.exists) {
-            const data = docSnap.data();
-            const likes = data.likes || [];
-            const likeCountEl = document.getElementById(`likeCount-${postId}`);
-            const likeIconEl = document.getElementById(`likeIcon-${postId}`);
-            if (likeCountEl) likeCountEl.textContent = likes.length;
-            if (likeIconEl) {
-              likeIconEl.textContent = currentUser && likes.includes(currentUser.uid) ? '❤️' : '🤍';
+        query.get().then(snapshot => {
+            clearTimeout(loadingTimeout); // Clear timeout on success
+            
+            if (snapshot.empty) {
+                if (isInitialLoad) {
+                    feed.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No posts yet</h3>
+                            <p>Be the first to share something!</p>
+                        </div>
+                    `;
+                }
+                sentinel.textContent = 'No more posts';
+                hasMorePosts = false;
+                isFetching = false;
+                return;
             }
-          }
-        }, err => console.error('like listener err', err));
-        postUnsubs[postId] = postUnsubs[postId] || [];
-        postUnsubs[postId].push(unsub);
-      });
 
-      if (snapshot.size < 10) {
-        hasMorePosts = false;
-        sentinel.textContent = 'No more posts';
-      }
-      isFetching = false;
-    }).catch(err => {
-      console.error('load feed err', err);
-      feed.innerHTML = '<div class="empty-state"><h3>Error loading posts</h3></div>';
-      sentinel.textContent = '';
-      isFetching = false;
-    });
-  }
+            // Only clear loading state on initial load
+            if (isInitialLoad && feed.querySelector('.loading')) {
+                feed.innerHTML = '';
+            }
 
-  // Initial fetch
-  fetchPosts(firstQuery);
+            let postsAdded = 0;
+            snapshot.forEach(doc => {
+                const p = doc.data();
+                const postId = doc.id;
+                
+                // Skip if post already exists (prevents duplicates)
+                if (document.getElementById(`post-${postId}`)) {
+                    return;
+                }
 
-  // IntersectionObserver for infinite scroll
-  const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting && hasMorePosts && !isFetching) {
-      const nextQuery = db.collection('posts').orderBy('createdAt', 'desc').startAfter(lastVisible).limit(10);
-      fetchPosts(nextQuery);
+                const div = document.createElement('div');
+                div.className = 'feed-post';
+                div.id = `post-${postId}`;
+
+                let mediaHTML = '';
+                if (p.mediaUrl) {
+                    if (p.mediaType === 'video') {
+                        mediaHTML = `<video src="${p.mediaUrl}" controls style="width:100%;border-radius:8px" loading="lazy"></video>`;
+                    } else {
+                        mediaHTML = `<img src="${p.mediaUrl}" style="width:100%;border-radius:8px" alt="post" loading="lazy">`;
+                    }
+                    if (p.mediaCaption) {
+                        mediaHTML += `<div class="media-caption">${escapeHtml(p.mediaCaption)}</div>`;
+                    }
+                } else {
+                    // Only show "No media" if there's no text either
+                    if (!p.text) {
+                        mediaHTML = `<div style="padding:18px;border-radius:8px;background:var(--gradient-no-media);text-align:center;font-weight:600;">No media</div>`;
+                    }
+                }
+
+                let textHTML = '';
+                if (p.text) {
+                    const bgColor = p.backgroundColor || '#ffffff';
+                    textHTML = `<div class="text-post" style="background-color:${bgColor}" onclick="openPostModal('${postId}')">${p.text}</div>`;
+                }
+
+                div.innerHTML = `
+                    <div class="user">
+                        <a href="user.html?uid=${p.uid}">
+                            <img src="${p.photoURL || 'https://via.placeholder.com/44'}" alt="${p.author}" loading="lazy">
+                            <strong>${p.author}</strong>
+                        </a>
+                    </div>
+                    ${textHTML}
+                    <div class="media-wrapper" onclick="openPostModal('${postId}')">
+                        ${mediaHTML}
+                    </div>
+                    <div class="actions">
+                        <button id="likeBtn-${postId}" onclick="likePost('${postId}')">
+                            <span id="likeIcon-${postId}">🤍</span> 
+                            <span id="likeCount-${postId}">${p.likes?.length || 0}</span>
+                        </button>
+                        <button id="commentBtn-${postId}" onclick="toggleComments('${postId}')">💬 <span id="commentCount-${postId}">0</span></button>
+                    </div>
+                    <div id="comments-${postId}" class="comments-section" style="display:none">
+                        <div class="comments-header"><strong>Comments</strong></div>
+                        <div class="comments-list"></div>
+                        <div class="comment-input">
+                            <input id="newComment-${postId}" placeholder="Write a comment...">
+                            <button onclick="sendComment('${postId}')">Send</button>
+                        </div>
+                    </div>
+                `;
+                
+                feed.appendChild(div);
+                loadCommentsCount(postId);
+                postsAdded++;
+
+                // Add real-time listener for likes
+                const unsub = db.collection('posts').doc(postId).onSnapshot(docSnap => {
+                    if (docSnap.exists) {
+                        const data = docSnap.data();
+                        const likes = data.likes || [];
+                        const likeCountEl = document.getElementById(`likeCount-${postId}`);
+                        const likeIconEl = document.getElementById(`likeIcon-${postId}`);
+                        if (likeCountEl) likeCountEl.textContent = likes.length;
+                        if (likeIconEl) {
+                            likeIconEl.textContent = currentUser && likes.includes(currentUser.uid) ? '❤️' : '🤍';
+                        }
+                    }
+                }, err => console.error('like listener err', err));
+                
+                postUnsubs[postId] = postUnsubs[postId] || [];
+                postUnsubs[postId].push(unsub);
+            });
+
+            // Update lastVisible for pagination
+            lastVisible = snapshot.docs[snapshot.docs.length - 1];
+
+            // Handle case where no new posts were added (all duplicates)
+            if (isInitialLoad && postsAdded === 0) {
+                feed.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No new posts</h3>
+                        <p>Check back later for new content</p>
+                    </div>
+                `;
+            }
+
+            if (snapshot.size < 10) {
+                hasMorePosts = false;
+                sentinel.textContent = 'No more posts';
+            } else {
+                sentinel.textContent = 'Scroll to load more';
+            }
+            isFetching = false;
+            
+        }).catch(err => {
+            console.error('load feed err', err);
+            clearTimeout(loadingTimeout);
+            
+            if (isInitialLoad) {
+                feed.innerHTML = `
+                    <div class="error-state">
+                        <h3>Error loading posts</h3>
+                        <p>Please check your connection</p>
+                        <button onclick="retryFeedLoad()" class="retry-btn">Try Again</button>
+                    </div>
+                `;
+            }
+            sentinel.textContent = 'Error loading posts';
+            isFetching = false;
+        });
     }
-  }, { threshold: 0.1 });
 
-  observer.observe(sentinel);
+    // Initial fetch
+    fetchPosts(firstQuery, true);
 
-  // Cleanup on page leave
-  window.addEventListener('beforeunload', () => {
-    Object.keys(postUnsubs).forEach(postId => {
-      postUnsubs[postId].forEach(unsub => unsub());
+    // IntersectionObserver for infinite scroll
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMorePosts && !isFetching) {
+            const nextQuery = db.collection('posts')
+                .orderBy('createdAt', 'desc')
+                .startAfter(lastVisible)
+                .limit(10);
+            fetchPosts(nextQuery, false);
+        }
+    }, { threshold: 0.1 });
+
+    observer.observe(sentinel);
+
+    // Cleanup on page leave
+    window.addEventListener('beforeunload', () => {
+        Object.keys(postUnsubs).forEach(postId => {
+            postUnsubs[postId].forEach(unsub => unsub());
+        });
+        clearTimeout(loadingTimeout);
     });
-  });
 }
 
+// Add this helper function after the loadFeed function
+function retryFeedLoad() {
+    feed.innerHTML = '<div class="loading">Retrying...</div>';
+    setTimeout(() => {
+        loadFeed();
+    }, 1000);
+}
     function loadCommentsCount(postId) {
       const unsub = db.collection('posts').doc(postId).collection('comments').onSnapshot(snap => {
         const btn = document.getElementById(`commentCount-${postId}`);
