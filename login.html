@@ -350,6 +350,7 @@
         .then(() => {
           console.log(`Firebase Auth persistence set to ${remember ? 'LOCAL' : 'SESSION'}`);
         })
+      
         .catch(err => {
           console.error('Error setting auth persistence:', err);
           showStatus('Error setting persistence: ' + err.message, true);
@@ -957,7 +958,7 @@
   </div>
 
   <div class="onboard-card" id="onboard5">
-    <img src="https://bett.website/assets/logo.png" alt="Betthub logo" class="onboard-logo" />
+    <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
     <h2>🎉 You’re all set!</h2>
     <p>Welcome to <b>Betthub</b> — your new favorite place to belong.</p>
     <button onclick="finishOnboarding()">Start Exploring 🚀</button>
