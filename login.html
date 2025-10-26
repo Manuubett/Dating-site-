@@ -926,49 +926,46 @@
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
-<!-- 🌸 Enhanced Onboarding Flow for Betthub -->
-<<!-- 🌸 Onboarding Flow -->
+<!-- 🌸 Onboarding Flow for Betthub -->
 <div id="onboardingOverlay" class="onboard-overlay">
   <div class="onboard-card" id="onboard1">
     <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
     <h2>Welcome to Betthub 💖</h2>
-    <p>Join a vibrant community to connect, share, and match with people who share your vibe!</p>
-    <button onclick="nextOnboard(2)">Get Started →</button>
+    <p>Connect, share, and match with people who vibe like you — the Betthub way!</p>
+    <button onclick="nextOnboard(2)">Next →</button>
   </div>
 
   <div class="onboard-card" id="onboard2">
     <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
-    <h2>🌐 Build Your Network</h2>
-    <p>Connect with like-minded individuals for professional or social networking in a fun, engaging way.</p>
+    <h2>✨ Set up your Betthub profile</h2>
+    <p>Add a photo, your hobbies, and a short bio so others can get to know you better.</p>
     <button onclick="nextOnboard(3)">Next →</button>
   </div>
 
   <div class="onboard-card" id="onboard3">
     <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
-    <h2>📸 Share Your Moments</h2>
-    <p>Post photos, thoughts, or stories instantly with our easy-to-use tools to showcase your unique vibe.</p>
+    <h2>📸 Share your first moment</h2>
+    <p>Post photos, thoughts, or stories — show your vibe to the Betthub community!</p>
     <button onclick="nextOnboard(4)">Next →</button>
   </div>
 
   <div class="onboard-card" id="onboard4">
     <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
-    <h2>🔒 Safe & Welcoming Community</h2>
-    <p>Enjoy a secure, moderated platform designed for positive interactions and meaningful connections.</p>
+    <h2>💬 Connect & Chat</h2>
+    <p>Meet people who share your energy. Chat, match, and make meaningful connections.</p>
     <button onclick="nextOnboard(5)">Next →</button>
   </div>
 
   <div class="onboard-card" id="onboard5">
     <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
-    <h2>🚀 Join Betthub Today!</h2>
-    <p>Create your free account to start connecting, sharing, and vibing with the community!</p>
-    <div style="margin-top: 15px;">
-      <button onclick="createAccount()" class="primary-btn">Create Free Account</button>
-      <p style="font-size: 12px; color: #888; margin-top: 10px;">Already have an account? <a href="#" onclick="showLogin()">Sign in</a></p>
-    </div>
+    <h2>🎉 You’re all set!</h2>
+    <p>Welcome to <b>Betthub</b> — your new favorite place to belong.</p>
+    <button onclick="finishOnboarding()">Start Exploring 🚀</button>
   </div>
 </div>
+
 <style>
-/* 🌸 Onboarding Styles */
+/* 🌸 Betthub Onboarding Styles */
 .onboard-overlay {
   position: fixed;
   top: 0; left: 0;
@@ -995,6 +992,13 @@
 
 .onboard-card.active {
   display: block;
+}
+
+.onboard-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  margin-bottom: 15px;
 }
 
 .onboard-card h2 {
