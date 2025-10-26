@@ -350,7 +350,6 @@
         .then(() => {
           console.log(`Firebase Auth persistence set to ${remember ? 'LOCAL' : 'SESSION'}`);
         })
-      
         .catch(err => {
           console.error('Error setting auth persistence:', err);
           showStatus('Error setting persistence: ' + err.message, true);
@@ -927,51 +926,99 @@
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
-  <!-- 🌸 Onboarding Flow for Betthub -->
+  <!-- 🌸 Enhanced Onboarding Flow for Bett Hub with Progress Indicators -->
 <div id="onboardingOverlay" class="onboard-overlay">
-  <div class="onboard-card" id="onboard1">
-    <img src="https://bett.website/assets/logo.png" alt="Betthub logo" class="onboard-logo" />
-    <h2>Welcome to Betthub 💖</h2>
-    <p>Connect, share, and match with people who vibe like you — the Betthub way!</p>
+  <div class="onboard-card active" id="onboard1">
+    <a href="https://bett.website" class="onboard-logo-link">
+      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
+    </a>
+    <h2>Welcome to Bett Hub 💖</h2>
+    <p>Connect, share, and grow together — where people build meaningful relationships the Bett Hub way!</p>
     <button onclick="nextOnboard(2)">Next →</button>
+    <div class="progress-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
   </div>
 
   <div class="onboard-card" id="onboard2">
-    <img src="https://bett.website/assets/logo.png" alt="Betthub logo" class="onboard-logo" />
-    <h2>✨ Set up your Betthub profile</h2>
+    <a href="https://bett.website" class="onboard-logo-link">
+      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
+    </a>
+    <h2>✨ Set up your Bett Hub profile</h2>
     <p>Add a photo, your hobbies, and a short bio so others can get to know you better.</p>
     <button onclick="nextOnboard(3)">Next →</button>
+    <div class="progress-dots">
+      <span class="dot"></span>
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
   </div>
 
   <div class="onboard-card" id="onboard3">
-    <img src="https://bett.website/assets/logo.png" alt="Betthub logo" class="onboard-logo" />
+    <a href="https://bett.website" class="onboard-logo-link">
+      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
+    </a>
     <h2>📸 Share your first moment</h2>
-    <p>Post photos, thoughts, or stories — show your vibe to the Betthub community!</p>
+    <p>Post photos, thoughts, or stories — show your vibe to the Bett Hub community!</p>
     <button onclick="nextOnboard(4)">Next →</button>
+    <div class="progress-dots">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
   </div>
 
   <div class="onboard-card" id="onboard4">
-    <img src="https://bett.website/assets/logo.png" alt="Betthub logo" class="onboard-logo" />
+    <a href="https://bett.website" class="onboard-logo-link">
+      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
+    </a>
     <h2>💬 Connect & Chat</h2>
     <p>Meet people who share your energy. Chat, match, and make meaningful connections.</p>
     <button onclick="nextOnboard(5)">Next →</button>
+    <div class="progress-dots">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot active"></span>
+      <span class="dot"></span>
+    </div>
   </div>
 
   <div class="onboard-card" id="onboard5">
-    <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
-    <h2>🎉 You’re all set!</h2>
-    <p>Welcome to <b>Betthub</b> — your new favorite place to belong.</p>
-    <button onclick="finishOnboarding()">Start Exploring 🚀</button>
+    <a href="https://bett.website" class="onboard-logo-link">
+      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
+    </a>
+    <h2>🎉 You're all set!</h2>
+    <p>Welcome to <b>Bett Hub</b> — your new favorite place to connect, share, and grow.</p>
+    <div class="onboard-cta">
+      <button onclick="createAccount()" class="btn-primary">Create Account Now 🚀</button>
+      <p class="onboard-note">Join for free and start building your network today!</p>
+    </div>
+    <div class="progress-dots">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot active"></span>
+    </div>
   </div>
 </div>
 
 <style>
-/* 🌸 Betthub Onboarding Styles */
+/* 🌸 Enhanced Bett Hub Onboarding Styles with Progress Indicators */
 .onboard-overlay {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(255, 240, 245, 0.98);
+  background: linear-gradient(135deg, rgba(255, 240, 245, 0.98), rgba(255, 248, 255, 0.95));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -995,37 +1042,87 @@
   display: block;
 }
 
+.onboard-logo-link {
+  display: inline-block;
+  margin-bottom: 15px;
+  text-decoration: none;
+}
+
 .onboard-logo {
   width: 70px;
   height: 70px;
   object-fit: contain;
-  margin-bottom: 15px;
+  transition: transform 0.2s ease;
+}
+
+.onboard-logo-link:hover .onboard-logo {
+  transform: scale(1.05);
 }
 
 .onboard-card h2 {
   color: #ff4f87;
   margin-bottom: 10px;
+  font-size: 24px;
 }
 
 .onboard-card p {
   color: #555;
   font-size: 15px;
   margin-bottom: 20px;
+  line-height: 1.4;
 }
 
 .onboard-card button {
   background: #ff4f87;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
+  width: 100%;
+  max-width: 200px;
 }
 
 .onboard-card button:hover {
   background: #ff2f75;
+  transform: translateY(-1px);
+}
+
+.onboard-cta {
+  margin-top: 10px;
+}
+
+.btn-primary {
+  background: #ff4f87 !important;
+  margin-bottom: 10px;
+}
+
+.onboard-note {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+}
+
+/* Progress Dots */
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: #ccc;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.dot.active {
+  background: #ff4f87;
 }
 
 @keyframes fadeIn {
@@ -1041,6 +1138,11 @@ function nextOnboard(step) {
   document.getElementById(`onboard${onboardStep}`).classList.remove('active');
   document.getElementById(`onboard${step}`).classList.add('active');
   onboardStep = step;
+}
+
+function createAccount() {
+  // Redirect to account creation on the site
+  window.location.href = 'https://bett.website/login?action=signup';
 }
 
 function finishOnboarding() {
