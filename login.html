@@ -927,6 +927,7 @@
     document.addEventListener('DOMContentLoaded', init);
   </script>
 <!-- 🌸 Enhanced Onboarding Flow for Betthub -->
+<<!-- 🌸 Onboarding Flow -->
 <div id="onboardingOverlay" class="onboard-overlay">
   <div class="onboard-card" id="onboard1">
     <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
@@ -966,126 +967,65 @@
     </div>
   </div>
 </div>
-
 <style>
-/* 🌸 Betthub Onboarding Styles */
+/* 🌸 Onboarding Styles */
 .onboard-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: rgba(255, 240, 245, 0.98);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 99999;
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.3s ease;
 }
 
 .onboard-card {
   display: none;
   background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  padding: 40px 30px;
+  border-radius: 20px;
+  box-shadow: 0 6px 30px rgba(0,0,0,.1);
+  padding: 35px 25px;
   width: 90%;
-  max-width: 380px;
+  max-width: 360px;
   text-align: center;
-  animation: slideIn 0.5s ease;
+  animation: fadeIn 0.4s ease;
 }
 
 .onboard-card.active {
   display: block;
 }
 
-.onboard-logo {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  margin-bottom: 20px;
-}
-
 .onboard-card h2 {
   color: #ff4f87;
-  font-size: 24px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .onboard-card p {
-  color: #444;
-  font-size: 16px;
-  line-height: 1.5;
-  margin-bottom: 24px;
+  color: #555;
+  font-size: 15px;
+  margin-bottom: 20px;
 }
 
 .onboard-card button {
   background: #ff4f87;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
+  padding: 10px 20px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 16px;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: background 0.2s;
 }
 
 .onboard-card button:hover {
   background: #ff2f75;
-  transform: scale(1.05);
 }
 
-.primary-btn {
-  background: linear-gradient(90deg, #ff4f87, #ff2f75);
-  padding: 14px;
-  width: 100%;
-  border-radius: 12px;
-  font-size: 16px;
-}
-
-.primary-btn:hover {
-  background: linear-gradient(90deg, #ff2f75, #ff0f63);
-}
-
-.onboard-card a {
-  color: #ff4f87;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.onboard-card a:hover {
-  text-decoration: underline;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 480px) {
-  .onboard-card {
-    padding: 30px 20px;
-    max-width: 320px;
-  }
-
-  .onboard-logo {
-    width: 60px;
-    height: 60px;
-  }
-
-  .onboard-card h2 {
-    font-size: 20px;
-  }
-
-  .onboard-card p {
-    font-size: 14px;
-  }
-
-  .onboard-card button {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 </style>
 
@@ -1096,14 +1036,6 @@ function nextOnboard(step) {
   document.getElementById(`onboard${onboardStep}`).classList.remove('active');
   document.getElementById(`onboard${step}`).classList.add('active');
   onboardStep = step;
-}
-
-function createAccount() {
-  window.location.href = 'https://bett.website/login?action=signup';
-}
-
-function showLogin() {
-  window.location.href = 'https://bett.website/login';
 }
 
 function finishOnboarding() {
