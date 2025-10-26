@@ -926,150 +926,97 @@
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
-  <!-- 🌸 Enhanced Onboarding Flow for Bett Hub with Progress Indicators -->
+<!-- 🌸 Enhanced Onboarding Flow for Betthub -->
 <div id="onboardingOverlay" class="onboard-overlay">
-  <div class="onboard-card active" id="onboard1">
-    <a href="https://bett.website" class="onboard-logo-link">
-      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
-    </a>
-    <h2>Welcome to Bett Hub 💖</h2>
-    <p>Connect, share, and grow together — where people build meaningful relationships the Bett Hub way!</p>
-    <button onclick="nextOnboard(2)">Next →</button>
-    <div class="progress-dots">
-      <span class="dot active"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-    </div>
+  <div class="onboard-card" id="onboard1">
+    <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
+    <h2>Welcome to Betthub 💖</h2>
+    <p>Join a vibrant community to connect, share, and match with people who share your vibe!</p>
+    <button onclick="nextOnboard(2)">Get Started →</button>
   </div>
 
   <div class="onboard-card" id="onboard2">
-    <a href="https://bett.website" class="onboard-logo-link">
-      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
-    </a>
-    <h2>✨ Set up your Bett Hub profile</h2>
-    <p>Add a photo, your hobbies, and a short bio so others can get to know you better.</p>
+    <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
+    <h2>🌐 Build Your Network</h2>
+    <p>Connect with like-minded individuals for professional or social networking in a fun, engaging way.</p>
     <button onclick="nextOnboard(3)">Next →</button>
-    <div class="progress-dots">
-      <span class="dot"></span>
-      <span class="dot active"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-    </div>
   </div>
 
   <div class="onboard-card" id="onboard3">
-    <a href="https://bett.website" class="onboard-logo-link">
-      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
-    </a>
-    <h2>📸 Share your first moment</h2>
-    <p>Post photos, thoughts, or stories — show your vibe to the Bett Hub community!</p>
+    <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
+    <h2>📸 Share Your Moments</h2>
+    <p>Post photos, thoughts, or stories instantly with our easy-to-use tools to showcase your unique vibe.</p>
     <button onclick="nextOnboard(4)">Next →</button>
-    <div class="progress-dots">
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot active"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-    </div>
   </div>
 
   <div class="onboard-card" id="onboard4">
-    <a href="https://bett.website" class="onboard-logo-link">
-      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
-    </a>
-    <h2>💬 Connect & Chat</h2>
-    <p>Meet people who share your energy. Chat, match, and make meaningful connections.</p>
+    <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
+    <h2>🔒 Safe & Welcoming Community</h2>
+    <p>Enjoy a secure, moderated platform designed for positive interactions and meaningful connections.</p>
     <button onclick="nextOnboard(5)">Next →</button>
-    <div class="progress-dots">
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot active"></span>
-      <span class="dot"></span>
-    </div>
   </div>
 
   <div class="onboard-card" id="onboard5">
-    <a href="https://bett.website" class="onboard-logo-link">
-      <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Bett Hub logo" class="onboard-logo" />
-    </a>
-    <h2>🎉 You're all set!</h2>
-    <p>Welcome to <b>Bett Hub</b> — your new favorite place to connect, share, and grow.</p>
-    <div class="onboard-cta">
-      <button onclick="createAccount()" class="btn-primary">Create Account Now 🚀</button>
-      <p class="onboard-note">Join for free and start building your network today!</p>
-    </div>
-    <div class="progress-dots">
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot active"></span>
+    <img src="https://i.ibb.co/Y4bz3tHf/web-app-manifest-192x192.png" alt="Betthub logo" class="onboard-logo" />
+    <h2>🚀 Join Betthub Today!</h2>
+    <p>Create your free account to start connecting, sharing, and vibing with the community!</p>
+    <div style="margin-top: 15px;">
+      <button onclick="createAccount()" class="primary-btn">Create Free Account</button>
+      <p style="font-size: 12px; color: #888; margin-top: 10px;">Already have an account? <a href="#" onclick="showLogin()">Sign in</a></p>
     </div>
   </div>
 </div>
 
 <style>
-/* 🌸 Enhanced Bett Hub Onboarding Styles with Progress Indicators */
+/* 🌸 Betthub Onboarding Styles */
 .onboard-overlay {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: linear-gradient(135deg, rgba(255, 240, 245, 0.98), rgba(255, 248, 255, 0.95));
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 240, 245, 0.98);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 99999;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.5s ease-in-out;
 }
 
 .onboard-card {
   display: none;
   background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 6px 30px rgba(0,0,0,.1);
-  padding: 35px 25px;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 40px 30px;
   width: 90%;
-  max-width: 360px;
+  max-width: 380px;
   text-align: center;
-  animation: fadeIn 0.4s ease;
+  animation: slideIn 0.5s ease;
 }
 
 .onboard-card.active {
   display: block;
 }
 
-.onboard-logo-link {
-  display: inline-block;
-  margin-bottom: 15px;
-  text-decoration: none;
-}
-
 .onboard-logo {
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
-  transition: transform 0.2s ease;
-}
-
-.onboard-logo-link:hover .onboard-logo {
-  transform: scale(1.05);
+  margin-bottom: 20px;
 }
 
 .onboard-card h2 {
   color: #ff4f87;
-  margin-bottom: 10px;
   font-size: 24px;
+  margin-bottom: 12px;
 }
 
 .onboard-card p {
-  color: #555;
-  font-size: 15px;
-  margin-bottom: 20px;
-  line-height: 1.4;
+  color: #444;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 24px;
 }
 
 .onboard-card button {
@@ -1077,57 +1024,68 @@
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  width: 100%;
-  max-width: 200px;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .onboard-card button:hover {
   background: #ff2f75;
-  transform: translateY(-1px);
+  transform: scale(1.05);
 }
 
-.onboard-cta {
-  margin-top: 10px;
+.primary-btn {
+  background: linear-gradient(90deg, #ff4f87, #ff2f75);
+  padding: 14px;
+  width: 100%;
+  border-radius: 12px;
+  font-size: 16px;
 }
 
-.btn-primary {
-  background: #ff4f87 !important;
-  margin-bottom: 10px;
+.primary-btn:hover {
+  background: linear-gradient(90deg, #ff2f75, #ff0f63);
 }
 
-.onboard-note {
-  font-size: 14px;
-  color: #888;
-  margin: 0;
+.onboard-card a {
+  color: #ff4f87;
+  text-decoration: none;
+  font-weight: 500;
 }
 
-/* Progress Dots */
-.progress-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
+.onboard-card a:hover {
+  text-decoration: underline;
 }
 
-.dot {
-  width: 10px;
-  height: 10px;
-  background: #ccc;
-  border-radius: 50%;
-  transition: background 0.3s ease;
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.dot.active {
-  background: #ff4f87;
-}
+@media (max-width: 480px) {
+  .onboard-card {
+    padding: 30px 20px;
+    max-width: 320px;
+  }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  .onboard-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .onboard-card h2 {
+    font-size: 20px;
+  }
+
+  .onboard-card p {
+    font-size: 14px;
+  }
+
+  .onboard-card button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
 }
 </style>
 
@@ -1141,8 +1099,11 @@ function nextOnboard(step) {
 }
 
 function createAccount() {
-  // Redirect to account creation on the site
   window.location.href = 'https://bett.website/login?action=signup';
+}
+
+function showLogin() {
+  window.location.href = 'https://bett.website/login';
 }
 
 function finishOnboarding() {
