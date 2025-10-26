@@ -13,6 +13,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      overflow: hidden;
     }
     .auth-container {
       background: white;
@@ -22,8 +23,12 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, .15);
       text-align: center;
       transition: .4s;
+      position: relative;
     }
-    h2 { color: #ff4f87; margin-bottom: 20px; }
+    h2 { 
+      color: #ff4f87; 
+      margin-bottom: 20px; 
+    }
     input {
       width: 100%;
       padding: 10px;
@@ -31,6 +36,12 @@
       border: 1px solid #ddd;
       border-radius: 8px;
       font-family: inherit;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #ff4f87;
     }
     button {
       width: 100%;
@@ -41,25 +52,139 @@
       border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
+      transition: background 0.3s;
     }
-    button:hover { background: #ff2f6d; }
-    .toggle { margin-top: 15px; color: #666; }
+    button:hover { 
+      background: #ff2f6d; 
+    }
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .toggle { 
+      margin-top: 15px; 
+      color: #666; 
+    }
     .toggle span {
       color: #ff4f87;
       cursor: pointer;
       font-weight: 600;
     }
-    .hidden { display: none; }
+    .hidden { 
+      display: none; 
+    }
     .status-text {
       color: #ff4f87;
       font-size: 14px;
       margin-top: 10px;
+      min-height: 20px;
     }
     .password-requirements {
       font-size: 12px;
       color: #666;
       text-align: left;
       margin: 8px 0;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+    }
+    .requirement {
+      margin: 3px 0;
+      transition: color 0.3s;
+    }
+    .requirement.met {
+      color: #4CAF50;
+    }
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .password-container {
+      position: relative;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #666;
+      width: auto;
+      padding: 0;
+    }
+    .password-toggle:hover {
+      color: #ff4f87;
+      background: none;
+    }
+    .forgot-password {
+      text-align: right;
+      margin: 5px 0 15px;
+    }
+    .forgot-password a {
+      color: #ff4f87;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+    .error-message {
+      color: #e74c3c;
+      font-size: 12px;
+      text-align: left;
+      margin-top: 5px;
+    }
+    .success-message {
+      color: #4CAF50;
+      font-size: 12px;
+      text-align: left;
+      margin-top: 5px;
+    }
+    .input-error {
+      border-color: #e74c3c;
+    }
+    .input-success {
+      border-color: #4CAF50;
+    }
+    .loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .remember-me {
+      text-align: left;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+    }
+    .remember-me input {
+      width: auto;
+      margin-right: 8px;
+    }
+    .remember-me label {
+      font-size: 14px;
+      color: #666;
+    }
+    .user-info {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      text-align: left;
+    }
+    .user-info p {
+      margin: 5px 0;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -69,25 +194,102 @@
 
     <!-- Login Form -->
     <div id="loginForm">
-      <input type="email" id="loginEmail" placeholder="Email">
-      <input type="password" id="loginPassword" placeholder="Password">
-      <button id="loginBtn">Login</button>
+      <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+      <div class="password-container">
+        <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+        <button class="password-toggle" id="loginPasswordToggle">👁️</button>
+      </div>
+      <div class="remember-me">
+        <input type="checkbox" id="rememberMe">
+        <label for="rememberMe">Remember me</label>
+      </div>
+      <div class="forgot-password">
+        <a href="#" id="forgotPasswordLink">Forgot Password?</a> | 
+        <a href="#" id="changePasswordLink">Change Password</a>
+      </div>
+      <button id="loginBtn">
+        <span class="loader hidden" id="loginLoader"></span>
+        <span id="loginBtnText">Login</span>
+      </button>
     </div>
 
     <!-- Signup Form -->
     <div id="signupForm" class="hidden">
-      <input type="text" id="signupName" placeholder="Full Name">
-      <input type="email" id="signupEmail" placeholder="Email">
-      <input type="password" id="signupPassword" placeholder="Password">
-      <div class="password-requirements">
-        Password must be at least 8 characters long and include:<br>
-        - One uppercase letter<br>
-        - One lowercase letter<br>
-        - One number<br>
-        - One special character (@$!%*?&)
+      <input type="text" id="signupName" placeholder="Full Name" autocomplete="name">
+      <input type="email" id="signupEmail" placeholder="Email" autocomplete="email">
+      <div class="password-container">
+        <input type="password" id="signupPassword" placeholder="Password" autocomplete="new-password">
+        <button class="password-toggle" id="signupPasswordToggle">👁️</button>
       </div>
-      <input type="password" id="signupConfirmPassword" placeholder="Confirm Password">
-      <button id="signupBtn">Sign Up</button>
+      <div class="password-requirements">
+        <div class="requirement" id="reqLength">At least 8 characters</div>
+        <div class="requirement" id="reqUppercase">One uppercase letter</div>
+        <div class="requirement" id="reqLowercase">One lowercase letter</div>
+        <div class="requirement" id="reqNumber">One number</div>
+        <div class="requirement" id="reqSpecial">One special character (@$!%*?&)</div>
+      </div>
+      <div class="password-container">
+        <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" autocomplete="new-password">
+        <button class="password-toggle" id="signupConfirmPasswordToggle">👁️</button>
+      </div>
+      <div id="passwordMatchMessage" class="error-message"></div>
+      <button id="signupBtn">
+        <span class="loader hidden" id="signupLoader"></span>
+        <span id="signupBtnText">Sign Up</span>
+      </button>
+    </div>
+
+    <!-- Forgot Password Form -->
+    <div id="forgotPasswordForm" class="hidden">
+      <p>Enter your email address and we'll send you a password reset link.</p>
+      <input type="email" id="forgotPasswordEmail" placeholder="Email" autocomplete="email">
+      <button id="sendResetLinkBtn">
+        <span class="loader hidden" id="resetLoader"></span>
+        <span id="resetBtnText">Send Reset Link</span>
+      </button>
+      <div class="toggle">
+        <span id="backToLoginLink">Back to Login</span>
+      </div>
+    </div>
+
+    <!-- Change Password Form -->
+    <div id="changePasswordForm" class="hidden">
+      <p>Enter your current and new password to update your account.</p>
+      <div class="password-container">
+        <input type="password" id="currentPassword" placeholder="Current Password" autocomplete="current-password">
+        <button class="password-toggle" id="currentPasswordToggle">👁️</button>
+      </div>
+      <div class="password-container">
+        <input type="password" id="newPassword" placeholder="New Password" autocomplete="new-password">
+        <button class="password-toggle" id="newPasswordToggle">👁️</button>
+      </div>
+      <div class="password-requirements">
+        <div class="requirement" id="reqLengthChange">At least 8 characters</div>
+        <div class="requirement" id="reqUppercaseChange">One uppercase letter</div>
+        <div class="requirement" id="reqLowercaseChange">One lowercase letter</div>
+        <div class="requirement" id="reqNumberChange">One number</div>
+        <div class="requirement" id="reqSpecialChange">One special character (@$!%*?&)</div>
+      </div>
+      <div class="password-container">
+        <input type="password" id="confirmNewPassword" placeholder="Confirm New Password" autocomplete="new-password">
+        <button class="password-toggle" id="confirmNewPasswordToggle">👁️</button>
+      </div>
+      <div id="newPasswordMatchMessage" class="error-message"></div>
+      <button id="changePasswordBtn">
+        <span class="loader hidden" id="changePasswordLoader"></span>
+        <span id="changePasswordBtnText">Change Password</span>
+      </button>
+      <div class="toggle">
+        <span id="backToLoginFromChangeLink">Back to Login</span>
+      </div>
+    </div>
+
+    <!-- User Info Display -->
+    <div id="userInfo" class="user-info hidden">
+      <h3>User Information</h3>
+      <p><strong>Name:</strong> <span id="displayUserName"></span></p>
+      <p><strong>Email:</strong> <span id="displayUserEmail"></span></p>
+      <p><strong>User ID:</strong> <span id="displayUserId"></span></p>
     </div>
 
     <p class="toggle" id="toggleText">
@@ -110,127 +312,619 @@
       messagingSenderId: "619099585646",
       appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
     };
+
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const statusText = document.getElementById('status');
 
-    // Set persistence to LOCAL
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-      .then(() => {
-        console.log('Firebase Auth persistence set to LOCAL');
-      })
-      .catch(err => {
-        console.error('Error setting auth persistence:', err);
-        statusText.textContent = 'Error setting persistence: ' + err.message;
-      });
+    // DOM elements
+    let formTitle, loginForm, signupForm, forgotPasswordForm, changePasswordForm, toggleLink, toggleText;
+    let statusText, authContainer, backToLoginLink, forgotPasswordLink, changePasswordLink, rememberMeCheckbox, userInfoDiv;
 
-    const formTitle = document.getElementById('formTitle');
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-    const toggleLink = document.getElementById('toggleLink');
-    const toggleText = document.getElementById('toggleText');
+    // Initialize DOM elements
+    function initializeDOMElements() {
+      formTitle = document.getElementById('formTitle');
+      loginForm = document.getElementById('loginForm');
+      signupForm = document.getElementById('signupForm');
+      forgotPasswordForm = document.getElementById('forgotPasswordForm');
+      changePasswordForm = document.getElementById('changePasswordForm');
+      toggleLink = document.getElementById('toggleLink');
+      toggleText = document.getElementById('toggleText');
+      statusText = document.getElementById('status');
+      authContainer = document.querySelector('.auth-container');
+      backToLoginLink = document.getElementById('backToLoginLink');
+      forgotPasswordLink = document.getElementById('forgotPasswordLink');
+      changePasswordLink = document.getElementById('changePasswordLink');
+      rememberMeCheckbox = document.getElementById('rememberMe');
+      userInfoDiv = document.getElementById('userInfo');
+    }
+
+    // Set auth persistence based on remember me
+    function setAuthPersistence(remember) {
+      const persistence = remember ? 
+        firebase.auth.Auth.Persistence.LOCAL : 
+        firebase.auth.Auth.Persistence.SESSION;
+      
+      auth.setPersistence(persistence)
+        .then(() => {
+          console.log(`Firebase Auth persistence set to ${remember ? 'LOCAL' : 'SESSION'}`);
+        })
+        .catch(err => {
+          console.error('Error setting auth persistence:', err);
+          showStatus('Error setting persistence: ' + err.message, true);
+        });
+    }
+
+    // Load remember me preference
+    function loadRememberMePreference() {
+      const remember = localStorage.getItem('rememberMe') === 'true';
+      if (rememberMeCheckbox) {
+        rememberMeCheckbox.checked = remember;
+      }
+      setAuthPersistence(remember);
+      return remember;
+    }
 
     let isLogin = true;
+
+    // Toggle between login and signup forms
     function toggleForms() {
       isLogin = !isLogin;
+      clearStatus();
+      resetForms();
+      
       if (isLogin) {
         formTitle.textContent = 'Login';
         loginForm.classList.remove('hidden');
         signupForm.classList.add('hidden');
+        forgotPasswordForm.classList.add('hidden');
+        changePasswordForm.classList.add('hidden');
+        if (userInfoDiv) userInfoDiv.classList.add('hidden');
         toggleText.innerHTML = `Don't have an account? <span id="toggleLink">Sign Up</span>`;
+        toggleText.classList.remove('hidden');
       } else {
         formTitle.textContent = 'Sign Up';
         loginForm.classList.add('hidden');
         signupForm.classList.remove('hidden');
+        forgotPasswordForm.classList.add('hidden');
+        changePasswordForm.classList.add('hidden');
+        if (userInfoDiv) userInfoDiv.classList.add('hidden');
         toggleText.innerHTML = `Already have an account? <span id="toggleLink">Login</span>`;
+        toggleText.classList.remove('hidden');
       }
-      document.getElementById('toggleLink').addEventListener('click', toggleForms);
+      
+      const newToggleLink = document.getElementById('toggleLink');
+      if (newToggleLink) {
+        newToggleLink.addEventListener('click', toggleForms);
+      }
     }
-    toggleLink.addEventListener('click', toggleForms);
+
+    // Show forgot password form
+    function showForgotPasswordForm() {
+      formTitle.textContent = 'Reset Password';
+      loginForm.classList.add('hidden');
+      signupForm.classList.add('hidden');
+      forgotPasswordForm.classList.remove('hidden');
+      changePasswordForm.classList.add('hidden');
+      if (userInfoDiv) userInfoDiv.classList.add('hidden');
+      toggleText.classList.add('hidden');
+      clearStatus();
+      resetForms();
+    }
+
+    // Show change password form
+    function showChangePasswordForm() {
+      formTitle.textContent = 'Change Password';
+      loginForm.classList.add('hidden');
+      signupForm.classList.add('hidden');
+      forgotPasswordForm.classList.add('hidden');
+      changePasswordForm.classList.remove('hidden');
+      if (userInfoDiv) userInfoDiv.classList.add('hidden');
+      toggleText.classList.add('hidden');
+      clearStatus();
+      resetForms();
+    }
+
+    // Show login form
+    function showLoginForm() {
+      formTitle.textContent = 'Login';
+      loginForm.classList.remove('hidden');
+      signupForm.classList.add('hidden');
+      forgotPasswordForm.classList.add('hidden');
+      changePasswordForm.classList.add('hidden');
+      if (userInfoDiv) userInfoDiv.classList.add('hidden');
+      toggleText.classList.remove('hidden');
+      clearStatus();
+      resetForms();
+      isLogin = true;
+      toggleText.innerHTML = `Don't have an account? <span id="toggleLink">Sign Up</span>`;
+      
+      const newToggleLink = document.getElementById('toggleLink');
+      if (newToggleLink) {
+        newToggleLink.addEventListener('click', toggleForms);
+      }
+    }
+
+    // Display user information
+    function displayUserInfo(user) {
+      if (!userInfoDiv) return;
+      
+      const userNameElement = document.getElementById('displayUserName');
+      const userEmailElement = document.getElementById('displayUserEmail');
+      const userIdElement = document.getElementById('displayUserId');
+      
+      if (userNameElement) userNameElement.textContent = user.displayName || 'Not set';
+      if (userEmailElement) userEmailElement.textContent = user.email || 'Not set';
+      if (userIdElement) userIdElement.textContent = user.uid;
+      
+      userInfoDiv.classList.remove('hidden');
+    }
+
+    // Show status message
+    function showStatus(message, isError = false) {
+      if (statusText) {
+        statusText.textContent = message;
+        statusText.style.color = isError ? '#e74c3c' : '#ff4f87';
+      }
+    }
+
+    // Clear status message
+    function clearStatus() {
+      if (statusText) {
+        statusText.textContent = '';
+      }
+    }
+
+    // Reset form inputs and validation
+    function resetForms() {
+      document.querySelectorAll('input').forEach(input => {
+        if (input.type !== 'checkbox') {
+          input.value = '';
+        }
+        input.classList.remove('input-error', 'input-success');
+      });
+      
+      document.querySelectorAll('.requirement').forEach(req => {
+        req.classList.remove('met');
+      });
+      
+      const passwordMatchMessage = document.getElementById('passwordMatchMessage');
+      if (passwordMatchMessage) {
+        passwordMatchMessage.textContent = '';
+      }
+      
+      const newPasswordMatchMessage = document.getElementById('newPasswordMatchMessage');
+      if (newPasswordMatchMessage) {
+        newPasswordMatchMessage.textContent = '';
+      }
+      
+      setLoading(false, 'login');
+      setLoading(false, 'signup');
+      setLoading(false, 'reset');
+      setLoading(false, 'changePassword');
+    }
+
+    // Set loading state
+    function setLoading(isLoading, formType) {
+      const loader = document.getElementById(`${formType}Loader`);
+      const btnText = document.getElementById(`${formType}BtnText`);
+      const button = document.getElementById(`${formType}Btn`);
+      
+      if (!loader || !btnText || !button) return;
+      
+      if (isLoading) {
+        loader.classList.remove('hidden');
+        btnText.textContent = formType === 'login' ? 'Logging in...' : 
+                             formType === 'signup' ? 'Creating account...' : 
+                             formType === 'reset' ? 'Sending...' : 'Changing Password...';
+        button.disabled = true;
+        if (authContainer) authContainer.classList.add('loading');
+      } else {
+        loader.classList.add('hidden');
+        btnText.textContent = formType === 'login' ? 'Login' : 
+                             formType === 'signup' ? 'Sign Up' : 
+                             formType === 'reset' ? 'Send Reset Link' : 'Change Password';
+        button.disabled = false;
+        if (authContainer) authContainer.classList.remove('loading');
+      }
+    }
+
+    // Password strength validation
+    function validatePassword(password, isChangePassword = false) {
+      const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /\d/.test(password),
+        special: /[@$!%*?&]/.test(password)
+      };
+      
+      const prefix = isChangePassword ? 'Change' : '';
+      const reqIds = [`reqLength${prefix}`, `reqUppercase${prefix}`, `reqLowercase${prefix}`, `reqNumber${prefix}`, `reqSpecial${prefix}`];
+      const reqKeys = ['length', 'uppercase', 'lowercase', 'number', 'special'];
+      
+      reqKeys.forEach((key, index) => {
+        const element = document.getElementById(reqIds[index]);
+        if (element) {
+          element.classList.toggle('met', requirements[key]);
+        }
+      });
+      
+      return Object.values(requirements).every(Boolean);
+    }
+
+    // Check if passwords match (for signup or change password)
+    function checkPasswordMatch(isChangePassword = false) {
+      const passwordInput = document.getElementById(isChangePassword ? 'newPassword' : 'signupPassword');
+      const confirmPasswordInput = document.getElementById(isChangePassword ? 'confirmNewPassword' : 'signupConfirmPassword');
+      const messageElement = document.getElementById(isChangePassword ? 'newPasswordMatchMessage' : 'passwordMatchMessage');
+      
+      if (!passwordInput || !confirmPasswordInput || !messageElement) return false;
+      
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+      
+      if (confirmPassword === '') {
+        messageElement.textContent = '';
+        confirmPasswordInput.classList.remove('input-error', 'input-success');
+        return false;
+      }
+      
+      if (password === confirmPassword) {
+        messageElement.textContent = 'Passwords match!';
+        messageElement.className = 'success-message';
+        confirmPasswordInput.classList.remove('input-error');
+        confirmPasswordInput.classList.add('input-success');
+        return true;
+      } else {
+        messageElement.textContent = 'Passwords do not match!';
+        messageElement.className = 'error-message';
+        confirmPasswordInput.classList.remove('input-success');
+        confirmPasswordInput.classList.add('input-error');
+        return false;
+      }
+    }
+
+    // Toggle password visibility
+    function setupPasswordToggle(passwordInputId, toggleButtonId) {
+      const passwordInput = document.getElementById(passwordInputId);
+      const toggleButton = document.getElementById(toggleButtonId);
+      
+      if (!passwordInput || !toggleButton) return;
+      
+      toggleButton.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        toggleButton.textContent = type === 'password' ? '👁️' : '🔒';
+      });
+    }
+
+    // Ensure user document exists in Firestore
+    async function ensureUserDocumentExists(uid, email) {
+      const userDoc = await db.collection('users').doc(uid).get();
+      
+      if (!userDoc.exists) {
+        console.log('Creating missing user document for:', uid);
+        await db.collection('users').doc(uid).set({
+          email: email,
+          fullName: '',
+          bio: '',
+          photoURL: 'https://via.placeholder.com/50',
+          online: true,
+          blockedUsers: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } else {
+        await db.collection('users').doc(uid).update({
+          online: true,
+          lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
 
     // Check auth state on page load
     auth.onAuthStateChanged(user => {
       if (user) {
         console.log(`User already logged in: ${user.uid}`);
         localStorage.setItem('loggedInUser', user.uid);
-        window.location.href = 'home2.html';
+        
+        db.collection('users').doc(user.uid).get()
+          .then(doc => {
+            if (doc.exists) {
+              const userData = doc.data();
+              console.log('User data:', userData);
+              displayUserInfo({
+                ...user,
+                displayName: userData.fullName || user.displayName
+              });
+            }
+            setTimeout(() => {
+              window.location.href = 'home2.html';
+            }, 1500);
+          })
+          .catch(err => {
+            console.error('Error getting user data:', err);
+            showStatus('Error: ' + err.message, true);
+          });
       } else {
         console.log('No user logged in on page load');
       }
     });
 
-    // ----- Login -----
-    document.getElementById('loginBtn').addEventListener('click', async () => {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-      if (!email || !password) {
-        statusText.textContent = 'Please enter both email and password!';
-        return;
+    // Setup event listeners
+    function setupEventListeners() {
+      if (toggleLink) {
+        toggleLink.addEventListener('click', toggleForms);
       }
-      try {
-        console.log('Attempting login for:', email);
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        localStorage.setItem('loggedInUser', userCredential.user.uid);
-        await db.collection('users').doc(userCredential.user.uid).update({
-          online: true,
-          lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      
+      if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', showForgotPasswordForm);
+      }
+      
+      if (changePasswordLink) {
+        changePasswordLink.addEventListener('click', showChangePasswordForm);
+      }
+      
+      if (backToLoginLink) {
+        backToLoginLink.addEventListener('click', showLoginForm);
+      }
+      
+      const backToLoginFromChangeLink = document.getElementById('backToLoginFromChangeLink');
+      if (backToLoginFromChangeLink) {
+        backToLoginFromChangeLink.addEventListener('click', showLoginForm);
+      }
+      
+      if (rememberMeCheckbox) {
+        rememberMeCheckbox.addEventListener('change', function() {
+          localStorage.setItem('rememberMe', this.checked);
+          setAuthPersistence(this.checked);
         });
-        console.log('Login successful, user:', userCredential.user.uid);
-        window.location.href = 'home2.html';
-      } catch (err) {
-        console.error('Login error:', err);
-        statusText.textContent = `Login failed: ${err.message}`;
       }
-    });
-
-    // ----- Sign Up -----
-    document.getElementById('signupBtn').addEventListener('click', async () => {
-      const name = document.getElementById('signupName').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
-      const password = document.getElementById('signupPassword').value.trim();
-      const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
-
-      // Check if all fields are filled
-      if (!name || !email || !password || !confirmPassword) {
-        statusText.textContent = 'Please fill all fields!';
-        return;
-      }
-
-      // Check if passwords match
-      if (password !== confirmPassword) {
-        statusText.textContent = 'Passwords do not match!';
-        return;
-      }
-
-      // Strong password validation
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(password)) {
-        statusText.textContent = 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)';
-        return;
-      }
-
-      try {
-        console.log('Attempting signup for:', email);
-        const cred = await auth.createUserWithEmailAndPassword(email, password);
-        const uid = cred.user.uid;
-        await db.collection('users').doc(uid).set({
-          fullName: name,
-          email,
-          bio: '',
-          photoURL: 'https://via.placeholder.com/50', // Default photo
-          online: true,
-          blockedUsers: [],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      
+      setupPasswordToggle('loginPassword', 'loginPasswordToggle');
+      setupPasswordToggle('signupPassword', 'signupPasswordToggle');
+      setupPasswordToggle('signupConfirmPassword', 'signupConfirmPasswordToggle');
+      setupPasswordToggle('currentPassword', 'currentPasswordToggle');
+      setupPasswordToggle('newPassword', 'newPasswordToggle');
+      setupPasswordToggle('confirmNewPassword', 'confirmNewPasswordToggle');
+      
+      const signupPasswordInput = document.getElementById('signupPassword');
+      if (signupPasswordInput) {
+        signupPasswordInput.addEventListener('input', function() {
+          validatePassword(this.value);
+          checkPasswordMatch();
         });
-        localStorage.setItem('loggedInUser', uid);
-        console.log('Signup successful, user:', uid);
-        window.location.href = 'home2.html';
-      } catch (err) {
-        console.error('Signup error:', err);
-        statusText.textContent = `Sign up failed: ${err.message}`;
       }
-    });
+      
+      const signupConfirmPasswordInput = document.getElementById('signupConfirmPassword');
+      if (signupConfirmPasswordInput) {
+        signupConfirmPasswordInput.addEventListener('input', checkPasswordMatch);
+      }
+      
+      const newPasswordInput = document.getElementById('newPassword');
+      if (newPasswordInput) {
+        newPasswordInput.addEventListener('input', function() {
+          validatePassword(this.value, true);
+          checkPasswordMatch(true);
+        });
+      }
+      
+      const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+      if (confirmNewPasswordInput) {
+        confirmNewPasswordInput.addEventListener('input', () => checkPasswordMatch(true));
+      }
+
+      // Login handler
+      document.getElementById('loginBtn').addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        
+        if (!email || !password) {
+          showStatus('Please enter both email and password!', true);
+          return;
+        }
+        
+        try {
+          setLoading(true, 'login');
+          console.log('Attempting login for:', email);
+          
+          const userCredential = await auth.signInWithEmailAndPassword(email, password);
+          const user = userCredential.user;
+          
+          localStorage.setItem('loggedInUser', user.uid);
+          localStorage.setItem('userEmail', user.email);
+          
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            localStorage.setItem('userName', userData.fullName || '');
+            displayUserInfo({
+              ...user,
+              displayName: userData.fullName
+            });
+          }
+          
+          await ensureUserDocumentExists(user.uid, user.email);
+          
+          console.log('Login successful, user:', user.uid);
+          setTimeout(() => {
+            window.location.href = 'home2.html';
+          }, 1500);
+        } catch (err) {
+          console.error('Login error:', err);
+          showStatus(`Login failed: ${err.message}`, true);
+        } finally {
+          setLoading(false, 'login');
+        }
+      });
+
+      // Signup handler
+      document.getElementById('signupBtn').addEventListener('click', async () => {
+        const name = document.getElementById('signupName').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const password = document.getElementById('signupPassword').value.trim();
+        const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
+        
+        if (!name || !email || !password || !confirmPassword) {
+          showStatus('Please fill all fields!', true);
+          return;
+        }
+        
+        if (!checkPasswordMatch()) {
+          showStatus('Passwords do not match!', true);
+          return;
+        }
+        
+        if (!validatePassword(password)) {
+          showStatus('Password does not meet all requirements!', true);
+          return;
+        }
+        
+        try {
+          setLoading(true, 'signup');
+          console.log('Attempting signup for:', email);
+          
+          const cred = await auth.createUserWithEmailAndPassword(email, password);
+          const user = cred.user;
+          const uid = user.uid;
+          
+          await user.updateProfile({
+            displayName: name
+          });
+          
+          await db.collection('users').doc(uid).set({
+            fullName: name,
+            email: email,
+            bio: '',
+            photoURL: 'https://via.placeholder.com/50',
+            online: true,
+            blockedUsers: [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          
+          localStorage.setItem('loggedInUser', uid);
+          localStorage.setItem('userEmail', email);
+          localStorage.setItem('userName', name);
+          
+          console.log('Signup successful, user:', uid);
+          displayUserInfo(user);
+          
+          setTimeout(() => {
+            window.location.href = 'home2.html';
+          }, 1500);
+        } catch (err) {
+          console.error('Signup error:', err);
+          showStatus(`Sign up failed: ${err.message}`, true);
+        } finally {
+          setLoading(false, 'signup');
+        }
+      });
+
+      // Forgot password handler
+      document.getElementById('sendResetLinkBtn').addEventListener('click', async () => {
+        const email = document.getElementById('forgotPasswordEmail').value.trim();
+        
+        if (!email) {
+          showStatus('Please enter your email address!', true);
+          return;
+        }
+        
+        try {
+          setLoading(true, 'reset');
+          console.log('Sending password reset email to:', email);
+          
+          await auth.sendPasswordResetEmail(email);
+          showStatus('Password reset link sent to your email!', false);
+          
+          document.getElementById('forgotPasswordEmail').value = '';
+        } catch (err) {
+          console.error('Password reset error:', err);
+          showStatus(`Failed to send reset link: ${err.message}`, true);
+        } finally {
+          setLoading(false, 'reset');
+        }
+      });
+
+      // Change password handler
+      document.getElementById('changePasswordBtn').addEventListener('click', async () => {
+        const currentPassword = document.getElementById('currentPassword').value.trim();
+        const newPassword = document.getElementById('newPassword').value.trim();
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value.trim();
+        
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+          showStatus('Please fill all fields!', true);
+          return;
+        }
+        
+        if (!checkPasswordMatch(true)) {
+          showStatus('New passwords do not match!', true);
+          return;
+        }
+        
+        if (!validatePassword(newPassword, true)) {
+          showStatus('New password does not meet all requirements!', true);
+          return;
+        }
+        
+        try {
+          setLoading(true, 'changePassword');
+          const user = auth.currentUser;
+          
+          if (!user) {
+            showStatus('No user is logged in. Please log in first.', true);
+            showLoginForm();
+            return;
+          }
+          
+          console.log('Attempting to change password for:', user.email);
+          
+          // Re-authenticate user
+          const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+          await user.reauthenticateWithCredential(credential);
+          
+          // Update password
+          await user.updatePassword(newPassword);
+          
+          showStatus('Password changed successfully!', false);
+          setTimeout(() => {
+            showLoginForm();
+          }, 1500);
+        } catch (err) {
+          console.error('Change password error:', err);
+          showStatus(`Failed to change password: ${err.message}`, true);
+        } finally {
+          setLoading(false, 'changePassword');
+        }
+      });
+
+      // Allow form submission with Enter key
+      document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          if (!loginForm.classList.contains('hidden')) {
+            document.getElementById('loginBtn').click();
+          } else if (!signupForm.classList.contains('hidden')) {
+            document.getElementById('signupBtn').click();
+          } else if (!forgotPasswordForm.classList.contains('hidden')) {
+            document.getElementById('sendResetLinkBtn').click();
+          } else if (!changePasswordForm.classList.contains('hidden')) {
+            document.getElementById('changePasswordBtn').click();
+          }
+        }
+      });
+    }
+
+    // Initialize the page
+    function init() {
+      initializeDOMElements();
+      setupEventListeners();
+      loadRememberMePreference();
+      console.log('Authentication page initialized');
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
