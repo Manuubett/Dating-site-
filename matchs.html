@@ -83,6 +83,7 @@
       height: 300px;
       overflow: hidden;
       cursor: pointer;
+      border-radius: 12px; /* Reduced border radius */
     }
 
     .match-photo {
@@ -328,6 +329,80 @@
     .view-profile-btn:hover {
       background: #45a049;
     }
+
+    /* New Styles for Added Features */
+    .send-date-btn {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      margin: 15px 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+
+    .send-date-btn:hover {
+      background: #1976D2;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .scroll-arrow {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 5;
+      transition: all 0.3s ease;
+    }
+
+    .scroll-arrow:hover {
+      background: white;
+      transform: scale(1.1);
+    }
+
+    .scroll-arrow span {
+      font-size: 24px;
+    }
+
+    .swipe-instruction {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 5;
+      animation: fadeInOut 3s infinite;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
   </style>
 </head>
 <body>
@@ -348,11 +423,19 @@
     
     <div class="profile-photo-container">
       <img id="userPhoto" class="match-photo" src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Profile Photo">
+      <button class="scroll-arrow" id="scrollArrow">
+        <span>➡️</span>
+      </button>
+      <div class="swipe-instruction">Swipe left/right or use arrows</div>
     </div>
     
     <div class="profile-info">
       <h3 id="userName">Loading...</h3>
-      <button class="view-profile-btn" id="viewProfileBtn">👁 View Profile</button>
+      
+      <div class="action-buttons">
+        <button class="view-profile-btn" id="viewProfileBtn">👁 View Profile</button>
+        <button class="send-date-btn" id="sendDateBtn">📅 Send Date</button>
+      </div>
       
       <div class="user-details">
         <div class="detail-item">
@@ -420,13 +503,17 @@
     const matchCard = document.getElementById('matchCard');
     const bubbleContainer = document.getElementById('bubbleContainer');
     const viewProfileBtn = document.getElementById('viewProfileBtn');
+    const sendDateBtn = document.getElementById('sendDateBtn');
     const photoModal = document.getElementById('photoModal');
     const modalPhoto = document.getElementById('modalPhoto');
     const closeModal = document.querySelector('.close-modal');
+    const scrollArrow = document.getElementById('scrollArrow');
 
     let profiles = [];
     let currentIndex = 0;
     let currentUserId = null;
+    let startX = 0;
+    let endX = 0;
 
     // Profile photo zoom functionality
     photo.addEventListener('click', () => {
@@ -461,6 +548,70 @@
       }
     });
 
+    // Send Date button functionality
+    sendDateBtn.addEventListener('click', () => {
+      window.location.href = 'date.html';
+    });
+
+    // Scroll arrow functionality
+    scrollArrow.addEventListener('click', () => {
+      currentIndex++;
+      showNextProfile();
+    });
+
+    // Swipe functionality
+    matchCard.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    });
+
+    matchCard.addEventListener('touchend', (e) => {
+      endX = e.changedTouches[0].clientX;
+      handleSwipe();
+    });
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      
+      if (startX - endX > swipeThreshold) {
+        // Swipe left - skip
+        currentIndex++;
+        showNextProfile();
+      } else if (endX - startX > swipeThreshold) {
+        // Swipe right - like
+        simulateLike();
+      }
+    }
+
+    function simulateLike() {
+      const likedUser = profiles[currentIndex % profiles.length];
+      if (!likedUser) return;
+      
+      // Visual feedback - heart burst animation
+      likeBtn.classList.add('heart-burst');
+      setTimeout(() => likeBtn.classList.remove('heart-burst'), 500);
+      
+      // Create love bubbles
+      createLoveBubbles();
+      
+      // Button press animation
+      likeBtn.style.transform = "scale(0.9)";
+      setTimeout(() => likeBtn.style.transform = "scale(1)", 150);
+      
+      db.collection('likes').add({
+        from: currentUserId,
+        to: likedUser.id,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      checkForMatch(likedUser.id);
+      currentIndex++;
+      
+      // Show next profile after a delay to let animation play
+      setTimeout(() => {
+        showNextProfile();
+      }, 1500);
+    }
+
     auth.onAuthStateChanged(async (user) => {
       if (!user) return window.location.href = 'log1.html';
       currentUserId = user.uid;
@@ -475,7 +626,7 @@
       
       const snapshot = await db.collection('users').get();
       profiles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
-        .filter(u => u.id !== currentUserId);
+        .filter(u => u.id !== currentUserId && u.photoURL); // Filter out users without profile image
       
       // Create progress indicator dots
       updateProgressIndicator();

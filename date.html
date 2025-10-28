@@ -1,0 +1,433 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+  <title>Partner for Life</title>  
+  <style>  
+    body { font-family: "Poppins", sans-serif; margin: 0; padding: 0; background: linear-gradient(to bottom, #fdfbfb, #ebedee); color: #333; }  
+    nav { background: linear-gradient(135deg, #ff4f87, #ff6b6b); padding: 15px; text-align: center; position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }  
+    nav a { color: #fff; text-decoration: none; margin: 0 12px; font-size: 17px; font-weight: 500; position: relative; }  
+    .notif-badge { position: absolute; top: -5px; right: -10px; background: gold; color: black; font-size: 12px; padding: 2px 6px; border-radius: 50%; display: none; }  
+    .container { max-width: 1200px; margin: 100px auto 40px; padding: 20px; background: white; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }  
+    h2 { text-align: center; color: #ff4f87; margin-bottom: 20px; }  
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }  
+    input, select { padding: 10px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; }  
+    button { background: linear-gradient(135deg, #ff4f87, #ff6b6b); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; transition: all 0.3s; }  
+    button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(255,79,135,0.3); }  
+    .chat-btn { background: linear-gradient(135deg, #4CAF50, #45a049); margin-left: 10px; }  
+    .chat-btn:hover { box-shadow: 0 5px 10px rgba(76,175,80,0.3); }  
+    #membersGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 25px; justify-items: center; }  
+    .member-card { position: relative; background: #fff; text-align: center; border-radius: 15px; padding: 10px; transition: all 0.3s; box-shadow: 0 3px 8px rgba(0,0,0,0.08); overflow: hidden; cursor: pointer; }  
+    .member-card:hover { transform: scale(1.05); }  
+    .profile-pic { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }  
+    .online-dot { position: absolute; bottom: 55px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: #26d53a; border: 2px solid #fff; border-radius: 50%; }  
+    .member-name { font-weight: bold; margin-top: 8px; font-size: 15px; }  
+    .member-age { color: #777; font-size: 13px; margin-bottom: 10px; }  
+    .member-actions { display: none; margin-top: 10px; }  
+    .member-actions button { margin: 5px; }  
+    .request-header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }  
+    .toggle-btn { background: #eee; color: #444; font-size: 13px; }  
+    .delete-selected { display: none; margin-top: 10px; }  
+    .request-item { padding: 10px; margin: 8px 0; border-radius: 8px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }  
+    .request-item.pending { background: #fff3cd; } .request-item.accepted { background: #d4edda; } .request-item.rejected { background: #f8d7da; }  
+    .request-item input[type=checkbox] { margin-right: 8px; }  
+    .toast { position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #ff4f87, #ff6b6b); color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 3000; animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 2.5s forwards; display: none; }  
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }  
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; display: none; } }  
+    @media (max-width: 600px) { nav a { font-size: 14px; margin: 0 8px; } .container { margin: 80px 10px 20px; padding: 15px; } .filters { flex-direction: column; } input, select, button { width: 100%; box-sizing: border-box; } .member-card { width: 100%; } .toast { right: 10px; top: 10px; width: 80%; } }  
+  </style>  
+</head>  
+<body>  
+  <nav>  
+    <a href="home2.html">🏠 Home</a>  
+    <a href="matchs.html">💞 Match <span class="notif-badge" id="matchNotif">0</span></a>  
+    <a href="Profile.html">👫my Profile</a>  
+    <a href="chats.html">💬 Chats <span class="notif-badge" id="chatNotif">0</span></a>  
+    <a href="#">🔔 <span class="notif-badge" id="reqNotif">0</span></a>  
+  </nav>    
+  
+  <div class="toast" id="welcomeToast">🎉 Welcome back to Partner for Life! 💞</div>  
+  <div class="toast" id="notifToast"></div>    
+  
+  <div class="container">  
+    <h2>Partner for Life</h2>  
+    
+    <div class="filters">  
+      <input id="search" placeholder="Search name...">  
+      <input id="minAge" type="number" placeholder="Min Age" min="18">  
+      <input id="maxAge" type="number" placeholder="Max Age">  
+      <input id="filterLocation" placeholder="Location">
+      <!-- Profile Image Filter -->
+      <select id="profileImageFilter">
+        <option value="all">All Profiles</option>
+        <option value="withImage">With Profile Image</option>
+        <option value="withoutImage">Without Profile Image</option>
+      </select>  
+      <button id="applyFilter">Apply Filters</button>  
+    </div>  
+
+    <div class="request-header">  
+      <h3>Outgoing Requests</h3>  
+      <button class="toggle-btn" onclick="toggleList('outgoing')">Hide</button>  
+    </div>  
+    <div id="outgoing"></div>  
+    <button id="deleteOutgoing" class="delete-selected" onclick="deleteSelected('outgoing')">🗑️ Delete Selected</button>  
+
+    <div class="request-header">  
+      <h3>Incoming Requests</h3>  
+      <button class="toggle-btn" onclick="toggleList('incoming')">Hide</button>  
+    </div>  
+    <div id="incoming"></div>  
+    <button id="deleteIncoming" class="delete-selected" onclick="deleteSelected('incoming')">🗑️ Delete Selected</button>
+  </div>    
+
+  <div id="membersGrid"></div>    
+
+  <!-- Firebase SDK -->    
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>    
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>    
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>    
+  
+  <script>  
+    const firebaseConfig = {  
+      apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",  
+      authDomain: "smart-waste-66279.firebaseapp.com",  
+      projectId: "smart-waste-66279",  
+      storageBucket: "smart-waste-66279.appspot.com",  
+      messagingSenderId: "619099585646",  
+      appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"  
+    };  
+    firebase.initializeApp(firebaseConfig);  
+    const db = firebase.firestore();  
+    const auth = firebase.auth();  
+  
+    let currentUserId = null;  
+    let selectedProfileId = null; // Track the currently selected profile
+  
+    const dingSound = new Audio('https://freesound.org/data/previews/391/391539_5121236-lq.mp3');  
+  
+    window.onload = () => {  
+      const toast = document.getElementById('welcomeToast');  
+      toast.style.display = 'block';  
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);  
+    };  
+  
+    auth.onAuthStateChanged(async (user) => {  
+      if (!user) return location.href = 'log1.html';  
+      currentUserId = user.uid;  
+      loadMembers();  
+      loadRequests();  
+      listenForNotifications();  
+    });  
+  
+    function toggleList(listId) {  
+      const div = document.getElementById(listId);  
+      const btn = div.previousElementSibling.querySelector(".toggle-btn");  
+      if (div.style.display === "none") { 
+        div.style.display = "block"; 
+        btn.innerText = "Hide"; 
+      } else { 
+        div.style.display = "none"; 
+        btn.innerText = "Show"; 
+      }  
+    }  
+  
+    async function deleteSelected(listId) {  
+      const selected = document.querySelectorAll(`#${listId} input[type=checkbox]:checked`);  
+      if (selected.length === 0) return alert("Select requests to delete.");  
+      if (!confirm(`Delete ${selected.length} selected requests?`)) return;  
+      for (const cb of selected) {  
+        await db.collection('dateRequests').doc(cb.value).delete();  
+      }  
+      alert("Selected requests deleted.");  
+    }  
+  
+    async function getUser(uid) {  
+      const doc = await db.collection('users').doc(uid).get();  
+      return doc.data() || {};  
+    }  
+  
+    async function loadMembers() {  
+      const grid = document.getElementById('membersGrid');  
+      const snap = await db.collection('users').get();  
+      grid.innerHTML = "";  
+      snap.forEach(doc => {  
+        const data = doc.data();  
+        if (doc.id === currentUserId) return;  
+        
+        const div = document.createElement('div');  
+        div.className = 'member-card';  
+        div.setAttribute('data-user-id', doc.id);
+        
+        // Add click event to select profile
+        div.addEventListener('click', function(e) {
+          // If clicking on action buttons, don't trigger profile selection
+          if (e.target.tagName === 'BUTTON') return;
+          
+          // Reset previous selection
+          if (selectedProfileId) {
+            const prevSelected = document.querySelector(`.member-card[data-user-id="${selectedProfileId}"]`);
+            if (prevSelected) {
+              prevSelected.style.border = '';
+              prevSelected.querySelector('.member-actions').style.display = 'none';
+            }
+          }
+          
+          // Set new selection
+          selectedProfileId = doc.id;
+          div.style.border = '2px solid #ff4f87';
+          div.querySelector('.member-actions').style.display = 'block';
+        });
+        
+        div.innerHTML = `  
+          <img src="${data.photoURL || 'https://via.placeholder.com/110'}" class="profile-pic">  
+          ${data.online ? '<div class="online-dot"></div>' : ''}  
+          <div class="member-name">${data.fullName || 'Unknown'}</div>  
+          <div class="member-age">${data.age || '-'} yrs</div>  
+          <div class="member-actions">
+            <button onclick="viewUserProfile('${doc.id}')">View Profile</button>  
+            <button onclick="sendDateRequest('${doc.id}')">💌 Send Date</button>
+          </div>`;  
+        grid.appendChild(div);  
+      });  
+    }  
+  
+    function viewUserProfile(uid) { 
+      window.location.href = `user.html?uid=${uid}`; 
+    }  
+  
+    async function sendDateRequest(toUserId) {  
+      await db.collection('dateRequests').add({  
+        from: currentUserId,  
+        to: toUserId,  
+        status: 'pending',  
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()  
+      });  
+      showToast('💌 Date request sent!');  
+    }  
+  
+    function showToast(message) {  
+      const toast = document.getElementById('notifToast');  
+      toast.textContent = message;  
+      toast.style.display = 'block';  
+      dingSound.play();  
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);  
+    }  
+  
+    async function loadRequests() {  
+      // Outgoing requests  
+      db.collection('dateRequests').where('from', '==', currentUserId).orderBy('createdAt', 'desc')  
+        .onSnapshot(async snap => {  
+          const out = document.getElementById('outgoing'); 
+          out.innerHTML = '';  
+          for (const doc of snap.docs) {  
+            const req = doc.data(), toUser = await getUser(req.to);  
+            const item = document.createElement('div');  
+            item.className = `request-item ${req.status}`;  
+            
+            let buttons = '';  
+            if (req.status === 'accepted') {  
+              buttons = `<button class="chat-btn" onclick="goToChat('${req.to}')">💬 Chat Now</button>`;  
+            }  
+            
+            item.innerHTML = `  
+              <div>
+                <input type="checkbox" value="${doc.id}">
+                <strong>To:</strong> ${toUser.fullName || 'Unknown'} - ${req.status}
+              </div>
+              ${buttons}`;  
+            out.appendChild(item);  
+          }  
+          document.getElementById('deleteOutgoing').style.display = snap.docs.length ? "block" : "none";  
+        });  
+  
+      // Incoming requests  
+      db.collection('dateRequests').where('to', '==', currentUserId).orderBy('createdAt', 'desc')  
+        .onSnapshot(async snap => {  
+          const inc = document.getElementById('incoming'); 
+          inc.innerHTML = '';  
+          let newCount = 0;  
+          for (const doc of snap.docs) {  
+            const req = doc.data(), fromUser = await getUser(req.from);  
+            if (req.status === 'pending') newCount++;  
+            const item = document.createElement('div');  
+            item.className = `request-item ${req.status}`;  
+            let buttons = '';  
+            if (req.status === 'pending') {  
+              buttons = `
+                <button onclick="acceptRequest('${doc.id}', '${req.from}')">Accept</button>  
+                <button onclick="rejectRequest('${doc.id}')">Reject</button>
+              `;  
+            } else if (req.status === 'accepted') {  
+              buttons = `<button class="chat-btn" onclick="goToChat('${req.from}')">💬 Chat Now</button>`;  
+            }  
+            item.innerHTML = `
+              <div>
+                <input type="checkbox" value="${doc.id}">
+                <strong>From:</strong> ${fromUser.fullName || 'Unknown'} - ${req.status}
+              </div>
+              ${buttons}
+            `;  
+            inc.appendChild(item);  
+          }  
+          document.getElementById('deleteIncoming').style.display = snap.docs.length ? "block" : "none";  
+          updateRequestNotif(newCount);  
+        });  
+    }  
+  
+    function updateRequestNotif(count) {  
+      const el = document.getElementById('reqNotif');  
+      if (count > 0) { 
+        el.style.display = 'inline-block'; 
+        el.textContent = count; 
+      } else { 
+        el.style.display = 'none'; 
+      }  
+    }  
+  
+    async function listenForNotifications() {  
+      db.collection('chats').where('users', 'array-contains', currentUserId)  
+        .onSnapshot(async snap => {  
+          let unread = 0;  
+          for (const doc of snap.docs) {  
+            const chat = doc.data();  
+            if (chat.lastMessage && !chat.readBy?.includes(currentUserId)) {  
+              unread++;  
+              const otherUserId = chats.users.find(id => id !== currentUserId);  
+              const otherUser = await getUser(otherUserId);  
+              showToast(`💌 New message from ${otherUser.fullName || 'someone'}!`);  
+            }  
+          }  
+          const badge = document.getElementById('chatNotif');  
+          badge.style.display = unread ? 'inline-block' : 'none';  
+          badge.textContent = unread;  
+        });  
+  
+      db.collection('dateRequests').where('to', '==', currentUserId).where('status', '==', 'accepted')  
+        .onSnapshot(async snap => {  
+          let matchCount = 0;  
+          for (const doc of snap.docs) {  
+            const req = doc.data();  
+            const createdAt = req.createdAt?.toDate();  
+            if (createdAt && (Date.now() - createdAt.getTime()) < 24 * 60 * 60 * 1000) {  
+              matchCount++;  
+              const fromUser = await getUser(req.from);  
+              showToast(`💞 New match with ${fromUser.fullName || 'someone'}!`);  
+            }  
+          }  
+          const badge = document.getElementById('matchNotif');  
+          badge.style.display = matchCount ? 'inline-block' : 'none';  
+          badge.textContent = matchCount;  
+        });  
+    }  
+  
+    async function acceptRequest(requestId, fromUserId) {  
+      await db.collection('dateRequests').doc(requestId).update({ 
+        status: 'accepted',
+        acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });  
+      
+      // Create a chat room when request is accepted
+      await createChatRoom(currentUserId, fromUserId);
+      
+      showToast('✅ Request accepted! You can now chat with this user.');  
+    }  
+  
+    async function rejectRequest(id) {  
+      await db.collection('dateRequests').doc(id).update({ status: 'rejected' });  
+      showToast('❌ Request rejected.');  
+    }  
+  
+    async function createChatRoom(userId1, userId2) {
+      // Create a unique chat ID by combining user IDs in sorted order
+      const chatId = [userId1, userId2].sort().join('_');
+      
+      // Check if chat already exists
+      const chatDoc = await db.collection('chats').doc(chatId).get();
+      
+      if (!chatDoc.exists) {
+        // Create new chat
+        await db.collection('chats').doc(chatId).set({
+          users: [userId1, userId2],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastMessage: '',
+          lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+          readBy: [currentUserId]
+        });
+      }
+      
+      return chatId;
+    }
+  
+    function goToChat(otherUserId) { 
+      // Create a chat room if it doesn't exist, then redirect
+      createChatRoom(currentUserId, otherUserId).then(chatId => {
+        window.location.href = `chats.html?uid=${otherUserId}&chatId=${chatId}`;
+      });
+    }  
+  
+    document.getElementById('applyFilter').onclick = async () => {  
+      const search = document.getElementById('search').value.toLowerCase();  
+      const minAge = parseInt(document.getElementById('minAge').value) || 0;  
+      const maxAge = parseInt(document.getElementById('maxAge').value) || 100;  
+      const location = document.getElementById('filterLocation').value.toLowerCase();  
+      const profileImageFilter = document.getElementById('profileImageFilter').value;
+      
+      const grid = document.getElementById('membersGrid');  
+      const snap = await db.collection('users').get();  
+      grid.innerHTML = "";  
+      snap.forEach(doc => {  
+        const data = doc.data();  
+        if (doc.id === currentUserId) return;  
+        
+        // Apply profile image filter
+        const hasProfileImage = data.photoURL && data.photoURL !== 'https://via.placeholder.com/110';
+        if (profileImageFilter === 'withImage' && !hasProfileImage) return;
+        if (profileImageFilter === 'withoutImage' && hasProfileImage) return;
+        
+        const matchesSearch = !search || data.fullName?.toLowerCase().includes(search);  
+        const matchesAge = (!minAge || data.age >= minAge) && (!maxAge || data.age <= maxAge);  
+        const matchesLocation = !location || data.location?.toLowerCase().includes(location);  
+        
+        if (matchesSearch && matchesAge && matchesLocation) {  
+          const div = document.createElement('div');  
+          div.className = 'member-card';  
+          div.setAttribute('data-user-id', doc.id);
+          
+          // Add click event to select profile
+          div.addEventListener('click', function(e) {
+            // If clicking on action buttons, don't trigger profile selection
+            if (e.target.tagName === 'BUTTON') return;
+            
+            // Reset previous selection
+            if (selectedProfileId) {
+              const prevSelected = document.querySelector(`.member-card[data-user-id="${selectedProfileId}"]`);
+              if (prevSelected) {
+                prevSelected.style.border = '';
+                prevSelected.querySelector('.member-actions').style.display = 'none';
+              }
+            }
+            
+            // Set new selection
+            selectedProfileId = doc.id;
+            div.style.border = '2px solid #ff4f87';
+            div.querySelector('.member-actions').style.display = 'block';
+          });
+          
+          div.innerHTML = `  
+            <img src="${data.photoURL || 'https://via.placeholder.com/110'}" class="profile-pic">  
+            ${data.online ? '<div class="online-dot"></div>' : ''}  
+            <div class="member-name">${data.fullName || 'Unknown'}</div>  
+            <div class="member-age">${data.age || '-'} yrs</div>  
+            <div class="member-actions">
+              <button onclick="viewUserProfile('${doc.id}')">View Profile</button>  
+              <button onclick="sendDateRequest('${doc.id}')">💌 Send Date</button>
+            </div>`;  
+          grid.appendChild(div);  
+        }  
+      });  
+    };  
+  </script>  
+</body>  
+</html>
