@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DateLink — Feed</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #000;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* 🔍 Search bar */
+  .search-bar {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    z-index: 100;
+  }
+  .search-bar input {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    font-size: 15px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .search-bar input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .video-feed {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    padding-top: 60px;
+  }
+
+  .media-card {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    scroll-snap-align: start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+  }
+
+  video, img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .overlay {
+    position: absolute;
+    bottom: 100px;
+    left: 20px;
+    color: white;
+    text-shadow: 0 2px 6px rgba(0,0,0,.6);
+  }
+
+  .caption {
+    font-size: 14px;
+    max-width: 80%;
+    line-height: 1.4;
+  }
+
+  .like-btn {
+    position: absolute;
+    right: 20px;
+    bottom: 160px;
+    font-size: 28px;
+    cursor: pointer;
+    transition: transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .like-btn:hover { transform: scale(1.2); }
+  .liked { color: #ff4f87; }
+  .like-count {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .add-btn {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ff4f87, #ff8eb1);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,.3);
+    cursor: pointer;
+    z-index: 999;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .add-btn:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 6px 15px rgba(0,0,0,.4);
+  }
+
+  /* 🎛 Controls */
+  .controls {
+    position: absolute;
+    right: 20px;
+    bottom: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 50;
+    align-items: center;
+  }
+  .controls button {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .controls button:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  /* 👤 Profile icon near controls */
+  .user-profile-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid #ff4f87;
+    cursor: pointer;
+    object-fit: cover;
+  }
+
+  /* 💬 Enhanced Comments Section */
+  .comments-panel {
+    position: absolute;
+    right: -400px;
+    top: 0;
+    width: 350px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    transition: right 0.3s ease;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .comments-panel.active {
+    right: 0;
+  }
+  
+  .comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .comments-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  .close-comments {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s;
+  }
+  .close-comments:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .comments-list {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding-right: 5px;
+  }
+  
+  .comment {
+    display: flex;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: background 0.3s;
+  }
+  .comment:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .comment-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+    object-fit: cover;
+  }
+  
+  .comment-content {
+    flex: 1;
+  }
+  
+  .comment-author {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #ff8eb1;
+  }
+  
+  .comment-text {
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 5px;
+  }
+  
+  .comment-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+  }
+  
+  .comment-actions {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .comment-action {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.3s;
+  }
+  .comment-action:hover {
+    color: #ff4f87;
+  }
+  
+  .reply-input-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    padding: 8px 15px;
+    margin-top: 10px;
+    margin-left: 45px;
+  }
+  
+  .comment-input-container {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    padding: 8px 15px;
+    margin-top: 10px;
+  }
+  
+  .comment-input, .reply-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 14px;
+    outline: none;
+    padding: 5px 0;
+  }
+  
+  .send-comment, .send-reply {
+    background: none;
+    border: none;
+    color: #ff4f87;
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: transform 0.3s;
+  }
+  .send-comment:hover, .send-reply:hover {
+    transform: scale(1.1);
+  }
+
+  /* Loading indicator */
+  .loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 16px;
+    z-index: 10;
+  }
+
+  /* Reply styling */
+  .reply {
+    margin-left: 45px;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 2px solid #ff4f87;
+  }
+
+  /* Scrollbar styling */
+  .comments-list::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .comments-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  
+  .comments-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+  }
+  
+  .comments-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Pulse animation for new content */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  .pulse {
+    animation: pulse 0.5s ease-in-out;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .comments-panel {
+      width: 100%;
+      right: -100%;
+    }
+    
+    .search-bar {
+      width: 95%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- 🔍 Search bar -->
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search by caption or username...">
+</div>
+
+<div class="video-feed" id="videoFeed"></div>
+<div class="add-btn" id="addBtn">+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
+  authDomain: "smart-waste-66279.firebaseapp.com",
+  projectId: "smart-waste-66279",
+  storageBucket: "smart-waste-66279.appspot.com",
+  messagingSenderId: "619099585646",
+  appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+const feed = document.getElementById("videoFeed");
+const searchInput = document.getElementById("searchInput");
+let allVideos = [];
+let currentVideoIndex = 0;
+
+// 🔄 Always fetch latest user profile
+async function fetchUser(uid) {
+  try {
+    const userDoc = await db.collection("users").doc(uid).get();
+    return userDoc.exists ? userDoc.data() : null;
+  } catch {
+    return null;
+  }
+}
+
+// 🎬 Load feed with live user profiles
+async function loadFeed() {
+  feed.innerHTML = `<p style="text-align:center;color:gray;">Loading...</p>`;
+  const snapshot = await db.collection("videos").orderBy("createdAt", "desc").get();
+  allVideos = [];
+
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    const id = doc.id;
+    const latestUser = await fetchUser(data.userId);
+
+    allVideos.push({
+      id,
+      ...data,
+      userName: latestUser?.displayName || data.userName || "User",
+      userPhoto: latestUser?.photoURL || data.userPhoto || "https://i.imgur.com/0y8Ftya.png",
+    });
+  }
+
+  renderFeed(allVideos);
+}
+
+// 🧩 Render Feed
+function renderFeed(videos) {
+  feed.innerHTML = "";
+  videos.forEach((data, index) => {
+    const id = data.id;
+    const card = document.createElement("div");
+    card.className = "media-card";
+    card.dataset.index = index;
+
+    const mediaElement =
+      data.type === "image"
+        ? `<img src="${data.url}" alt="post">`
+        : `
+          <div class="loading-indicator">Loading video...</div>
+          <video 
+            src="${data.url}" 
+            preload="metadata" 
+            playsinline 
+            loop
+            data-loaded="false"
+            data-playing="false"
+          ></video>
+        `;
+
+    card.innerHTML = `
+      ${mediaElement}
+      <div class="overlay">
+        <div class="caption">${data.caption || ""}</div>
+      </div>
+
+      <div class="controls">
+        <img src="${data.userPhoto}" class="user-profile-icon" title="@${data.userName}">
+        <button class="pause-btn">⏸️</button>
+        <button class="download-btn">📥</button>
+        <button class="share-btn">🔗</button>
+        <button class="comment-btn">💬</button>
+      </div>
+
+      <div class="like-btn" data-id="${id}" data-likes="${data.likes || 0}">
+        ❤️
+        <span class="like-count">${data.likes || 0}</span>
+      </div>
+
+      <!-- Enhanced Comments Panel -->
+      <div class="comments-panel" id="comments-${id}">
+        <div class="comments-header">
+          <div class="comments-title">Comments</div>
+          <button class="close-comments">×</button>
+        </div>
+        <div class="comments-list" id="comments-list-${id}">
+          <div class="loading-comments">Loading comments...</div>
+        </div>
+        <div class="comment-input-container">
+          <input type="text" class="comment-input" placeholder="Add a comment...">
+          <button class="send-comment">➤</button>
+        </div>
+      </div>
+    `;
+    feed.appendChild(card);
+  });
+
+  attachEvents();
+  setupVideoPlayback();
+}
+
+// Setup video playback with intersection observer
+function setupVideoPlayback() {
+  // Create intersection observer to play videos when they're in view
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target.querySelector('video');
+      if (!video) return;
+      
+      if (entry.isIntersecting) {
+        // Play the video when it's in view
+        playVideo(video);
+      } else {
+        // Pause the video when it's out of view
+        pauseVideo(video);
+      }
+    });
+  }, {
+    threshold: 0.7 // Play when 70% of the video is visible
+  });
+
+  // Observe all media cards with videos
+  document.querySelectorAll('.media-card').forEach(card => {
+    if (card.querySelector('video')) {
+      observer.observe(card);
+    }
+  });
+}
+
+// Play video with proper error handling
+function playVideo(video) {
+  if (!video || video.dataset.playing === "true") return;
+  
+  video.dataset.playing = "true";
+  
+  // Remove loading indicator if it exists
+  const loadingIndicator = video.parentElement.querySelector('.loading-indicator');
+  if (loadingIndicator) {
+    loadingIndicator.style.display = 'none';
+  }
+  
+  const playPromise = video.play();
+  
+  if (playPromise !== undefined) {
+    playPromise
+      .then(() => {
+        // Video started playing successfully
+        console.log('Video is playing');
+      })
+      .catch(error => {
+        console.error('Error playing video:', error);
+        video.dataset.playing = "false";
+        
+        // Show play button if autoplay failed
+        const pauseBtn = video.closest('.media-card').querySelector('.pause-btn');
+        if (pauseBtn) {
+          pauseBtn.textContent = "▶️";
+        }
+      });
+  }
+}
+
+// Pause video
+function pauseVideo(video) {
+  if (!video) return;
+  
+  video.pause();
+  video.dataset.playing = "false";
+}
+
+// 🎛 Event Handlers (pause, like, share, comments)
+function attachEvents() {
+  // Comment button - open comments panel
+  document.querySelectorAll(".comment-btn").forEach((btn) => {
+    btn.onclick = () => {
+      const card = btn.closest(".media-card");
+      const id = card.querySelector(".like-btn").dataset.id;
+      const commentsPanel = card.querySelector(`#comments-${id}`);
+      commentsPanel.classList.add("active");
+      
+      // Load comments when panel opens
+      loadComments(id, commentsPanel.querySelector('.comments-list'));
+    };
+  });
+
+  // Close comments panel
+  document.querySelectorAll(".close-comments").forEach((btn) => {
+    btn.onclick = () => {
+      const commentsPanel = btn.closest(".comments-panel");
+      commentsPanel.classList.remove("active");
+    };
+  });
+
+  // Send comment
+  document.querySelectorAll(".send-comment").forEach((btn) => {
+    btn.onclick = () => {
+      const input = btn.parentElement.querySelector('.comment-input');
+      const card = btn.closest(".media-card");
+      const id = card.querySelector(".like-btn").dataset.id;
+      const commentsList = card.querySelector(`#comments-list-${id}`);
+      
+      if (input.value.trim()) {
+        postComment(id, input.value.trim(), commentsList, null);
+        input.value = "";
+      }
+    };
+  });
+
+  // Enter key to send comment
+  document.querySelectorAll(".comment-input").forEach((input) => {
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        const btn = input.parentElement.querySelector('.send-comment');
+        btn.click();
+      }
+    });
+  });
+
+  document.querySelectorAll(".like-btn").forEach((btn) => {
+    btn.onclick = async () => {
+      const id = btn.dataset.id;
+      const current = parseInt(btn.dataset.likes);
+      const liked = btn.classList.toggle("liked");
+      const newLikes = liked ? current + 1 : current - 1;
+      btn.innerHTML = `❤️ <span class="like-count">${newLikes}</span>`;
+      btn.dataset.likes = newLikes;
+      await db.collection("videos").doc(id).update({ likes: newLikes });
+    };
+  });
+
+  document.querySelectorAll(".media-card").forEach((card) => {
+    const video = card.querySelector("video");
+    if (!video) return;
+    
+    const pauseBtn = card.querySelector(".pause-btn");
+    const downloadBtn = card.querySelector(".download-btn");
+    const shareBtn = card.querySelector(".share-btn");
+
+    // Handle video loading
+    video.addEventListener('loadeddata', () => {
+      video.dataset.loaded = "true";
+      const loadingIndicator = card.querySelector('.loading-indicator');
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+    });
+
+    // Handle video errors
+    video.addEventListener('error', () => {
+      console.error('Error loading video:', video.src);
+      const loadingIndicator = card.querySelector('.loading-indicator');
+      if (loadingIndicator) {
+        loadingIndicator.textContent = 'Error loading video';
+      }
+    });
+
+    pauseBtn.onclick = () => {
+      if (video.paused) {
+        playVideo(video);
+        pauseBtn.textContent = "⏸️";
+      } else {
+        pauseVideo(video);
+        pauseBtn.textContent = "▶️";
+      }
+    };
+
+    downloadBtn.onclick = () => {
+      const a = document.createElement("a");
+      a.href = video.src;
+      a.download = "video.mp4";
+      a.click();
+    };
+
+    shareBtn.onclick = async () => {
+      if (navigator.share) {
+        await navigator.share({ title: "Watch this!", url: video.src });
+      } else {
+        prompt("Copy this link:", video.src);
+      }
+    };
+  });
+}
+
+// 💬 Load Comments
+async function loadComments(videoId, container) {
+  try {
+    const snap = await db.collection("videos").doc(videoId).collection("comments").orderBy("createdAt", "asc").get();
+    
+    if (snap.empty) {
+      container.innerHTML = '<div class="no-comments">No comments yet. Be the first to comment!</div>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      const commentId = doc.id;
+      const timeAgo = getTimeAgo(data.createdAt?.toDate() || new Date());
+      
+      const commentEl = document.createElement('div');
+      commentEl.className = 'comment';
+      commentEl.innerHTML = `
+        <img src="${data.userPhoto || 'https://i.imgur.com/0y8Ftya.png'}" class="comment-avatar" alt="User">
+        <div class="comment-content">
+          <div class="comment-author">${data.userName || 'User'}</div>
+          <div class="comment-text">${data.text}</div>
+          <div class="comment-time">${timeAgo}</div>
+          <div class="comment-actions">
+            <button class="comment-action reply-btn" data-comment-id="${commentId}">Reply</button>
+            <button class="comment-action like-btn">Like</button>
+          </div>
+        </div>
+      `;
+      
+      container.appendChild(commentEl);
+      
+      // Add event listener for reply button
+      const replyBtn = commentEl.querySelector('.reply-btn');
+      replyBtn.addEventListener('click', () => {
+        // Remove any existing reply input
+        const existingInput = commentEl.querySelector('.reply-input-container');
+        if (existingInput) {
+          existingInput.remove();
+          return;
+        }
+        
+        // Create reply input
+        const replyInput = document.createElement('div');
+        replyInput.className = 'reply-input-container';
+        replyInput.innerHTML = `
+          <input type="text" class="reply-input" placeholder="Write a reply...">
+          <button class="send-reply">➤</button>
+        `;
+        
+        commentEl.appendChild(replyInput);
+        
+        // Focus on the input
+        const inputField = replyInput.querySelector('.reply-input');
+        inputField.focus();
+        
+        // Send reply on button click
+        const sendBtn = replyInput.querySelector('.send-reply');
+        sendBtn.addEventListener('click', () => {
+          if (inputField.value.trim()) {
+            postComment(videoId, inputField.value.trim(), container, commentId);
+            replyInput.remove();
+          }
+        });
+        
+        // Send reply on Enter key
+        inputField.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            sendBtn.click();
+          }
+        });
+      });
+      
+      // Load replies for this comment
+      await loadReplies(videoId, commentId, commentEl);
+    }
+  } catch (error) {
+    console.error("Error loading comments:", error);
+    container.innerHTML = '<div class="error-comments">Error loading comments</div>';
+  }
+}
+
+// 💬 Load Replies for a Comment
+async function loadReplies(videoId, commentId, commentElement) {
+  try {
+    const repliesSnap = await db.collection("videos").doc(videoId)
+      .collection("comments").doc(commentId)
+      .collection("replies").orderBy("createdAt", "asc").get();
+    
+    if (!repliesSnap.empty) {
+      const repliesContainer = document.createElement('div');
+      repliesContainer.className = 'replies-container';
+      
+      repliesSnap.docs.forEach(doc => {
+        const replyData = doc.data();
+        const timeAgo = getTimeAgo(replyData.createdAt?.toDate() || new Date());
+        
+        const replyEl = document.createElement('div');
+        replyEl.className = 'reply';
+        replyEl.innerHTML = `
+          <div class="comment">
+            <img src="${replyData.userPhoto || 'https://i.imgur.com/0y8Ftya.png'}" class="comment-avatar" alt="User">
+            <div class="comment-content">
+              <div class="comment-author">${replyData.userName || 'User'}</div>
+              <div class="comment-text">${replyData.text}</div>
+              <div class="comment-time">${timeAgo}</div>
+            </div>
+          </div>
+        `;
+        
+        repliesContainer.appendChild(replyEl);
+      });
+      
+      commentElement.appendChild(repliesContainer);
+    }
+  } catch (error) {
+    console.error("Error loading replies:", error);
+  }
+}
+
+// 💬 Post Comment or Reply
+async function postComment(videoId, text, container, parentCommentId = null) {
+  try {
+    // In a real app, you would get the current user from auth
+    const currentUser = {
+      uid: "current-user-id",
+      displayName: "You",
+      photoURL: "https://i.imgur.com/0y8Ftya.png"
+    };
+    
+    const commentData = {
+      text: text,
+      userName: currentUser.displayName,
+      userPhoto: currentUser.photoURL,
+      userId: currentUser.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    if (parentCommentId) {
+      // This is a reply to a comment
+      await db.collection("videos").doc(videoId)
+        .collection("comments").doc(parentCommentId)
+        .collection("replies").add(commentData);
+    } else {
+      // This is a top-level comment
+      await db.collection("videos").doc(videoId)
+        .collection("comments").add(commentData);
+    }
+    
+    // Reload comments to show the new one
+    loadComments(videoId, container);
+  } catch (error) {
+    console.error("Error posting comment:", error);
+    alert("Failed to post comment. Please try again.");
+  }
+}
+
+// Utility function to format time
+function getTimeAgo(date) {
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  
+  return date.toLocaleDateString();
+}
+
+// 🔍 Search by caption or username
+searchInput.addEventListener("input", (e) => {
+  const q = e.target.value.toLowerCase();
+  const filtered = allVideos.filter(
+    (v) =>
+      v.caption?.toLowerCase().includes(q) ||
+      v.userName?.toLowerCase().includes(q)
+  );
+  renderFeed(filtered);
+});
+
+// ⚡ Register Service Worker for caching and performance
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.error);
+}
+
+// Initialize the app
+loadFeed();
+</script>
+</body>
+</html>
