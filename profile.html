@@ -471,6 +471,8 @@
     <button id="logoutBtn">Logout</button>  
 
     <!-- My Posts -->  
+    
+<div id="myVideos" class="videos-grid"></div>
     <div class="posts-section">  
       <h3 style="color:#ff4f87;">My Posts</h3>  
       <div id="userPosts" class="posts-grid"></div>  
@@ -968,5 +970,176 @@
       }
     }
   </script>  
+
+    <script>
+// Reference to video container
+const myVideosContainer = document.getElementById('myVideos');
+
+// Track selected videos for multiple deletion
+let selectedVideos = [];
+
+// Load user videos
+async function loadUserVideos() {
+  myVideosContainer.innerHTML = '<p style="text-align:center;color:gray;">Loading videos...</p>';
+  myVideosContainer.className = 'videos-grid';
+
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const snapshot = await db.collection('videos')
+    .where('userId', '==', user.uid)
+    .orderBy('createdAt', 'desc')
+    .get();
+
+  if (snapshot.empty) {
+    myVideosContainer.innerHTML = '<p style="text-align:center;color:gray;">No videos uploaded yet.</p>';
+    return;
+  }
+
+  myVideosContainer.innerHTML = '';
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const id = doc.id;
+
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.dataset.id = id;
+
+    card.innerHTML = `
+      ${data.type === 'image' 
+        ? `<img src="${data.url}" alt="upload">`
+        : `<video src="${data.url}" muted loop playsinline></video>`}
+      <div style="position:absolute;bottom:5px;left:5px;right:5px;
+                  display:flex;justify-content:space-between;align-items:center;
+                  background:rgba(0,0,0,0.5);padding:5px;border-radius:5px;">
+        <span style="font-size:12px;color:#fff;">${data.caption || ''}</span>
+        <div style="display:flex;gap:4px;">
+          <button class="edit-btn" data-id="${id}" 
+            style="background:#ff4f87;border:none;color:white;padding:3px 6px;
+                   border-radius:5px;font-size:12px;cursor:pointer;">✏️</button>
+          <button class="del-btn" data-id="${id}"
+            style="background:#555;border:none;color:white;padding:3px 6px;
+                   border-radius:5px;font-size:12px;cursor:pointer;">🗑️</button>
+          <input type="checkbox" class="select-box" data-id="${id}" 
+            style="transform:scale(1.2);margin-left:4px;">
+        </div>
+      </div>
+    `;
+
+    // Click to view fullscreen with sound
+    card.addEventListener('click', e => {
+      if (e.target.tagName !== 'BUTTON' && e.target.type !== 'checkbox') {
+        showFullscreen(data.url, data.type);
+      }
+    });
+
+    myVideosContainer.appendChild(card);
+  });
+
+  attachVideoActions();
+}
+
+// Attach edit/delete listeners
+function attachVideoActions() {
+  document.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      if (!confirm('Delete this video?')) return;
+      await db.collection('videos').doc(id).delete();
+      loadUserVideos();
+    });
+  });
+
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const newCaption = prompt('Enter new caption:');
+      if (newCaption !== null) {
+        await db.collection('videos').doc(id).update({ caption: newCaption });
+        alert('Caption updated!');
+        loadUserVideos();
+      }
+    });
+  });
+
+  document.querySelectorAll('.select-box').forEach(box => {
+    box.addEventListener('change', e => {
+      const id = e.target.dataset.id;
+      if (e.target.checked) selectedVideos.push(id);
+      else selectedVideos = selectedVideos.filter(v => v !== id);
+      toggleMultiDeleteBtn();
+    });
+  });
+}
+
+// Create and show multi-delete button dynamically
+function toggleMultiDeleteBtn() {
+  let existing = document.getElementById('multiDeleteBtn');
+  if (selectedVideos.length > 0) {
+    if (!existing) {
+      existing = document.createElement('button');
+      existing.id = 'multiDeleteBtn';
+      existing.textContent = `🗑️ Delete Selected (${selectedVideos.length})`;
+      existing.style.cssText = `
+        position:fixed;bottom:20px;right:20px;z-index:200;
+        background:#ff4f87;color:#fff;border:none;padding:10px 15px;
+        border-radius:8px;cursor:pointer;font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,0.3);
+      `;
+      existing.addEventListener('click', deleteSelectedVideos);
+      document.body.appendChild(existing);
+    } else {
+      existing.textContent = `🗑️ Delete Selected (${selectedVideos.length})`;
+    }
+  } else if (existing) {
+    existing.remove();
+  }
+}
+
+// Delete multiple videos
+async function deleteSelectedVideos() {
+  if (!confirm(`Delete ${selectedVideos.length} selected videos?`)) return;
+  const batch = db.batch();
+  selectedVideos.forEach(id => {
+    const ref = db.collection('videos').doc(id);
+    batch.delete(ref);
+  });
+  await batch.commit();
+  selectedVideos = [];
+  toggleMultiDeleteBtn();
+  alert('Selected videos deleted.');
+  loadUserVideos();
+}
+
+// Fullscreen viewer with sound
+function showFullscreen(url, type) {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.9);display:flex;justify-content:center;
+    align-items:center;z-index:9999;
+  `;
+  modal.innerHTML = `
+    <div style="position:relative;max-width:95%;max-height:90%;">
+      ${type === 'image'
+        ? `<img src="${url}" style="max-width:100%;max-height:100%;border-radius:12px;">`
+        : `<video src="${url}" controls autoplay style="max-width:100%;max-height:100%;border-radius:12px;"></video>`}
+      <span id="closeModal" style="position:absolute;top:-35px;right:0;
+        color:white;font-size:28px;cursor:pointer;">✖</span>
+    </div>
+  `;
+  modal.addEventListener('click', e => {
+    if (e.target.id === 'closeModal' || e.target === modal) modal.remove();
+  });
+  document.body.appendChild(modal);
+}
+
+// Auto load when logged in
+firebase.auth().onAuthStateChanged(user => {
+  if (user) loadUserVideos();
+});
+    </script>
 </body>  
 </html>
