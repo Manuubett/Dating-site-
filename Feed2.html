@@ -623,7 +623,104 @@
 
 <div class="video-feed" id="videoFeed"></div>
 <div class="add-btn" id="addBtn">+</div>
+<style>
+  #ad-box {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    width: 150px;
+    height: 100px;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
 
+  #closeAd {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  #ad-box iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border: none;
+    border-radius: 8px;
+  }
+
+  #ad-box.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+
+<!-- Ad container -->
+<div id="ad-box">
+  <button id="closeAd">×</button>
+  <div id="container-7cef91039495f3a458e8dcd12beb2c56"></div>
+</div>
+
+<!-- Initial ad load -->
+<script async data-cfasync="false"
+  src="//pl28025813.effectivegatecpm.com/7cef91039495f3a458e8dcd12beb2c56/invoke.js"></script>
+
+<script>
+  const adBox = document.getElementById('ad-box');
+  const adContainer = document.getElementById('container-7cef91039495f3a458e8dcd12beb2c56');
+  const closeAd = document.getElementById('closeAd');
+
+  // Hide ad when user closes it
+  closeAd.onclick = () => {
+    adBox.classList.add('hidden');
+    localStorage.setItem('adClosed', 'true');
+  };
+
+  // Reload ad script safely
+  function reloadAd() {
+    adContainer.innerHTML = ''; // remove old ad
+    const script = document.createElement('script');
+    script.async = true;
+    script.dataset.cfasync = "false";
+    script.src = "//pl28025813.effectivegatecpm.com/7cef91039495f3a458e8dcd12beb2c56/invoke.js";
+    adContainer.appendChild(script);
+  }
+
+  let lastReloadTime = 0;
+  const reloadDelay = 10000; // 10 seconds minimum between ad reloads
+
+  // Detect when a new video becomes visible
+  const videos = document.querySelectorAll('video');
+
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const now = Date.now();
+          // Only reload ad if 10s have passed since last reload
+          if (now - lastReloadTime > reloadDelay) {
+            lastReloadTime = now;
+            if (!localStorage.getItem('adClosed')) {
+              adBox.classList.remove('hidden');
+              reloadAd();
+            }
+          }
+        }
+      });
+    },
+    { threshold: 0.75 } // triggers when 75% of a video is visible
+  );
+
+  videos.forEach(video => observer.observe(video));
+</script>
 <!-- Upload Modal -->
 <div class="upload-modal" id="uploadModal">
   <div class="upload-container">
@@ -698,6 +795,24 @@ let allVideos = [];
 let currentVideoIndex = 0;
 let currentMediaType = "image";
 let selectedFile = null;
+let currentUser = null; // Track current user
+
+// 🔐 Initialize authentication state
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    // Fetch additional user data from Firestore if needed
+    const userDoc = await db.collection("users").doc(user.uid).get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      currentUser = { ...user, ...userData };
+    }
+    loadFeed();
+  } else {
+    // Redirect to login if not authenticated
+    window.location.href = "login.html";
+  }
+});
 
 // Upload functionality
 addBtn.addEventListener("click", () => {
@@ -842,8 +957,8 @@ async function uploadToImgBB(file) {
 
 // Upload to Cloudinary (for videos)
 async function uploadToCloudinary(file) {
-  const cloudName = "your_cloud_name_here"; // Replace with your Cloudinary cloud name
-  const uploadPreset = "your_upload_preset_here"; // Replace with your Cloudinary upload preset
+  const cloudName = "dm9c4ksdg"; // Replace with your Cloudinary cloud name
+  const uploadPreset = "bettke"; // Replace with your Cloudinary upload preset
   
   const formData = new FormData();
   formData.append("file", file);
@@ -870,7 +985,7 @@ async function uploadToCloudinary(file) {
 
 // Upload button click
 uploadBtn.addEventListener("click", async () => {
-  if (!selectedFile) return;
+  if (!selectedFile || !currentUser) return;
   
   // Show progress
   progressContainer.classList.add("active");
@@ -903,20 +1018,14 @@ uploadBtn.addEventListener("click", async () => {
     progressFill.style.width = "100%";
     progressText.textContent = "Processing...";
     
-    // Save to Firestore
-    const currentUser = {
-      uid: "current-user-id",
-      displayName: "You",
-      photoURL: "https://i.imgur.com/0y8Ftya.png"
-    };
-    
+    // ✅ FIX: Use actual current user data instead of hardcoded values
     const postData = {
       url: mediaUrl,
       type: currentMediaType,
       caption: captionInput.value,
       userId: currentUser.uid,
-      userName: currentUser.displayName,
-      userPhoto: currentUser.photoURL,
+      userName: currentUser.displayName || currentUser.email?.split('@')[0] || "User",
+      userPhoto: currentUser.photoURL || "https://i.imgur.com/0y8Ftya.png",
       likes: 0,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -944,7 +1053,14 @@ uploadBtn.addEventListener("click", async () => {
 async function fetchUser(uid) {
   try {
     const userDoc = await db.collection("users").doc(uid).get();
-    return userDoc.exists ? userDoc.data() : null;
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      return {
+        displayName: userData.displayName || userData.username || "User",
+        photoURL: userData.photoURL || userData.profilePicture || "https://i.imgur.com/0y8Ftya.png"
+      };
+    }
+    return null;
   } catch {
     return null;
   }
@@ -1003,7 +1119,8 @@ function renderFeed(videos) {
       </div>
 
       <div class="controls">
-        <img src="${data.userPhoto}" class="user-profile-icon" title="@${data.userName}">
+        <!-- ✅ FIX: Added data-user-id attribute and made profile clickable -->
+        <img src="${data.userPhoto}" class="user-profile-icon" title="@${data.userName}" data-user-id="${data.userId}">
         <button class="pause-btn">⏸️</button>
         <button class="download-btn">📥</button>
         <button class="share-btn">🔗</button>
@@ -1108,6 +1225,17 @@ function pauseVideo(video) {
 
 // 🎛 Event Handlers (pause, like, share, comments)
 function attachEvents() {
+  // ✅ FIX: Added user profile click handler to redirect to user.html
+  document.querySelectorAll(".user-profile-icon").forEach(icon => {
+    icon.onclick = (e) => {
+      e.stopPropagation();
+      const userId = icon.dataset.userId;
+      if (userId) {
+        window.location.href = `user.html?uid=${userId}`;
+      }
+    };
+  });
+
   // Comment button - open comments panel
   document.querySelectorAll(".comment-btn").forEach((btn) => {
     btn.onclick = () => {
@@ -1239,9 +1367,10 @@ async function loadComments(videoId, container) {
       const commentEl = document.createElement('div');
       commentEl.className = 'comment';
       commentEl.innerHTML = `
-        <img src="${data.userPhoto || 'https://i.imgur.com/0y8Ftya.png'}" class="comment-avatar" alt="User">
+        <!-- ✅ FIX: Make comment avatar clickable to user profile -->
+        <img src="${data.userPhoto || 'https://i.imgur.com/0y8Ftya.png'}" class="comment-avatar" alt="User" data-user-id="${data.userId}" style="cursor:pointer;">
         <div class="comment-content">
-          <div class="comment-author">${data.userName || 'User'}</div>
+          <div class="comment-author" data-user-id="${data.userId}" style="cursor:pointer;">${data.userName || 'User'}</div>
           <div class="comment-text">${data.text}</div>
           <div class="comment-time">${timeAgo}</div>
           <div class="comment-actions">
@@ -1252,6 +1381,20 @@ async function loadComments(videoId, container) {
       `;
       
       container.appendChild(commentEl);
+      
+      // ✅ FIX: Add click handlers for comment user avatars and names
+      const commentAvatar = commentEl.querySelector('.comment-avatar');
+      const commentAuthor = commentEl.querySelector('.comment-author');
+      
+      [commentAvatar, commentAuthor].forEach(element => {
+        element.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const userId = element.dataset.userId;
+          if (userId) {
+            window.location.href = `user.html?uid=${userId}`;
+          }
+        });
+      });
       
       // Add event listener for reply button
       const replyBtn = commentEl.querySelector('.reply-btn');
@@ -1322,9 +1465,9 @@ async function loadReplies(videoId, commentId, commentElement) {
         replyEl.className = 'reply';
         replyEl.innerHTML = `
           <div class="comment">
-            <img src="${replyData.userPhoto || 'https://i.imgur.com/0y8Ftya.png'}" class="comment-avatar" alt="User">
+            <img src="${replyData.userPhoto || 'https://i.imgur.com/0y8Ftya.png'}" class="comment-avatar" alt="User" data-user-id="${replyData.userId}" style="cursor:pointer;">
             <div class="comment-content">
-              <div class="comment-author">${replyData.userName || 'User'}</div>
+              <div class="comment-author" data-user-id="${replyData.userId}" style="cursor:pointer;">${replyData.userName || 'User'}</div>
               <div class="comment-text">${replyData.text}</div>
               <div class="comment-time">${timeAgo}</div>
             </div>
@@ -1332,6 +1475,20 @@ async function loadReplies(videoId, commentId, commentElement) {
         `;
         
         repliesContainer.appendChild(replyEl);
+        
+        // ✅ FIX: Add click handlers for reply user avatars and names
+        const replyAvatar = replyEl.querySelector('.comment-avatar');
+        const replyAuthor = replyEl.querySelector('.comment-author');
+        
+        [replyAvatar, replyAuthor].forEach(element => {
+          element.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const userId = element.dataset.userId;
+            if (userId) {
+              window.location.href = `user.html?uid=${userId}`;
+            }
+          });
+        });
       });
       
       commentElement.appendChild(repliesContainer);
@@ -1344,17 +1501,16 @@ async function loadReplies(videoId, commentId, commentElement) {
 // 💬 Post Comment or Reply
 async function postComment(videoId, text, container, parentCommentId = null) {
   try {
-    // In a real app, you would get the current user from auth
-    const currentUser = {
-      uid: "current-user-id",
-      displayName: "You",
-      photoURL: "https://i.imgur.com/0y8Ftya.png"
-    };
+    if (!currentUser) {
+      alert("Please log in to comment");
+      return;
+    }
     
+    // ✅ FIX: Use actual current user data
     const commentData = {
       text: text,
-      userName: currentUser.displayName,
-      userPhoto: currentUser.photoURL,
+      userName: currentUser.displayName || currentUser.email?.split('@')[0] || "User",
+      userPhoto: currentUser.photoURL || "https://i.imgur.com/0y8Ftya.png",
       userId: currentUser.uid,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -1409,9 +1565,6 @@ searchInput.addEventListener("input", (e) => {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(console.error);
 }
-
-// Initialize the app
-loadFeed();
 </script>
 </body>
 </html>
