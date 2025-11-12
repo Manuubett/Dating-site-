@@ -1,88 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset 
-    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-                        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-  
-  <!-- Homepage -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://bett.website/</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
+    <lastmod>2025-11-12</lastmod>
     <changefreq>daily</changefreq>
-    <priority>1.00</priority>
+    <priority>1.0</priority>
   </url>
-
-  <!-- Main Pages -->
-  <url>
-    <loc>https://bett.website/home2</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://bett.website/about</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://bett.website/contact1</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://bett.website/privacy</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://bett.website/terms</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.80</priority>
-  </url>
-
-  <!-- App Pages -->
-  <url>
-    <loc>https://bett.website/matchs</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.70</priority>
-  </url>
-
-  <url>
-    <loc>https://bett.website/date</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.70</priority>
-  </url>
-
-  <url>
-    <loc>https://bett.website/chats</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.70</priority>
-  </url>
-
-  <url>
-    <loc>https://bett.website/profile</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.70</priority>
-  </url>
-
-  <url>
-    <loc>https://bett.website/feed2</loc>
-    <lastmod>2025-11-12T12:00:00+00:00</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.60</priority>
-  </url>
-
 </urlset>
