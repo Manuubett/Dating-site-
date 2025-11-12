@@ -9,3 +9,5 @@
   to = "/:splat.html"
   status = 200
   force = true
+  
+/sitemap.xml  /sitemap.xml  200
