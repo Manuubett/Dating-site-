@@ -1,3 +1,9 @@
 Sitemap: https://bett.website/sitemap.xml
 User-agent: *
 Allow: /sitemap.xml
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
