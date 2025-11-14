@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bett Hub — Connect, Share & Grow Together</title>
+  <meta name="description" content="Bett Hub — a friendly social community to share lifestyle posts, follow people, and discover ideas. Join the hub to connect with others." />
+  <link rel="canonical" href="https://bett.website/" />
+  <meta name="theme-color" content="#EF4444" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="https://bett.website/sitemap.xml" />
+
+  <!-- Google Ads -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4347535849525164"
+     crossorigin="anonymous"></script>
+  <script async custom-element="amp-auto-ads"
+        src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"></script>
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="Bett Hub" />
+  <meta property="og:title" content="Bett Hub — Connect, Share & Grow Together" />
+  <meta property="og:description" content="Join the Bett Hub community — share posts, follow members, and discover lifestyle ideas." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bett.website/" />
+  <meta property="og:image" content="https://bett.website/assets/og-image.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Bett Hub — Connect, Share & Grow Together" />
+  <meta name="twitter:description" content="Join the Bett Hub community — share posts, follow members, and discover lifestyle ideas." />
+  <meta name="twitter:image" content="https://bett.website/assets/og-image.png" />
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://firestore.googleapis.com" />
+
+  <!-- Preload Fonts -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"></noscript>
+
+  <!-- Critical CSS -->
+  <style>
+    :root{--accent:#ef4444;--muted:#6b7280;--bg:#ffffff;--radius:12px;--max-w:1100px;}
+    html,body{margin:0;background:var(--bg);color:#111827;font-family:Inter,system-ui,sans-serif;}
+    .container{max-width:var(--max-w);margin:0 auto;padding:20px;}
+
+    /* HERO FIXED */
+    .hero{padding:60px 20px;text-align:center;background:#fff;}
+    .hero .title{font-size:32px;margin-bottom:10px;}
+    .hero p{color:var(--muted);max-width:600px;margin:0 auto;}
+    @media(max-width:600px){.hero .title{font-size:26px;}}
+
+    header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:8px 0}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:700}
+    .logo .mark{width:44px;height:44px;border-radius:10px;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
+    nav{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    a{color:inherit;text-decoration:none}
+    .btn{display:inline-block;padding:8px 14px;border-radius:10px;background:var(--accent);color:#fff;font-weight:600}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.06)}
+
+    .hero-buttons{margin-top:30px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+    .hero-title{font-size:28px;margin:20px 0 10px}
+    .posts{display:grid;gap:24px;margin-top:20px}
+    .post{background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:0 4px 12px rgba(16,24,40,0.04)}
+    .post-img{height:180px;overflow:hidden}
+    .post-img img{width:100%;height:100%;object-fit:cover}
+    .post-body{padding:18px}
+    .post h2{font-size:20px;margin:0 0 8px;line-height:1.4}
+    .post .meta{font-size:13px;color:var(--muted);margin-bottom:12px}
+    .post-content{line-height:1.7;color:#4b5563;font-size:15px}
+    .post-content img{max-width:100%;height:auto;border-radius:8px;margin:16px 0;display:block}
+
+    footer{margin-top:40px;padding:20px 0;border-top:1px solid rgba(15,23,42,0.05);font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="mark">BH</span>
+      <div>
+        <div style="font-size:15px">Bett Hub</div>
+        <div style="font-size:12px;color:var(--muted)">Connect • Share • Grow</div>
+      </div>
+    </div>
+    <nav>
+      <a href="home2.html">Explore</a>
+      <a href="blog.html" class="btn ghost">Blog</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </nav>
+  </header>
+<!-- FIXED HERO SECTION -->
+<section class="hero" aria-labelledby="home-heading">
+  <h1 id="home-heading" class="title">Welcome to Bett Hub — Build real connections</h1>
+  <p>Share stories, discover local lifestyle posts, and follow interesting people. Public previews below so visitors can see quality content without logging in.</p>
+
+  <div class="hero-buttons">
+    <a class="btn" href="login.html">Create an account</a>
+    <a class="btn ghost" href="home2.html">Explore public posts</a>
+  </div>
+</section>
+
+<!-- CONTENT CONTAINER (NOT inside hero) -->
+<div class="container" role="main">
+
+
+
+  <main>
+    <h1 class="hero-title">Bett Hub Blog</h1>
+    <p style="color:var(--muted);margin-bottom:20px">Official articles, tips, and updates from our team.</p>
+
+    <div class="posts" id="blogPosts">
+      <div class="empty">Loading blog posts...</div>
+    </div>
+  </main>
+
+  <footer>
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:center">
+      <div><strong>Bett Hub</strong> — <span class="meta">A community for sharing ideas.</span></div>
+      <div class="socials">
+        <a href="https://facebook.com" target="_blank" rel="noopener">FB</a>
+        <a href="https://twitter.com" target="_blank" rel="noopener">TW</a>
+      </div>
+    </div>
+    <div style="margin-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>© <span id="year"></span> Bett Hub. All rights reserved.</div>
+      <div><a href="/sitemap.xml">Sitemap</a> • <a href="/contact">Contact</a></div>
+    </div>
+  </footer>
+</div>
+
+<!-- FIREBASE + BLOG SCRIPTS -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@13/dist/markdown-it.min.js"></script>
+
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD9dwHPDTJr1-mFXPW_JZnVS-JyZ6BNMgU",
+    authDomain: "smart-waste-66279.firebaseapp.com",
+    projectId: "smart-waste-66279",
+    storageBucket: "smart-waste-66279.appspot.com",
+    messagingSenderId: "619099585646",
+    appId: "1:619099585646:web:b193d2a9fc13347d88ba7f"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const md = window.markdownit({ html: true, linkify: true, typographer: true });
+
+  // Underline: ++text++
+  md.inline.ruler.before('emphasis', 'underline', function (state, silent) {
+    const start = state.pos;
+    if (state.src.charCodeAt(start) !== 0x2B || state.src.charCodeAt(start + 1) !== 0x2B) return false;
+    const end = state.src.indexOf('++', start + 2);
+    if (end === -1) return false;
+    if (!silent) {
+      state.push('u_open', 'u', 1);
+      const text = state.push('text', '', 0);
+      text.content = state.src.slice(start + 2, end);
+      state.push('u_close', 'u', -1);
+    }
+    state.pos = end + 2;
+    return true;
+  });
+
+  // [text]{color:red; font-size:18px;}
+  md.inline.ruler.after('emphasis', 'style_tag', function (state, silent) {
+    const start = state.pos;
+    if (state.src[start] !== '[') return false;
+    const endText = state.src.indexOf(']{', start);
+    const endStyle = state.src.indexOf('}', endText + 2);
+    if (endText === -1 || endStyle === -1) return false;
+
+    if (!silent) {
+      const text = state.src.slice(start + 1, endText);
+      const style = state.src.slice(endText + 2, endStyle);
+      const token = state.push('html_inline', '', 0);
+      token.content = `<span style="${style}">${text}</span>`;
+    }
+    state.pos = endStyle + 1;
+    return true;
+  });
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  const postsContainer = document.getElementById('blogPosts');
+
+  db.collection('blog')
+    .orderBy('publishedAt', 'desc')
+    .onSnapshot(snap => {
+      if (snap.empty) {
+        postsContainer.innerHTML = '<div class="empty">No blog posts yet. <a href="/admin">Team: Publish the first one!</a></div>';
+        return;
+      }
+      postsContainer.innerHTML = '';
+      snap.forEach(doc => {
+        const p = doc.data();
+        const date = p.publishedAt?.toDate().toLocaleDateString() || 'Recently';
+        const slug = p.slug || doc.id;
+
+        const article = document.createElement('article');
+        article.className = 'post';
+        article.id = slug;  // Enable #slug
+
+        const imgHtml = p.imageUrl 
+          ? `<div class="post-img"><img src="${p.imageUrl}" alt="${p.title}" loading="lazy"></div>`
+          : '';
+
+        const fullContent = md.render(p.content || '');
+
+        article.innerHTML = `
+          ${imgHtml}
+          <div class="post-body">
+            <h2><a href="/blog/${slug}" style="color:inherit;text-decoration:none">${p.title || 'Untitled'}</a></h2>
+            <div class="meta">${date} • by ${p.author || 'Team'} • ${p.readTime || '3'} min read</div>
+            <div class="post-content">${fullContent}</div>
+          </div>
+        `;
+        postsContainer.appendChild(article);
+      });
+
+      // Auto-scroll to #slug on load
+      if (window.location.hash) {
+        const target = document.querySelector(window.location.hash);
+        if (target) {
+          setTimeout(() => {
+            target.scrollIntoView({ behavior: 'smooth' });
+            target.style.background = '#fffbeb';
+            setTimeout(() => target.style.background = '', 2000);
+          }, 300);
+        }
+      }
+    }, err => {
+      console.error(err);
+      postsContainer.innerHTML = '<div class="empty">Failed to load blog. Please try again.</div>';
+    });
+</script>
+
+</body>
+</html>
