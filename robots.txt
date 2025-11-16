@@ -37,3 +37,6 @@ Disallow: /
 
 User-agent: omgilibot
 Disallow: /
+
+Sitemap: https://www.bett.website/sitemap.xml
+Sitemap: https://bett.website/sitemap.xml
