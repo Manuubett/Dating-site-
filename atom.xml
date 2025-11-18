@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title>Bett Website Feed</title>
+  <link href="https://bett.website/"/>
+  <updated>2025-11-12T12:00:00Z</updated>
+  <id>https://bett.website/</id>
+
+  <!-- Homepage -->
+  <entry>
+    <title>Homepage</title>
+    <link href="https://bett.website/"/>
+    <id>https://bett.website/</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+    <summary>The main homepage of Bett Website.</summary>
+  </entry>
+
+  <!-- Main Pages -->
+  <entry>
+    <title>Home 2</title>
+    <link href="https://bett.website/home2"/>
+    <id>https://bett.website/home2</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <title>About</title>
+    <link href="https://bett.website/about"/>
+    <id>https://bett.website/about</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <title>Contact</title>
+    <link href="https://bett.website/contact1"/>
+    <id>https://bett.website/contact1</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <title>Privacy Policy</title>
+    <link href="https://bett.website/privacy"/>
+    <id>https://bett.website/privacy</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <title>Terms & Conditions</title>
+    <link href="https://bett.website/terms"/>
+    <id>https://bett.website/terms</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <!-- App Pages -->
+  <entry>
+    <title>Matchs</title>
+    <link href="https://bett.website/matchs"/>
+    <id>https://bett.website/matchs</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <title>Date Page</title>
+    <link href="https://bett.website/date"/>
+    <id>https://bett.website/date</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <title>Chats</title>
+    <link href="https://bett.website/chats"/>
+    <id>https://bett.website/chats</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <title>Profile</title>
+    <link href="https://bett.website/profile"/>
+    <id>https://bett.website/profile</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+  <entry>
+    <title>Feed 2</title>
+    <link href="https://bett.website/feed2"/>
+    <id>https://bett.website/feed2</id>
+    <updated>2025-11-12T12:00:00Z</updated>
+  </entry>
+
+</feed>
