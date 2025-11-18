@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+    <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title>Bett Website Feed</title>
@@ -45,7 +45,7 @@
   </entry>
 
   <entry>
-    <title>Terms & Conditions</title>
+    <title>Terms &amp; Conditions</title>
     <link href="https://bett.website/terms"/>
     <id>https://bett.website/terms</id>
     <updated>2025-11-12T12:00:00Z</updated>
