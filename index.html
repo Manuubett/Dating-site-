@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas Capture - Earn Money Completing Simple Tasks | Join 10k+ Contributors</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Join Atlas Capture and earn money completing simple tasks. Flexible hours, weekly payouts, no experience required. Start earning today!">
+    <meta name="keywords" content="earn money online, simple tasks, flexible work, weekly payouts, work from home">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Atlas Capture - Earn Money with Simple Tasks">
+    <meta property="og:description" content="Join 10,000+ contributors earning money completing simple tasks. Flexible hours, weekly payouts.">
+    <meta property="og:type" content="website">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #ffffff;
+            color: #0a0f1c;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Floating Elements Animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Navigation */
+        .navbar {
+            padding: 20px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .btn-outline {
+            padding: 10px 24px;
+            border: 2px solid #4158D0;
+            border-radius: 50px;
+            background: transparent;
+            color: #4158D0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: #4158D0;
+            color: white;
+        }
+
+        .btn-primary {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(65, 88, 208, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(65, 88, 208, 0.4);
+        }
+
+        .btn-large {
+            padding: 18px 48px;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 20px 40px rgba(65, 88, 208, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-large::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-large:hover::before {
+            left: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 160px 0 80px;
+            background: radial-gradient(circle at 80% 20%, rgba(200, 80, 192, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 20% 80%, rgba(65, 88, 208, 0.05) 0%, transparent 50%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+        }
+
+        .float-1 {
+            top: -100px;
+            right: -100px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .float-2 {
+            bottom: -100px;
+            left: -100px;
+            animation: float 10s ease-in-out infinite reverse;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
+            border-radius: 100px;
+            color: #4158D0;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(65, 88, 208, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #1a1f35, #4158D0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-highlight {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 100%;
+            height: 12px;
+            background: linear-gradient(135deg, rgba(200, 80, 192, 0.2), rgba(65, 88, 208, 0.2));
+            z-index: -1;
+            border-radius: 12px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .stat-item {
+            text-align: left;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: #5a6275;
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        /* Hero Image */
+        .hero-image-wrapper {
+            position: relative;
+        }
+
+        .hero-image {
+            width: 100%;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-card {
+            position: absolute;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: float 5s ease-in-out infinite;
+        }
+
+        .card-1 {
+            top: 20px;
+            left: -40px;
+        }
+
+        .card-2 {
+            bottom: 40px;
+            right: -30px;
+            animation-delay: 1s;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        /* Trust Bar */
+        .trust-bar {
+            padding: 30px 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 40px;
+        }
+
+        .trust-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .trust-item i {
+            color: #4158D0;
+            font-size: 1.2rem;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background: #fafbff;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 60px;
+        }
+
+        .section-header h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #1a1f35, #4158D0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-header p {
+            color: #5a6275;
+            font-size: 1.2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(65, 88, 208, 0.15);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .feature-icon i {
+            font-size: 30px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1f35;
+        }
+
+        .feature-card p {
+            color: #5a6275;
+            margin-bottom: 24px;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
+            border-radius: 100px;
+            color: #4158D0;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        /* Stats Section */
+        .stats-showcase {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #1a1f35, #2d1f3a);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-showcase::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(200, 80, 192, 0.3), transparent 70%);
+            top: -150px;
+            right: -150px;
+            border-radius: 50%;
+        }
+
+        .stats-showcase::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(65, 88, 208, 0.3), transparent 70%);
+            bottom: -150px;
+            left: -150px;
+            border-radius: 50%;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats-showcase .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            -webkit-text-fill-color: white;
+            margin-bottom: 8px;
+        }
+
+        .stats-showcase .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+        }
+
+        /* Task Categories */
+        .task-categories {
+            padding: 100px 0;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .category-item {
+            text-align: center;
+            padding: 30px 20px;
+            background: #fafbff;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .category-item:hover {
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .category-item:hover .category-icon i {
+            color: white;
+        }
+
+        .category-icon i {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .category-item h4 {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .category-item p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 100px 0;
+            background: #fafbff;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(65, 88, 208, 0.15);
+        }
+
+        .testimonial-rating {
+            color: #ffb347;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .author-info h4 {
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1a1f35;
+        }
+
+        .author-info p {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .earnings-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
+            border-radius: 100px;
+            color: #4158D0;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-top: 8px;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 100px 0;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .step-item {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin: 0 auto 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-item::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: -50%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4158D0, #C850C0, transparent);
+            z-index: 0;
+        }
+
+        .step-item:first-child::before {
+            display: none;
+        }
+
+        .step-item h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1f35;
+        }
+
+        .step-item p {
+            color: #5a6275;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 100px 0;
+            background: #fafbff;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 20px 40px rgba(65, 88, 208, 0.1);
+        }
+
+        .faq-question {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            color: #1a1f35;
+            margin-bottom: 12px;
+        }
+
+        .faq-question i {
+            color: #4158D0;
+        }
+
+        .faq-answer {
+            color: #5a6275;
+            margin-left: 32px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #1a1f35, #2d1f3a);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .cta-section h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-cta {
+            padding: 18px 48px;
+            font-size: 1.2rem;
+            background: white;
+            border: none;
+            border-radius: 50px;
+            color: #1a1f35;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-cta-secondary {
+            padding: 18px 48px;
+            font-size: 1.2rem;
+            background: transparent;
+            border: 2px solid white;
+            border-radius: 50px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cta-secondary:hover {
+            background: white;
+            color: #1a1f35;
+        }
+
+        /* Footer */
+        .footer {
+            background: #0a0f1c;
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 60px;
+        }
+
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .footer-col p {
+            color: #8f9bb3;
+            line-height: 1.6;
+        }
+
+        .footer-col h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 15px;
+            color: #8f9bb3;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .footer-col ul li:hover {
+            color: #4158D0;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #8f9bb3;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .hero h1 { font-size: 3rem; }
+            .hero-content { grid-template-columns: 1fr; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .categories-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-content { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .testimonial-grid { grid-template-columns: 1fr; }
+            .steps-grid { grid-template-columns: 1fr; }
+            .faq-grid { grid-template-columns: 1fr; }
+            .cta-buttons { flex-direction: column; }
+            .nav-buttons .btn-outline { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo">AtlasCapture</div>
+            <div class="nav-buttons">
+                <button class="btn-outline">Log in</button>
+                <button class="btn-primary" onclick="window.location.href='https://audit.atlascapture.io/?ref_id=699ec351fe4ca0d6b19d20d8'">Get Started</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="floating-element float-1"></div>
+        <div class="floating-element float-2"></div>
+        
+        <div class="container">
+            <div class="hero-content">
+                <div>
+                    <span class="hero-badge">
+                        <i class="fas fa-bolt"></i> Trusted by 10,000+ Contributors
+                    </span>
+                    
+                    <h1>
+                        Turn your free time into
+                        <span class="hero-highlight">real money</span>
+                    </h1>
+                    
+                    <p style="font-size: 1.3rem; color: #5a6275; margin-bottom: 30px;">
+                        Complete simple tasks, set your own schedule, and get paid weekly. No experience needed.
+                    </p>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">$2M+</span>
+                            <span class="stat-label">Paid to contributors</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">100+</span>
+                            <span class="stat-label">Cities worldwide</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">4.8/5</span>
+                            <span class="stat-label">User rating</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-large" onclick="window.location.href='https://audit.atlascapture.io/?ref_id=699ec351fe4ca0d6b19d20d8'">
+                        Start Earning Now <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                    </button>
+                    
+                    <p style="margin-top: 20px; color: #8f9bb3;">
+                        <i class="fas fa-clock"></i> Free to join • Takes less than 2 minutes
+                    </p>
+                </div>
+                
+                <div class="hero-image-wrapper">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 24 24' fill='none' stroke='%234158D0' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='3' width='20' height='14' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='8' y1='21' x2='16' y2='21'%3E%3C/line%3E%3Cline x1='12' y1='17' x2='12' y2='21'%3E%3C/line%3E%3Cpath d='M6 8h.01'%3E%3C/path%3E%3Cpath d='M10 8h.01'%3E%3C/path%3E%3Cpath d='M14 8h.01'%3E%3C/path%3E%3Cpath d='M18 8h.01'%3E%3C/path%3E%3C/svg%3E" alt="Atlas Capture Platform" class="hero-image">
+                    
+                    <div class="floating-card card-1">
+                        <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div>
+                            <strong>$350</strong>
+                            <p style="font-size: 0.8rem;">earned this week</p>
+                        </div>
+                    </div>
+                    
+                    <div class="floating-card card-2">
+                        <div class="card-icon"><i class="fas fa-check"></i></div>
+                        <div>
+                            <strong>24 tasks</strong>
+                            <p style="font-size: 0.8rem;">completed today</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Bar -->
+    <div class="trust-bar">
+        <div class="container">
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>No experience needed</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Flexible hours</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-globe"></i>
+                    <span>Work from anywhere</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Weekly payouts</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-headset"></i>
+                    <span>24/7 support</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why choose Atlas Capture</h2>
+                <p>Join thousands of people earning money on their own terms</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Quick & Simple Tasks</h3>
+                    <p>Tasks take 5-30 minutes to complete. Clear instructions make it easy to start right away.</p>
+                    <span class="feature-tag">50+ daily tasks</span>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3>Flexible Schedule</h3>
+                    <p>Work when you want, as much as you want. Perfect for students, parents, or anyone with free time.</p>
+                    <span class="feature-tag">24/7 availability</span>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3>Weekly Payouts</h3>
+                    <p>Get paid every week via PayPal, Payoneer, or direct bank transfer. No minimum threshold.</p>
+                    <span class="feature-tag">$15-25/hour avg</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Showcase -->
+    <section class="stats-showcase">
+        <div class="container">
+            <div class="stats-grid">
+                <div>
+                    <div class="stat-number">10,000+</div>
+                    <div class="stat-label">Active Contributors</div>
+                </div>
+                <div>
+                    <div class="stat-number">$2M+</div>
+                    <div class="stat-label">Total Paid Out</div>
+                </div>
+                <div>
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Cities Covered</div>
+                </div>
+                <div>
+                    <div class="stat-number">4.8/5</div>
+                    <div class="stat-label">User Rating</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Task Categories -->
+    <section class="task-categories">
+        <div class="container">
+            <div class="section-header">
+                <h2>What tasks can you do?</h2>
+                <p>Diverse opportunities to earn money</p>
+            </div>
+            
+            <div class="categories-grid">
+                <div class="category-item">
+                    <div class="category-icon"><i class="fas fa-camera"></i></div>
+                    <h4>Photo Tasks</h4>
+                    <p>Take photos of products, stores, and locations</p>
+                </div>
+                
+                <div class="category-item">
+                    <div class="category-icon"><i class="fas fa-tag"></i></div>
+                    <h4>Price Checks</h4>
+                    <p>Verify product prices in stores</p>
+                </div>
+                
+                <div class="category-item">
+                    <div class="category-icon"><i class="fas fa-clipboard-check"></i></div>
+                    <h4>Surveys</h4>
+                    <p>Share your opinion on products and services</p>
+                </div>
+                
+                <div class="category-item">
+                    <div class="category-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <h4>Location Audit</h4>
+                    <p>Check business locations and information</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h2>Real people, real earnings</h2>
+                <p>Join thousands of satisfied contributors</p>
+            </div>
+            
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"What started as extra cash on weekends turned into my full time thing. The flexibility is amazing."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">R</div>
+                        <div class="author-info">
+                            <h4>Rajesh S.</h4>
+                            <p>Mumbai, India</p>
+                            <div class="earnings-badge">Earned $30k+</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"Perfect for students! I earn while studying. The tasks are simple and the support team is always helpful."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">M</div>
+                        <div class="author-info">
+                            <h4>Maria K.</h4>
+                            <p>Manila, Philippines</p>
+                            <div class="earnings-badge">Earned $12k+</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>Start earning in 3 simple steps</h2>
+                <p>Get started in minutes</p>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <h3>Create your account</h3>
+                    <p>Sign up for free. It takes less than 2 minutes to complete your profile.</p>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <h3>Choose your tasks</h3>
+                    <p>Browse available tasks and pick the ones that interest you.</p>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <h3>Get paid weekly</h3>
+                    <p>Complete tasks and receive your earnings every week.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Frequently asked questions</h2>
+                <p>Everything you need to know</p>
+            </div>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-question-circle"></i>
+                        Is it really free to join?
+                    </div>
+                    <div class="faq-answer">
+                        Yes! Creating an account and browsing tasks is completely free.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-question-circle"></i>
+                        How do I get paid?
+                    </div>
+                    <div class="faq-answer">
+                        Weekly payouts via PayPal, Payoneer, or direct bank transfer.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-question-circle"></i>
+                        Do I need experience?
+                    </div>
+                    <div class="faq-answer">
+                        No experience required. All tasks include clear instructions.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-question-circle"></i>
+                        How much can I earn?
+                    </div>
+                    <div class="faq-answer">
+                        Most contributors earn $200-500 weekly, depending on time invested.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-question-circle"></i>
+                        What types of tasks?
+                    </div>
+                    <div class="faq-answer">
+                        Photo tasks, price checks, surveys, and location audits.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-question-circle"></i>
+                        Is it available worldwide?
+                    </div>
+                    <div class="faq-answer">
+                        Available in 100+ cities globally, with new locations added regularly.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to start earning?</h2>
+                <p>Join 10,000+ people already earning money on Atlas Capture</p>
+                <div class="cta-buttons">
+                    <button class="btn-cta" onclick="window.location.href='https://audit.atlascapture.io/?ref_id=699ec351fe4ca0d6b19d20d8'">
+                        Get Started Now
+                    </button>
+                    <button class="btn-cta-secondary" onclick="window.location.href='https://audit.atlascapture.io/?ref_id=699ec351fe4ca0d6b19d20d8'">
+                        Learn More
+                    </button>
+                </div>
+                <p style="margin-top: 30px; opacity: 0.8;">
+                    <i class="fas fa-check-circle"></i> Free to join • Takes 2 minutes • Weekly payouts
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <div class="footer-logo">AtlasCapture</div>
+                    <p>Earn money completing simple tasks.<br>Flexible schedule, weekly payouts.</p>
+                </div>
+                
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li>How it works</li>
+                        <li>Available tasks</li>
+                        <li>Payouts</li>
+                        <li>FAQ</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li>About us</li>
+                        <li>Contact</li>
+                        <li>Careers</li>
+                        <li>Blog</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li>Terms of service</li>
+                        <li>Privacy policy</li>
+                        <li>Cookies</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                © 2025 Atlas Capture. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Smooth scroll for buttons -->
+    <script>
+        document.querySelectorAll('button[onclick]').forEach(button => {
+            const url = button.getAttribute('onclick').match(/'([^']+)'/)[1];
+            button.addEventListener('click', () => {
+                window.location.href = url;
+            });
+        });
+    </script>
+</body>
+</html>
