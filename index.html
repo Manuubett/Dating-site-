@@ -1,1744 +1,463 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- ⬇️⬇️⬇️ Alibaba / e‑commerce enhanced SEO meta tags ⬇️⬇️⬇️ -->
+  <!-- Primary keywords & description – optimised for Alibaba, express, global sourcing -->
+  <meta name="keywords" content="Alibaba Express, wholesale products, China electronics, bulk order, dropshipping, supplier directory, global sourcing, Alibaba affiliate, product gallery, factory price, fast shipping">
+  <meta name="description" content="Discover Alibaba Express wholesale collection: electronics, fashion, home goods. Source directly from suppliers with real‑time gallery & affiliate buy links.">
+  <!-- Author & revisit -->
+  <meta name="author" content="Alibaba Express ">
+  <meta name="revisit-after" content="1 day">
+  <!-- Robots: index & follow (explicit) -->
+  <meta name="robots" content="index, follow">
+  <!-- GEO / regional (can help with localised search) – adjust if needed -->
+  <meta name="geo.region" content="CN">
+  <meta name="geo.placename" content="Global">
+  <!-- Optional: verify for Google & Bing (placeholder – replace if you own verification) -->
+  <meta name="google-site-verification" content="xxxxxxxxxxxxxxxxxxxxxx" />
+  <meta name="msvalidate.01" content="xxxxxxxxxxxxxxxxxxxxxx" />
+  <!-- Open Graph / Facebook / LinkedIn – rich sharing -->
+  <meta property="og:title" content="Alibaba Express · Global Product Gallery">
+  <meta property="og:description" content="Real‑time wholesale gallery with supplier products. Search electronics, fashion, and more – direct affiliate access.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.alibabaexpress-gallery.com">
+  <meta property="og:image" content="https://via.placeholder.com/1200x630?text=Alibaba+Express+Gallery">
+  <meta property="og:site_name" content="Alibaba Express Gallery">
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Alibaba Express · Product Gallery">
+  <meta name="twitter:description" content="Discover trending wholesale products with real images and affiliate order links.">
+  <meta name="twitter:image" content="https://via.placeholder.com/1200x630?text=Alibaba+Express">
+  <!-- ⬆️⬆️⬆️ end of Alibaba SEO block ⬆️⬆️⬆️ -->
+
+  <title>Alibaba Express · Product Gallery – Wholesale & Dropship</title>
+  <!-- Firebase 9 compat & Font Awesome -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+    body { background-color: #f0f3f7; }
     
-    <!-- PRIMARY KEYWORDS - High Volume -->
-    <title>Earn Money Online: Complete Simple Tasks & Get Paid Weekly | Atlas Capture</title>
-    <meta name="description" content=" earn money online with simple tasks. Join 10,000+ people making $200-$500 weekly. No experience needed. Get paid via PayPal. Start earning today!">
-    <meta name="keywords" content="earn money online, make money from home, online jobs, work from home jobs, side hustle, extra income, paid tasks, online tasks, micro jobs, freelance work, remote jobs, part time work from home, earn extra cash, weekly payouts, PayPal jobs">
+    /* Top bar */
+    .top-bar { background: #1b2f4c; color: white; font-size: 0.85rem; padding: 8px 5%; display: flex; justify-content: space-between; flex-wrap: wrap; border-bottom: 1px solid #2b405e; }
+    .top-links a { color: #ddd; margin-right: 20px; text-decoration: none; font-weight: 500; }
+    .top-links a:hover { color: white; }
+    .user-links a { color: #ddd; margin-left: 20px; text-decoration: none; }
     
-    <!-- Geo-Targeting -->
-    <meta name="geo.region" content="US-GB-IN-AU-CA">
-    <meta name="geo.placename" content="Global">
+    /* Main header */
+    .main-header { background: white; padding: 18px 5%; display: flex; align-items: center; flex-wrap: wrap; gap: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); border-bottom: 1px solid #e5eef5; }
+    .logo-area { display: flex; align-items: center; gap: 5px; }
+    .logo-icon { font-size: 2.2rem; color: #ff6a00; }
+    .logo-text { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; }
+    .logo-text span { color: #ff6a00; }
+    .search-bar { flex: 1; min-width: 280px; display: flex; border: 2px solid #ff6a00; border-radius: 40px; overflow: hidden; background: white; }
+    .search-bar input { flex: 1; padding: 14px 20px; border: none; outline: none; font-size: 1rem; }
+    .search-bar button { background: #ff6a00; border: none; color: white; padding: 0 30px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 8px; }
+    .search-bar button:hover { background: #e55c00; }
     
-    <!-- Author & Robots -->
-    <meta name="author" content="Atlas Capture Official">
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large">
+    /* Category strip */
+    .category-strip { background: white; padding: 12px 5%; display: flex; flex-wrap: wrap; gap: 24px; border-bottom: 1px solid #e5eef5; font-size: 0.95rem; font-weight: 500; }
+    .category-strip a { color: #2f4858; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .category-strip a:hover { color: #ff6a00; }
+    .category-strip a i { color: #ff6a00; width: 18px; }
     
-    <!-- Open Graph for Social Sharing -->
-    <meta property="og:locale" content="en_US">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Earn Money Online with Simple Tasks - Get Paid Weekly">
-    <meta property="og:description" content="Join 10,000+ people earning $200-$500 weekly with simple online tasks. No experience needed. Instant signup. Get paid via PayPal.">
-    <meta property="og:site_name" content="Atlas Capture">
-    <meta property="og:image" content="https://audit.atlascapture.io/og-image.jpg">
-    <meta property="og:url" content="https://audit.atlascapture.io">
+    /* Active filters */
+    .active-filters { padding: 16px 5% 4px; display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.9rem; }
+    .filter-tag { background: white; border-radius: 40px; padding: 6px 16px; border: 1px solid #cbdae6; display: inline-flex; align-items: center; gap: 8px; }
+    .clear-search { color: #ff6a00; font-weight: 600; cursor: pointer; }
     
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Earn Money Online with Simple Tasks">
-    <meta name="twitter:description" content="Make $200-$500 weekly with simple tasks. Join 10k+ earners.">
-    <meta name="twitter:image" content="https://audit.atlascapture.io/twitter-card.jpg">
+    /* Products grid */
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; padding: 25px 5% 40px; }
     
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://audit.atlascapture.io">
+    /* Product card with gallery */
+    .product-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.04); transition: 0.2s; border: 1px solid #e7edf3; display: flex; flex-direction: column; }
+    .product-card:hover { transform: translateY(-6px); box-shadow: 0 18px 30px -8px rgba(0,50,70,0.15); border-color: #d6e0e9; }
     
-    <!-- Schema.org Markup for Rich Snippets -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Product",
-        "name": "Atlas Capture Online Tasks Platform",
-        "description": "Platform for earning money by completing simple online and offline tasks",
-        "brand": {
-            "@type": "Brand",
-            "name": "Atlas Capture"
-        },
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "ratingCount": "2342",
-            "bestRating": "5",
-            "worstRating": "1"
-        },
-        "offers": {
-            "@type": "AggregateOffer",
-            "priceCurrency": "USD",
-            "lowPrice": "200",
-            "highPrice": "500",
-            "offerCount": "10000"
-        },
-        "review": [
-            {
-                "@type": "Review",
-                "reviewRating": {
-                    "@type": "Rating",
-                    "ratingValue": "5"
-                },
-                "author": {
-                    "@type": "Person",
-                    "name": "Rajesh S."
-                },
-                "reviewBody": "What started as extra cash on weekends turned into my full time thing."
-            },
-            {
-                "@type": "Review",
-                "reviewRating": {
-                    "@type": "Rating",
-                    "ratingValue": "5"
-                },
-                "author": {
-                    "@type": "Person",
-                    "name": "Maria K."
-                },
-                "reviewBody": "Perfect for students! I earn while studying."
-            }
-        ]
-    }
-    </script>
+    /* Gallery section */
+    .gallery-container { position: relative; background: #f8fafc; padding: 10px; }
+    .main-image { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+    .thumbnail-strip { display: flex; gap: 8px; margin-top: 10px; padding: 0 5px; overflow-x: auto; scrollbar-width: thin; }
+    .thumbnail-strip img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: 0.1s; }
+    .thumbnail-strip img:hover { border-color: #ff6a00; }
+    .thumbnail-strip img.active-thumb { border-color: #ff6a00; }
     
-    <!-- FAQ Schema for Rich Results -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-            {
-                "@type": "Question",
-                "name": "How can I earn money online with simple tasks?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Join Atlas Capture for free, complete simple tasks like photo verification and surveys, and get paid weekly via PayPal or bank transfer."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "Is Atlas Capture legit for making money?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Yes, Atlas Capture has paid over $2M to 10,000+ contributors with a 4.8/5 rating from users worldwide."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "How much can I earn with online tasks?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Most contributors earn $200-$500 weekly depending on time invested, with top earners making over $1000 monthly."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "Do I need experience for online task jobs?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "No experience needed. All tasks come with clear instructions and are designed to be simple and easy to complete."
-                }
-            },
-            {
-                "@type": "Question",
-                "name": "How quickly do I get paid for completing tasks?",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Weekly payouts via PayPal, Payoneer, or direct bank transfer with no minimum withdrawal threshold."
-                }
-            }
-        ]
-    }
-    </script>
+    /* Navigation arrows for gallery */
+    .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; left: 0; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; }
+    .nav-arrow { background: rgba(255,255,255,0.9); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: 0.1s; }
+    .nav-arrow:hover { background: white; transform: scale(1.1); }
+    .image-counter { position: absolute; bottom: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 12px; border-radius: 30px; font-size: 0.8rem; font-weight: 500; }
     
-    <!-- Breadcrumb Schema -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Home",
-                "item": "https://audit.atlascapture.io"
-            },
-            {
-                "@type": "ListItem",
-                "position": 2,
-                "name": "Earn Money Online",
-                "item": "https://audit.atlascapture.io/earn-money-online"
-            },
-            {
-                "@type": "ListItem",
-                "position": 3,
-                "name": "Simple Tasks",
-                "item": "https://audit.atlascapture.io/simple-tasks"
-            }
-        ]
-    }
-    </script>
+    /* Product info */
+    .product-info { padding: 16px; display: flex; flex-direction: column; flex: 1; }
+    .product-title { font-weight: 500; font-size: 1rem; color: #1c2f44; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 44px; margin-bottom: 8px; }
+    .price-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin: 5px 0 4px; }
+    .current-price { font-size: 1.5rem; font-weight: 700; color: #d94b1e; }
+    .current-price small { font-size: 0.8rem; font-weight: 400; color: #677e97; }
+    .old-price { color: #8fa0b2; text-decoration: line-through; font-size: 0.9rem; }
+    .discount-badge { background: #fee8e3; color: #d94b1e; font-weight: 600; font-size: 0.75rem; padding: 3px 10px; border-radius: 30px; display: inline-block; margin: 6px 0 8px; width: fit-content; }
+    .shipping { font-size: 0.8rem; color: #5f7d9c; margin: 4px 0 6px; }
+    .order-btn { background: #ff6a00; color: white; border: none; border-radius: 40px; padding: 12px 0; font-weight: 600; font-size: 0.95rem; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; transition: 0.15s; }
+    .order-btn:hover { background: #e55c00; }
     
-    <!-- Organization Schema -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "Atlas Capture",
-        "url": "https://audit.atlascapture.io",
-        "logo": "https://audit.atlascapture.io/logo.png",
-        "sameAs": [
-            "https://facebook.com/atlascapture",
-            "https://twitter.com/atlascapture",
-            "https://linkedin.com/company/atlas-capture"
-        ],
-        "contactPoint": {
-            "@type": "ContactPoint",
-            "telephone": "+1-800-ATLAS-CAPTURE",
-            "contactType": "customer support",
-            "areaServed": "Global",
-            "availableLanguage": ["English", "Spanish", "Hindi"]
-        }
-    }
-    </script>
+    /* Lightbox modal for fullscreen gallery */
+    .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
+    .lightbox.active { display: flex; }
+    .lightbox-content { position: relative; max-width: 90%; max-height: 90%; }
+    .lightbox-image { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 8px; }
+    .lightbox-close { position: absolute; top: -40px; right: 0; color: white; font-size: 2rem; cursor: pointer; background: none; border: none; }
+    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; left: 0; display: flex; justify-content: space-between; padding: 0 20px; }
+    .lightbox-nav button { background: rgba(255,255,255,0.2); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; transition: 0.1s; }
+    .lightbox-nav button:hover { background: rgba(255,255,255,0.4); }
+    .lightbox-counter { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); color: white; font-size: 0.9rem; }
     
-    <!-- WebPage Schema -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": "Earn Money Online with Simple Tasks",
-        "description": "Complete guide to earning money with Atlas Capture through simple tasks",
-        "publisher": {
-            "@type": "Organization",
-            "name": "Atlas Capture"
-        },
-        "datePublished": "2024-01-15",
-        "dateModified": "2025-02-25",
-        "mainEntity": {
-            "@type": "ItemList",
-            "itemListElement": [
-                {
-                    "@type": "ListItem",
-                    "position": 1,
-                    "name": "Photo Tasks",
-                    "description": "Take photos of products and locations"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "Price Verification",
-                    "description": "Check and verify product prices"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 3,
-                    "name": "Surveys",
-                    "description": "Share opinions on products and services"
-                }
-            ]
-        }
-    }
-    </script>
+    .no-products { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #67829c; font-size: 1.2rem; background: white; border-radius: 40px; }
+    footer { background: #132433; color: #9bb1c7; padding: 30px 5%; text-align: center; font-size: 0.9rem; border-top: 1px solid #1f3a52; }
     
-    <!-- Article Schema for Blog Content -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "How to Earn Money Online with Simple Tasks: Complete Guide 2025",
-        "description": "Step-by-step guide to making $200-$500 weekly with Atlas Capture",
-        "author": {
-            "@type": "Organization",
-            "name": "Atlas Capture Team"
-        },
-        "publisher": {
-            "@type": "Organization",
-            "name": "Atlas Capture"
-        },
-        "datePublished": "2025-01-15",
-        "dateModified": "2025-02-25"
-    }
-    </script>
-    
-    <!-- Video Schema for Rich Snippets -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "VideoObject",
-        "name": "How to Earn Money with Atlas Capture - Tutorial",
-        "description": "Learn how to complete tasks and earn money on Atlas Capture",
-        "thumbnailUrl": "https://audit.atlascapture.io/video-thumbnail.jpg",
-        "uploadDate": "2025-01-20",
-        "duration": "PT5M",
-        "contentUrl": "https://audit.atlascapture.io/tutorial-video"
-    }
-    </script>
-    
-    <!-- Mobile Optimization -->
-    <meta name="format-detection" content="telephone=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <!-- Language & Regional -->
-    <link rel="alternate" href="https://audit.atlascapture.io" hreflang="x-default">
-    <link rel="alternate" href="https://audit.atlascapture.io/es" hreflang="es">
-    <link rel="alternate" href="https://audit.atlascapture.io/hi" hreflang="hi">
-    
-    <!-- Favicon & App Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    
-    <!-- Manifest for PWA -->
-    <link rel="manifest" href="/site.webmanifest">
-    
-    <!-- Preconnect for Speed -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Existing Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Sitemap -->
-    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
-    
-    <!-- RSS Feed -->
-    <link rel="alternate" type="application/rss+xml" title="Atlas Capture Blog" href="/blog/rss.xml">
-    
-    <style>
-        /* Previous styles remain exactly the same */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #ffffff;
-            color: #0a0f1c;
-            line-height: 1.5;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        /* Add a hidden SEO content section for more keywords */
-        .seo-content {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        /* Keep all previous animations and styles */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-    
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #ffffff;
-            color: #0a0f1c;
-            line-height: 1.5;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        /* Floating Elements Animation */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* Navigation */
-        .navbar {
-            padding: 20px 0;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-
-        .btn-outline {
-            padding: 10px 24px;
-            border: 2px solid #4158D0;
-            border-radius: 50px;
-            background: transparent;
-            color: #4158D0;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-outline:hover {
-            background: #4158D0;
-            color: white;
-        }
-
-        .btn-primary {
-            padding: 12px 32px;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 10px 20px rgba(65, 88, 208, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(65, 88, 208, 0.4);
-        }
-
-        .btn-large {
-            padding: 18px 48px;
-            font-size: 1.2rem;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 20px 40px rgba(65, 88, 208, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-large::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-large:hover::before {
-            left: 100%;
-        }
-
-        /* Hero Section */
-        .hero {
-            padding: 160px 0 80px;
-            background: radial-gradient(circle at 80% 20%, rgba(200, 80, 192, 0.05) 0%, transparent 50%),
-                        radial-gradient(circle at 20% 80%, rgba(65, 88, 208, 0.05) 0%, transparent 50%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .floating-element {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
-            border-radius: 50%;
-            filter: blur(60px);
-            z-index: 0;
-        }
-
-        .float-1 {
-            top: -100px;
-            right: -100px;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .float-2 {
-            bottom: -100px;
-            left: -100px;
-            animation: float 10s ease-in-out infinite reverse;
-        }
-
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 60px;
-            align-items: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
-            border-radius: 100px;
-            color: #4158D0;
-            font-weight: 600;
-            font-size: 0.875rem;
-            margin-bottom: 24px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(65, 88, 208, 0.2);
-        }
-
-        .hero h1 {
-            font-size: 4rem;
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -2px;
-            margin-bottom: 24px;
-            background: linear-gradient(135deg, #1a1f35, #4158D0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-highlight {
-            position: relative;
-            display: inline-block;
-        }
-
-        .hero-highlight::after {
-            content: '';
-            position: absolute;
-            bottom: 5px;
-            left: 0;
-            width: 100%;
-            height: 12px;
-            background: linear-gradient(135deg, rgba(200, 80, 192, 0.2), rgba(65, 88, 208, 0.2));
-            z-index: -1;
-            border-radius: 12px;
-        }
-
-        .hero-stats {
-            display: flex;
-            gap: 40px;
-            margin: 40px 0;
-        }
-
-        .stat-item {
-            text-align: left;
-        }
-
-        .stat-number {
-            font-size: 2.2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: block;
-            line-height: 1;
-        }
-
-        .stat-label {
-            color: #5a6275;
-            font-weight: 500;
-            font-size: 0.95rem;
-            margin-top: 4px;
-        }
-
-        /* Hero Image */
-        .hero-image-wrapper {
-            position: relative;
-        }
-
-        .hero-image {
-            width: 100%;
-            border-radius: 30px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .floating-card {
-            position: absolute;
-            background: white;
-            padding: 16px 24px;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: float 5s ease-in-out infinite;
-        }
-
-        .card-1 {
-            top: 20px;
-            left: -40px;
-        }
-
-        .card-2 {
-            bottom: 40px;
-            right: -30px;
-            animation-delay: 1s;
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        /* Trust Bar */
-        .trust-bar {
-            padding: 30px 0;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            margin-top: 40px;
-        }
-
-        .trust-grid {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .trust-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #2d3748;
-            font-weight: 500;
-        }
-
-        .trust-item i {
-            color: #4158D0;
-            font-size: 1.2rem;
-        }
-
-        /* Features Section */
-        .features {
-            padding: 100px 0;
-            background: #fafbff;
-        }
-
-        .section-header {
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto 60px;
-        }
-
-        .section-header h2 {
-            font-size: 3rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #1a1f35, #4158D0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .section-header p {
-            color: #5a6275;
-            font-size: 1.2rem;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-        }
-
-        .feature-card {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            transform: scaleX(0);
-            transition: transform 0.3s;
-        }
-
-        .feature-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 30px 60px rgba(65, 88, 208, 0.15);
-        }
-
-        .feature-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        .feature-icon i {
-            font-size: 30px;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .feature-card h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: #1a1f35;
-        }
-
-        .feature-card p {
-            color: #5a6275;
-            margin-bottom: 24px;
-        }
-
-        .feature-tag {
-            display: inline-block;
-            padding: 6px 12px;
-            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
-            border-radius: 100px;
-            color: #4158D0;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        /* Stats Section */
-        .stats-showcase {
-            padding: 80px 0;
-            background: linear-gradient(135deg, #1a1f35, #2d1f3a);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stats-showcase::before {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(200, 80, 192, 0.3), transparent 70%);
-            top: -150px;
-            right: -150px;
-            border-radius: 50%;
-        }
-
-        .stats-showcase::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(65, 88, 208, 0.3), transparent 70%);
-            bottom: -150px;
-            left: -150px;
-            border-radius: 50%;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 40px;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .stats-showcase .stat-number {
-            font-size: 3rem;
-            font-weight: 800;
-            color: white;
-            -webkit-text-fill-color: white;
-            margin-bottom: 8px;
-        }
-
-        .stats-showcase .stat-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.1rem;
-        }
-
-        /* Task Categories */
-        .task-categories {
-            padding: 100px 0;
-        }
-
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
-
-        .category-item {
-            text-align: center;
-            padding: 30px 20px;
-            background: #fafbff;
-            border-radius: 20px;
-            transition: all 0.3s;
-        }
-
-        .category-item:hover {
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .category-item:hover .category-icon i {
-            color: white;
-        }
-
-        .category-icon i {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .category-item h4 {
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .category-item p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        /* Testimonials */
-        .testimonials {
-            padding: 100px 0;
-            background: #fafbff;
-        }
-
-        .testimonial-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-        }
-
-        .testimonial-card {
-            background: white;
-            border-radius: 30px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-        }
-
-        .testimonial-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 30px 60px rgba(65, 88, 208, 0.15);
-        }
-
-        .testimonial-rating {
-            color: #ffb347;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
-
-        .testimonial-text {
-            font-size: 1.2rem;
-            line-height: 1.6;
-            color: #2d3748;
-            margin-bottom: 30px;
-            font-style: italic;
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .author-avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-
-        .author-info h4 {
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: #1a1f35;
-        }
-
-        .author-info p {
-            color: #718096;
-            font-size: 0.9rem;
-        }
-
-        .earnings-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: linear-gradient(135deg, rgba(65, 88, 208, 0.1), rgba(200, 80, 192, 0.1));
-            border-radius: 100px;
-            color: #4158D0;
-            font-weight: 600;
-            font-size: 0.875rem;
-            margin-top: 8px;
-        }
-
-        /* How It Works */
-        .how-it-works {
-            padding: 100px 0;
-        }
-
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            margin-top: 60px;
-        }
-
-        .step-item {
-            text-align: center;
-            position: relative;
-        }
-
-        .step-number {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 1.5rem;
-            margin: 0 auto 30px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .step-item::before {
-            content: '';
-            position: absolute;
-            top: 30px;
-            left: -50%;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #4158D0, #C850C0, transparent);
-            z-index: 0;
-        }
-
-        .step-item:first-child::before {
-            display: none;
-        }
-
-        .step-item h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: #1a1f35;
-        }
-
-        .step-item p {
-            color: #5a6275;
-        }
-
-        /* FAQ Section */
-        .faq-section {
-            padding: 100px 0;
-            background: #fafbff;
-        }
-
-        .faq-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .faq-item {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .faq-item:hover {
-            box-shadow: 0 20px 40px rgba(65, 88, 208, 0.1);
-        }
-
-        .faq-question {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            color: #1a1f35;
-            margin-bottom: 12px;
-        }
-
-        .faq-question i {
-            color: #4158D0;
-        }
-
-        .faq-answer {
-            color: #5a6275;
-            margin-left: 32px;
-        }
-
-        /* CTA Section */
-        .cta-section {
-            padding: 100px 0;
-            background: linear-gradient(135deg, #1a1f35, #2d1f3a);
-            color: white;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-content {
-            position: relative;
-            z-index: 1;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .cta-section h2 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 20px;
-        }
-
-        .cta-section p {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            opacity: 0.9;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-        }
-
-        .btn-cta {
-            padding: 18px 48px;
-            font-size: 1.2rem;
-            background: white;
-            border: none;
-            border-radius: 50px;
-            color: #1a1f35;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-cta-secondary {
-            padding: 18px 48px;
-            font-size: 1.2rem;
-            background: transparent;
-            border: 2px solid white;
-            border-radius: 50px;
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-cta-secondary:hover {
-            background: white;
-            color: #1a1f35;
-        }
-
-        /* Footer */
-        .footer {
-            background: #0a0f1c;
-            color: white;
-            padding: 60px 0 30px;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 60px;
-            margin-bottom: 60px;
-        }
-
-        .footer-logo {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-            display: inline-block;
-        }
-
-        .footer-col p {
-            color: #8f9bb3;
-            line-height: 1.6;
-        }
-
-        .footer-col h4 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 30px;
-            color: white;
-        }
-
-        .footer-col ul {
-            list-style: none;
-        }
-
-        .footer-col ul li {
-            margin-bottom: 15px;
-            color: #8f9bb3;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .footer-col ul li:hover {
-            color: #4158D0;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #8f9bb3;
-            font-size: 0.9rem;
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 1024px) {
-            .hero h1 { font-size: 3rem; }
-            .hero-content { grid-template-columns: 1fr; }
-            .features-grid { grid-template-columns: repeat(2, 1fr); }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .categories-grid { grid-template-columns: repeat(2, 1fr); }
-            .footer-content { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            .features-grid { grid-template-columns: 1fr; }
-            .testimonial-grid { grid-template-columns: 1fr; }
-            .steps-grid { grid-template-columns: 1fr; }
-            .faq-grid { grid-template-columns: 1fr; }
-            .cta-buttons { flex-direction: column; }
-            .nav-buttons .btn-outline { display: none; }
-        }
-    </style>
-
-        /* ... (rest of the styles from previous version) ... */
-    </style>
+    @media (max-width: 700px) { .main-header { flex-direction: column; align-items: stretch; } .search-bar button span { display: none; } }
+  </style>
 </head>
 <body>
-    <!-- Hidden SEO Content - Helps with keyword density -->
-    <div class="seo-content">
-        <h1>Earn Money Online with Simple Tasks: Complete Guide to Making Extra Income from Home</h1>
-        <p>Looking for ways to earn money online? Atlas Capture connects you with companies needing simple tasks completed. Whether you want to make money from home, earn extra cash on weekends, or find a flexible side hustle, our platform offers weekly payouts through PayPal and bank transfers.</p>
-        
-        <h2>Best Online Jobs for Beginners: No Experience Needed</h2>
-        <p>Start earning money online today with simple tasks like photo verification, price checks, surveys, and location audits. Our work from home opportunities are perfect for students, stay-at-home parents, or anyone seeking remote jobs with flexible hours.</p>
-        
-        <h3>Popular Ways to Earn Extra Cash:</h3>
-        <ul>
-            <li>Photo tasks: Take pictures of products and store displays</li>
-            <li>Price verification: Check and confirm product pricing</li>
-            <li>Online surveys: Share your opinions on brands</li>
-            <li>Location audits: Verify business information</li>
-            <li>Mystery shopping: Evaluate customer experiences</li>
-        </ul>
-        
-        <h3>Frequently Asked Questions About Online Earnings:</h3>
-        <p>Q: How much can I earn with online tasks? A: Most contributors earn $200-$500 weekly, with top earners making over $1000 monthly through consistent task completion.</p>
-        <p>Q: Are online task jobs legit? A: Yes, Atlas Capture has paid over $2 million to 10,000+ verified contributors with a 4.8/5 rating.</p>
-        <p>Q: How quickly do I get paid? A: Weekly payouts via PayPal, Payoneer, or direct bank transfer with no minimum withdrawal.</p>
-        <p>Q: Do I need experience for remote jobs? A: No experience required. All tasks include clear instructions and are designed to be simple.</p>
-        <p>Q: Can I work from anywhere? A: Yes, our platform is available in 100+ cities globally with tasks accessible via mobile app.</p>
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="top-links">
+      <a href="#">AliExpress</a>
+      <a href="#">Alibaba</a>
+      <a href="#">Marketplace</a>
     </div>
-
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container nav-container">
-            <div class="logo" itemscope itemtype="https://schema.org/Brand">
-                <span itemprop="name">AtlasCapture</span>
-            </div>
-            <div class="nav-buttons">
-                <button class="btn-outline" aria-label="Login to your account">Log in</button>
-                <button class="btn-primary" onclick="window.location.href='https://audit.atlascapture.io/?ref_id=699ec351fe4ca0d6b19d20d8'" aria-label="Start earning money online">Get Started</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section with SEO-friendly headings -->
-    <section class="hero" itemscope itemtype="https://schema.org/Product">
-        <meta itemprop="name" content="Atlas Capture Online Tasks Platform">
-        <meta itemprop="description" content="Earn money online with simple tasks. Get paid weekly via PayPal.">
-        
-        <div class="floating-element float-1"></div>
-        <div class="floating-element float-2"></div>
-        
-        <div class="container">
-            <div class="hero-content">
-                <div>
-                    <span class="hero-badge">
-                        <i class="fas fa-bolt"></i> Trusted by 10,000+ Contributors Worldwide
-                    </span>
-                    
-                    <h1 itemprop="headline">
-                        <span class="hero-highlight">Earn Money Online</span>
-                        <br>with Simple Tasks
-                    </h1>
-                    
-                    <p style="font-size: 1.3rem; color: #5a6275; margin-bottom: 30px;">
-                        Make <strong>$200-$500 weekly</strong> completing easy tasks from home. 
-                        <strong>Get paid via PayPal</strong> or bank transfer. No experience needed.
-                    </p>
-                    
-                    <div class="hero-stats" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
-                        <meta itemprop="ratingValue" content="4.8">
-                        <meta itemprop="reviewCount" content="2342">
-                        <meta itemprop="bestRating" content="5">
-                        <meta itemprop="worstRating" content="1">
-                        
-                        <div class="stat-item">
-                            <span class="stat-number">$2M+</span>
-                            <span class="stat-label">Paid to contributors</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">100+</span>
-                            <span class="stat-label">Cities worldwide</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">4.8/5</span>
-                            <span class="stat-label">User rating (2,342 reviews)</span>
-                        </div>
-                    </div>
-                    
-                    <button class="btn-large" onclick="window.location.href='https://audit.atlascapture.io/?ref_id=699ec351fe4ca0d6b19d20d8'" itemprop="url">
-                        Start Earning Now <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
-                    </button>
-                    
-                    <p style="margin-top: 20px; color: #8f9bb3;">
-                        <i class="fas fa-clock"></i> Free to join • Takes less than 2 minutes • <strong>Weekly payouts via PayPal</strong>
-                    </p>
-                </div>
-                
-                <div class="hero-image-wrapper">
-                    <!-- Alt text for SEO -->
-                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 24 24' fill='none' stroke='%234158D0' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='3' width='20' height='14' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='8' y1='21' x2='16' y2='21'%3E%3C/line%3E%3Cline x1='12' y1='17' x2='12' y2='21'%3E%3C/line%3E%3Cpath d='M6 8h.01'%3E%3C/path%3E%3Cpath d='M10 8h.01'%3E%3C/path%3E%3Cpath d='M14 8h.01'%3E%3C/path%3E%3Cpath d='M18 8h.01'%3E%3C/path%3E%3C/svg%3E" 
-                         alt="Earn money online with simple tasks on Atlas Capture platform" 
-                         class="hero-image">
-                    
-                    <div class="floating-card card-1">
-                        <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
-                        <div>
-                            <strong>$350 earned this week</strong>
-                            <p style="font-size: 0.8rem;">from online tasks</p>
-                        </div>
-                    </div>
-                    
-                    <div class="floating-card card-2">
-                        <div class="card-icon"><i class="fas fa-check"></i></div>
-                        <div>
-                            <strong>24 tasks completed</strong>
-                            <p style="font-size: 0.8rem;">in just 3 hours</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Trust Bar with keywords -->
-    <div class="trust-bar">
-        <div class="container">
-            <div class="trust-grid">
-                <div class="trust-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span><strong>No experience</strong> needed</span>
-                </div>
-                <div class="trust-item">
-                    <i class="fas fa-clock"></i>
-                    <span><strong>Flexible hours</strong> - work anytime</span>
-                </div>
-                <div class="trust-item">
-                    <i class="fas fa-globe"></i>
-                    <span><strong>Work from anywhere</strong> remotely</span>
-                </div>
-                <div class="trust-item">
-                    <i class="fas fa-bolt"></i>
-                    <span><strong>Weekly payouts</strong> via PayPal</span>
-                </div>
-                <div class="trust-item">
-                    <i class="fas fa-headset"></i>
-                    <span><strong>24/7 support</strong> available</span>
-                </div>
-            </div>
-        </div>
+    <div class="user-links">
+      <a href="#">Sign in</a>
+      <a href="#">Join free</a>
     </div>
+  </div>
 
-    <!-- Features Section with keyword-rich content -->
-    <section class="features">
-        <div class="container">
-            <div class="section-header">
-                <h2>Best Way to Earn Money Online with Simple Tasks</h2>
-                <p>Join thousands of people making extra income from home on their own schedule</p>
-            </div>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>Quick & Simple Tasks</h3>
-                    <p>Each task takes 5-30 minutes to complete. Perfect for earning extra cash during breaks or free time. Tasks include photo verification, price checks, and surveys.</p>
-                    <span class="feature-tag">50+ daily tasks available</span>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <h3>Flexible Schedule</h3>
-                    <p>Work when you want, as much as you want. Ideal for students, parents, or anyone seeking work-from-home opportunities with complete flexibility.</p>
-                    <span class="feature-tag">24/7 task availability</span>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                    <h3>Weekly Payouts via PayPal</h3>
-                    <p>Get paid every week through PayPal, Payoneer, or direct bank transfer. No minimum payout threshold - withdraw your earnings instantly.</p>
-                    <span class="feature-tag">$15-25/hour average</span>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Header with search -->
+  <div class="main-header">
+    <div class="logo-area">
+      <i class="fab fa-alipay logo-icon"></i>
+      <div class="logo-text">Alibaba<span>Express</span></div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search products..." value="">
+      <button id="searchBtn"><i class="fas fa-search"></i> <span>Search</span></button>
+    </div>
+  </div>
 
-    <!-- Stats Showcase -->
-    <section class="stats-showcase">
-        <div class="container">
-            <div class="stats-grid">
-                <div>
-                    <div class="stat-number">10,000+</div>
-                    <div class="stat-label">Active Contributors Making Money</div>
-                </div>
-                <div>
-                    <div class="stat-number">$2M+</div>
-                    <div class="stat-label">Total Paid to Task Workers</div>
-                </div>
-                <div>
-                    <div class="stat-number">100+</div>
-                    <div class="stat-label">Cities with Available Tasks</div>
-                </div>
-                <div>
-                    <div class="stat-number">4.8/5</div>
-                    <div class="stat-label">User Rating from 2,342 Reviews</div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Category strip -->
+  <div class="category-strip">
+    <a href="#"><i class="fas fa-mobile-alt"></i> Electronics</a>
+    <a href="#"><i class="fas fa-tshirt"></i> Clothing</a>
+    <a href="#"><i class="fas fa-shoe-prints"></i> Shoes</a>
+    <a href="#"><i class="fas fa-clock"></i> Watches</a>
+    <a href="#"><i class="fas fa-gem"></i> Jewelry</a>
+    <a href="#"><i class="fas fa-bicycle"></i> Sports</a>
+    <a href="#"><i class="fas fa-home"></i> Home</a>
+  </div>
 
-    <!-- Task Categories with rich descriptions -->
-    <section class="task-categories">
-        <div class="container">
-            <div class="section-header">
-                <h2>Types of Online Tasks You Can Do to Earn Money</h2>
-                <p>Diverse opportunities to make extra income from home</p>
-            </div>
-            
-            <div class="categories-grid">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-camera"></i></div>
-                    <h4>Photo Tasks</h4>
-                    <p>Take photos of products, store displays, and locations - earn $5-15 per task</p>
-                </div>
-                
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-tag"></i></div>
-                    <h4>Price Verification</h4>
-                    <p>Check and verify product prices in retail stores - quick $3-10 per check</p>
-                </div>
-                
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-clipboard-check"></i></div>
-                    <h4>Online Surveys</h4>
-                    <p>Share opinions on products and services - earn $2-20 per survey</p>
-                </div>
-                
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-map-marker-alt"></i></div>
-                    <h4>Location Audits</h4>
-                    <p>Verify business locations and information - earn $8-25 per audit</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Active filter tag -->
+  <div class="active-filters" id="activeFilterArea" style="display: none;">
+    <div class="filter-tag">
+      <span>🔍 <span id="searchTermDisplay"></span></span>
+      <span class="clear-search" id="clearSearchBtn"><i class="fas fa-times-circle"></i> clear</span>
+    </div>
+  </div>
 
-    <!-- Testimonials with Schema markup -->
-    <section class="testimonials" itemscope itemtype="https://schema.org/ItemList">
-        <meta itemprop="name" content="User Reviews of Atlas Capture">
-        <meta itemprop="description" content="Real testimonials from people earning money with Atlas Capture">
-        
-        <div class="container">
-            <div class="section-header">
-                <h2>Real People Making Real Money</h2>
-                <p>Join thousands of satisfied earners worldwide</p>
-            </div>
-            
-            <div class="testimonial-grid">
-                <div class="testimonial-card" itemprop="itemListElement" itemscope itemtype="https://schema.org/Review">
-                    <meta itemprop="itemReviewed" content="Atlas Capture">
-                    <div class="testimonial-rating" itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
-                        <meta itemprop="ratingValue" content="5">
-                        <meta itemprop="bestRating" content="5">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p class="testimonial-text" itemprop="reviewBody">"What started as extra cash on weekends turned into my full time thing. The flexibility is amazing for earning money online."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">R</div>
-                        <div class="author-info">
-                            <h4 itemprop="author">Rajesh S.</h4>
-                            <p>Mumbai, India</p>
-                            <div class="earnings-badge" itemprop="description">Earned $30k+ with online tasks</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="testimonial-card" itemprop="itemListElement" itemscope itemtype="https://schema.org/Review">
-                    <meta itemprop="itemReviewed" content="Atlas Capture">
-                    <div class="testimonial-rating" itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
-                        <meta itemprop="ratingValue" content="5">
-                        <meta itemprop="bestRating" content="5">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p class="testimonial-text" itemprop="reviewBody">"Perfect for students! I earn while studying. The tasks are simple and the support team is always helpful for making extra cash."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">M</div>
-                        <div class="author-info">
-                            <h4 itemprop="author">Maria K.</h4>
-                            <p>Manila, Philippines</p>
-                            <div class="earnings-badge" itemprop="description">Earned $12k+ from home</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Product grid -->
+  <div id="productsContainer" class="products-grid">
+    <div class="no-products"><i class="fas fa-spinner fa-pulse"></i> Loading products...</div>
+  </div>
 
-    <!-- How It Works with SEO-friendly headings -->
-    <section class="how-it-works">
-        <div class="container">
-            <div class="section-header">
-                <h2>How to Start Earning Money Online Today</h2>
-                <p>Get started in 3 simple steps - no experience required</p>
-            </div>
-            
-            <div class="steps-grid">
-                <div class="step-item">
-                    <div class="step-number">1</div>
-                    <h3>Create Your Free Account</h3>
-                    <p>Sign up in under 2 minutes. No fees, no credit card required to start earning money online.</p>
-                </div>
-                
-                <div class="step-item">
-                    <div class="step-number">2</div>
-                    <h3>Choose from Available Tasks</h3>
-                    <p>Browse hundreds of simple tasks like photos, surveys, and price checks. Pick what interests you.</p>
-                </div>
-                
-                <div class="step-item">
-                    <div class="step-number">3</div>
-                    <h3>Get Paid Weekly via PayPal</h3>
-                    <p>Complete tasks and receive your earnings every week through PayPal or bank transfer.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Lightbox for fullscreen gallery -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="closeLightbox"><i class="fas fa-times"></i></button>
+      <img src="" alt="" class="lightbox-image" id="lightboxImage">
+      <div class="lightbox-nav">
+        <button id="prevImage"><i class="fas fa-chevron-left"></i></button>
+        <button id="nextImage"><i class="fas fa-chevron-right"></i></button>
+      </div>
+      <div class="lightbox-counter" id="imageCounter"></div>
+    </div>
+  </div>
 
-    <!-- FAQ Section with Schema -->
-    <section class="faq-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Frequently Asked Questions About Earning Money Online</h2>
-                <p>Everything you need to know about online task jobs</p>
-            </div>
-            
-            <div class="faq-grid">
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <i class="fas fa-question-circle"></i>
-                        How can I earn money online with simple tasks?
-                    </div>
-                    <div class="faq-answer">
-                        Join Atlas Capture for free, complete simple tasks like photo verification and surveys, and get paid weekly via PayPal or bank transfer. Most users earn $200-500 weekly.
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <i class="fas fa-question-circle"></i>
-                        Is Atlas Capture legit for making money?
-                    </div>
-                    <div class="faq-answer">
-                        Yes, Atlas Capture has paid over $2M to 10,000+ contributors with a 4.8/5 rating from users worldwide. All payments are processed securely via PayPal.
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <i class="fas fa-question-circle"></i>
-                        How much can I earn with online tasks?
-                    </div>
-                    <div class="faq-answer">
-                        Most contributors earn $200-$500 weekly depending on time invested, with top earners making over $1000 monthly through consistent task completion.
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <i class="fas fa-question-circle"></i>
-                        Do I need experience for online task jobs?
-                    </div>
-                    <div class="faq-answer">
-                        No experience needed. All tasks come with clear instructions and are designed to be simple and easy to complete for beginners.
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <i class="fas fa-question-circle"></i>
-                        What types of online tasks are available?
-                    </div>
-                    <div class="faq-answer">
-                        Photo tasks, price verification, online surveys, location audits, and mystery shopping assignments. New tasks added daily.
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <i class="fas fa-question-circle"></i>
-                        Is it available worldwide for remote work?
-                    </div>
-                    <div class="faq-answer">
-                        Available in 100+ cities globally, with new locations added regularly. Check if your city is supported during signup.
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <i class="fas fa-question-circle"></i>
-                        How quickly do I get paid for completing tasks?
-                    </div>
-                    <div class="faq-answer">
-                        Weekly payouts via PayPal, Payoneer, or direct bank transfer with no minimum withdrawal threshold. Funds arrive within 24-48 hours.
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <i class="fas fa-question-circle"></i>
-                        Can I do this as a side hustle with a full-time job?
-                    </div>
-                    <div class="faq-answer">
-                        Absolutely! Most users work part-time during evenings or weekends. The flexible schedule lets you earn extra cash whenever you have free time.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <footer>
+    <p>© 2026 Alibaba Express Affiliate · All product links are affiliate</p>
+  </footer>
 
-    <!-- Blog/Resource Section for SEO -->
-    <section class="features" style="background: #ffffff;">
-        <div class="container">
-            <div class="section-header">
-                <h2>Tips for Maximizing Your Online Earnings</h2>
-                <p>Expert advice to help you earn more with simple tasks</p>
-            </div>
-            
-            <div class="features-grid" style="grid-template-columns: repeat(2, 1fr);">
-                <div class="feature-card">
-                    <h3>Best Times to Find High-Paying Tasks</h3>
-                    <p>Tasks are posted throughout the day. Check the platform during morning hours (9-11 AM local time) and early evening (5-7 PM) for the best-paying opportunities.</p>
-                    <span class="feature-tag">Pro tip: Enable notifications</span>
-                </div>
-                
-                <div class="feature-card">
-                    <h3>How to Complete Tasks Faster</h3>
-                    <p>Familiarize yourself with common task types. Photo tasks become quicker once you know what businesses look for. Complete surveys thoughtfully for better ratings.</p>
-                    <span class="feature-tag">Speed increases with practice</span>
-                </div>
-                
-                <div class="feature-card">
-                    <h3>Maximizing Weekly Payouts</h3>
-                    <p>Set a daily goal of completing 5-10 tasks. Consistent daily activity leads to higher weekly earnings. Focus on tasks that pay the most per minute.</p>
-                    <span class="feature-tag">Average: $15-25/hour</span>
-                </div>
-                
-                <div class="feature-card">
-                    <h3>Getting Paid via PayPal: What to Know</h3>
-                    <p>Link your verified PayPal account for fastest payouts. Payments are processed every Friday and appear in your account within 24-48 hours.</p>
-                    <span class="feature-tag">No fees for PayPal transfers</span>
-                </div>
-            </div>
-        </div>
-    </section>
+  <script>
+    (function() {
+      // Firebase config
+      const firebaseConfig = {
+        apiKey: "AIzaSyC23iQpw8dvOamO5FpcrWWlgTwJ8gvmuM4",
+        authDomain: "reconnect-10733.firebaseapp.com",
+        projectId: "reconnect-10733",
+        messagingSenderId: "902709752297",
+        appId: "1:902709752297:web:b89e694688d25472ac1b78"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      
+      // Enable persistence for offline caching
+      db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+        if (err.code === 'failed-precondition') {
+          console.warn('Persistence failed: multiple tabs open');
+        } else if (err.code === 'unimplemented') {
+          console.warn('Browser does not support persistence');
+        }
+      });
 
-    <!-- Final CTA with keyword-rich text -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="cta-content">
-                <h2>Ready to Start Earning Money Online?</h2>
-                <p>Join 10,000+ people already making <strong>$200-$500 weekly</strong> with simple tasks.<br>
-                <strong>Get paid via PayPal</strong> or bank transfer. No experience needed. Free to join.</p>
-                <div class="cta-buttons">
-                    <button class="btn-cta" onclick="window.location.href='https://audit.atlascapture.io/?ref_id=699ec351fe4ca0d6b19d20d8'">
-                        Start Earning Now
-                    </button>
-                    <button class="btn-cta-secondary" onclick="window.location.href='https://audit.atlascapture.io/?ref_id=699ec351fe4ca0d6b19d20d8'">
-                        See Available Tasks
-                    </button>
-                </div>
-                <p style="margin-top: 30px; opacity: 0.8;">
-                    <i class="fas fa-check-circle"></i> Free to join • Takes 2 minutes • <strong>Weekly payouts via PayPal</strong>
-                </p>
-            </div>
-        </div>
-    </section>
+      // DOM elements
+      const productsContainer = document.getElementById('productsContainer');
+      const searchInput = document.getElementById('searchInput');
+      const searchBtn = document.getElementById('searchBtn');
+      const activeFilterArea = document.getElementById('activeFilterArea');
+      const searchTermDisplay = document.getElementById('searchTermDisplay');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+      
+      // Lightbox elements
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImage = document.getElementById('lightboxImage');
+      const closeLightbox = document.getElementById('closeLightbox');
+      const prevImage = document.getElementById('prevImage');
+      const nextImage = document.getElementById('nextImage');
+      const imageCounter = document.getElementById('imageCounter');
 
-    <!-- Footer with SEO keywords -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-col">
-                    <div class="footer-logo">AtlasCapture</div>
-                    <p>The best platform to <strong>earn money online</strong> with simple tasks.<br>
-                    <strong>Work from home, get paid weekly via PayPal.</strong> Join 10,000+ happy earners.</p>
-                </div>
-                
-                <div class="footer-col">
-                    <h4>Ways to Earn</h4>
-                    <ul>
-                        <li>Online surveys</li>
-                        <li>Photo tasks</li>
-                        <li>Price verification</li>
-                        <li>Location audits</li>
-                        <li>Mystery shopping</li>
-                    </ul>
-                </div>
-                
-                <div class="footer-col">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li>How to earn money online</li>
-                        <li>Tips for more earnings</li>
-                        <li>PayPal payout guide</li>
-                        <li>Work from home guide</li>
-                        <li>Side hustle ideas</li>
-                    </ul>
-                </div>
-                
-                <div class="footer-col">
-                    <h4>Payment Methods</h4>
-                    <ul>
-                        <li>PayPal</li>
-                        <li>Payoneer</li>
-                        <li>Bank transfer</li>
-                        <li>Weekly payouts</li>
-                        <li>No minimum withdrawal</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>© 2025 Atlas Capture - <strong>Earn Money Online with Simple Tasks</strong>. All rights reserved.</p>
-                <p style="margin-top: 10px; font-size: 0.8rem;">Keywords: earn money online, work from home jobs, online tasks, side hustle, extra income, weekly payouts, PayPal jobs, remote work, freelance work, part-time work, make money from home</p>
-            </div>
-        </div>
-    </footer>
+      // State
+      let allProducts = [];
+      let currentSearchTerm = '';
+      let currentLightboxProduct = null;
+      let currentLightboxIndex = 0;
 
-    <script>
-        document.querySelectorAll('button[onclick]').forEach(button => {
-            const onclickAttr = button.getAttribute('onclick');
-            if (onclickAttr) {
-                const match = onclickAttr.match(/'([^']+)'/);
-                if (match) {
-                    const url = match[1];
-                    button.addEventListener('click', () => {
-                        window.location.href = url;
-                    });
-                }
-            }
+      // Close lightbox
+      closeLightbox.addEventListener('click', () => {
+        lightbox.classList.remove('active');
+      });
+
+      // Navigate lightbox
+      prevImage.addEventListener('click', () => {
+        if (currentLightboxProduct && currentLightboxProduct.images) {
+          currentLightboxIndex = (currentLightboxIndex - 1 + currentLightboxProduct.images.length) % currentLightboxProduct.images.length;
+          updateLightboxImage();
+        }
+      });
+
+      nextImage.addEventListener('click', () => {
+        if (currentLightboxProduct && currentLightboxProduct.images) {
+          currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxProduct.images.length;
+          updateLightboxImage();
+        }
+      });
+
+      function updateLightboxImage() {
+        if (currentLightboxProduct && currentLightboxProduct.images) {
+          lightboxImage.src = currentLightboxProduct.images[currentLightboxIndex];
+          imageCounter.textContent = `${currentLightboxIndex + 1} / ${currentLightboxProduct.images.length}`;
+        }
+      }
+
+      // Open lightbox
+      function openLightbox(product, index) {
+        currentLightboxProduct = product;
+        currentLightboxIndex = index;
+        updateLightboxImage();
+        lightbox.classList.add('active');
+      }
+
+      // Listen for real-time updates
+      db.collection('items').orderBy('title').onSnapshot({ includeMetadataChanges: true }, snapshot => {
+        allProducts = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          // Handle both new format (images array) and old format (single imageUrl)
+          if (!data.images && data.imageUrl) {
+            data.images = [data.imageUrl];
+          } else if (!data.images) {
+            data.images = [];
+          }
+          allProducts.push({ id: doc.id, ...data });
         });
-    </script>
+        applyFilterAndRender();
+      }, error => {
+        console.error('Listener error', error);
+        productsContainer.innerHTML = `<div class="no-products">⚠️ Failed to load products.</div>`;
+      });
+
+      // Filter and render
+      function applyFilterAndRender() {
+        const term = currentSearchTerm.trim().toLowerCase();
+        let filtered = allProducts;
+
+        if (term !== '') {
+          filtered = allProducts.filter(p => 
+            p.title && p.title.toLowerCase().includes(term)
+          );
+        }
+
+        // Update filter UI
+        if (term !== '') {
+          searchTermDisplay.innerText = term;
+          activeFilterArea.style.display = 'flex';
+        } else {
+          activeFilterArea.style.display = 'none';
+        }
+
+        renderProducts(filtered);
+      }
+
+      // Render products with gallery
+      function renderProducts(products) {
+        if (!products || products.length === 0) {
+          productsContainer.innerHTML = `<div class="no-products"><i class="fas fa-box-open" style="font-size:2.5rem; opacity:0.4;"></i><br />No products found.</div>`;
+          return;
+        }
+
+        let html = '';
+        products.forEach(product => {
+          const images = product.images || [];
+          const mainImage = images.length > 0 ? images[0] : 'https://via.placeholder.com/300?text=No+Image';
+          const title = product.title || 'Product';
+          const price = product.price || 0;
+          const discount = product.discount || 0;
+          const finalPrice = discount ? Math.round(price * (1 - discount/100)) : price;
+          const oldPrice = discount ? price : null;
+          const affiliateLink = product.affiliateLink || '#';
+
+          // Generate thumbnails
+          let thumbnails = '';
+          images.slice(0, 5).forEach((img, idx) => {
+            thumbnails += `<img src="${img}" onclick="changeProductImage('${product.id}', ${idx})" onmouseover="changeProductImage('${product.id}', ${idx})" title="View image ${idx+1}">`;
+          });
+
+          html += `
+            <div class="product-card" data-id="${product.id}">
+              <div class="gallery-container">
+                <img src="${mainImage}" class="main-image" id="main-${product.id}" onclick="openProductLightbox('${product.id}', 0)" style="cursor: pointer;">
+                ${images.length > 1 ? `
+                  <div class="gallery-nav">
+                    <div class="nav-arrow" onclick="event.stopPropagation(); navigateGallery('${product.id}', -1)"><i class="fas fa-chevron-left"></i></div>
+                    <div class="nav-arrow" onclick="event.stopPropagation(); navigateGallery('${product.id}', 1)"><i class="fas fa-chevron-right"></i></div>
+                  </div>
+                  <div class="image-counter">${images.length} photos</div>
+                ` : ''}
+                <div class="thumbnail-strip" id="thumbs-${product.id}">
+                  ${thumbnails}
+                </div>
+              </div>
+              <div class="product-info">
+                <div class="product-title">${escapeHtml(title)}</div>
+                <div class="price-row">
+                  <span class="current-price">KES ${finalPrice.toLocaleString()}</span>
+                  ${oldPrice ? `<span class="old-price">KES ${oldPrice.toLocaleString()}</span>` : ''}
+                </div>
+                ${discount ? `<div class="discount-badge">-${discount}%</div>` : ''}
+                <div class="shipping"><i class="fas fa-truck"></i> Free shipping</div>
+                <a href="${affiliateLink}" target="_blank" rel="nofollow" class="order-btn"><i class="fas fa-bolt"></i> Buy Now</a>
+              </div>
+            </div>
+          `;
+        });
+
+        productsContainer.innerHTML = html;
+      }
+
+      // Gallery navigation functions (will be attached to window for onclick access)
+      window.changeProductImage = function(productId, index) {
+        const product = allProducts.find(p => p.id === productId);
+        if (product && product.images && product.images[index]) {
+          const mainImg = document.getElementById(`main-${productId}`);
+          if (mainImg) {
+            mainImg.src = product.images[index];
+          }
+          
+          // Update active thumbnail
+          const thumbContainer = document.getElementById(`thumbs-${productId}`);
+          if (thumbContainer) {
+            const thumbs = thumbContainer.querySelectorAll('img');
+            thumbs.forEach((thumb, i) => {
+              if (i === index) {
+                thumb.style.borderColor = '#ff6a00';
+              } else {
+                thumb.style.borderColor = 'transparent';
+              }
+            });
+          }
+        }
+      };
+
+      window.navigateGallery = function(productId, direction) {
+        const product = allProducts.find(p => p.id === productId);
+        if (!product || !product.images) return;
+        
+        const currentMain = document.getElementById(`main-${productId}`);
+        if (!currentMain) return;
+        
+        const currentSrc = currentMain.src;
+        const currentIndex = product.images.findIndex(img => img === currentSrc);
+        if (currentIndex === -1) return;
+        
+        const newIndex = (currentIndex + direction + product.images.length) % product.images.length;
+        window.changeProductImage(productId, newIndex);
+      };
+
+      window.openProductLightbox = function(productId, index) {
+        const product = allProducts.find(p => p.id === productId);
+        if (product) {
+          openLightbox(product, index);
+        }
+      };
+
+      // Escape HTML
+      function escapeHtml(unsafe) {
+        if (!unsafe) return unsafe;
+        return unsafe.replace(/[&<>"]/g, function(m) {
+          if(m === '&') return '&amp;';
+          if(m === '<') return '&lt;';
+          if(m === '>') return '&gt;';
+          if(m === '"') return '&quot;';
+          return m;
+        });
+      }
+
+      // Search handlers
+      function performSearch() {
+        currentSearchTerm = searchInput.value.trim();
+        applyFilterAndRender();
+      }
+
+      searchBtn.addEventListener('click', performSearch);
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performSearch();
+      });
+
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        currentSearchTerm = '';
+        applyFilterAndRender();
+      });
+
+      // Keyboard navigation for lightbox
+      document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('active')) return;
+        
+        if (e.key === 'Escape') {
+          lightbox.classList.remove('active');
+        } else if (e.key === 'ArrowLeft') {
+          prevImage.click();
+        } else if (e.key === 'ArrowRight') {
+          nextImage.click();
+        }
+      });
+
+      // Click outside to close lightbox
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+          lightbox.classList.remove('active');
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
